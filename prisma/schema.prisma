@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  phone     String?  @unique
+  password  String?  // Hashed password for Owner/Manager
+  pin       String?  // For Tenant login if needed, or OTP logic handled elsewhere
+  role      String   // "OWNER", "MANAGER", "TENANT"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenantProperty Property? @relation("TenantProperty")
+  bills          Bill[]
+  payments       Payment[]
+}
+
+model Property {
+  id         String   @id @default(cuid())
+  name       String   // e.g., "Shop 101", "Room 304"
+  type       String   // "SHOP", "ROOM", "PARKING"
+  identifier String   @unique // Internal ID like S-101
+  
+  // Relations
+  tenantId   String?  @unique
+  tenant     User?    @relation("TenantProperty", fields: [tenantId], references: [id])
+  readings   MeterReading[]
+}
+
+model MeterReading {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  value      Float
+  photoUrl   String
+  date       DateTime @default(now())
+}
+
+model Bill {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    User     @relation(fields: [tenantId], references: [id])
+  amount    Float
+  status    String   // "PENDING", "PAID", "OVERDUE"
+  breakdown String   // JSON string or relation for details (Rent + Electricity)
+  date      DateTime @default(now())
+
+  // Relations
+  payments  Payment[]
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  billId    String
+  bill      Bill     @relation(fields: [billId], references: [id])
+  amount    Float
+  proofUrl  String?
+  status    String   // "PENDING_APPROVAL", "APPROVED", "REJECTED"
+  date      DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
