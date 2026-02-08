@@ -81,3 +81,11 @@
 .glass-panel {
   @apply bg-background/60 backdrop-blur-xl border border-border shadow-lg;
 }
+@layer base {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+}

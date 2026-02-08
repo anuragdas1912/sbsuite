@@ -1,14 +1,15 @@
-import type { Metadata } from 'next'
-import { Inter, Playfair_Display } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { cn } from "@/lib/utils"
-import CustomCursor from '@/components/ui/custom-cursor'
 import Preloader from '@/components/ui/preloader'
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/context/language-context"
+import ServiceWorkerCleanup from '@/components/service-worker-cleanup'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
-const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+}
 
 export const metadata: Metadata = {
     title: 'SB Suite @ Das Market',
@@ -23,7 +24,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
-            <body className={cn(inter.variable, playfair.variable, 'font-sans antialiased bg-background text-foreground transition-colors duration-300')}>
+            <body className={cn('font-sans antialiased bg-background text-foreground transition-colors duration-300')}>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="dark"
@@ -31,8 +32,8 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <LanguageProvider>
+                        <ServiceWorkerCleanup />
                         <div className="fixed inset-0 w-full h-full bg-noise opacity-[0.03] z-[50] pointer-events-none mix-blend-overlay"></div>
-                        <CustomCursor />
                         <Preloader />
                         {children}
                     </LanguageProvider>

@@ -6,9 +6,19 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ShieldCheck } from "lucide-react"
 import { useLanguage } from "@/context/language-context"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 export default function AdminLogin() {
     const { t } = useLanguage()
+    const router = useRouter()
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+
+    const handleAuthenticate = () => {
+        if (!email.trim() || !password.trim()) return
+        router.push('/dashboard/owner')
+    }
 
     return (
         <LoginLayout
@@ -20,13 +30,28 @@ export default function AdminLogin() {
             <div className="space-y-4">
                 <div className="space-y-2">
                     <Label>{t('staff_email')}</Label>
-                    <Input placeholder="admin@sbsuite.in" className="bg-background/50 border-border focus:border-primary/50" />
+                    <Input
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="admin@sbsuite.in"
+                        className="bg-background/50 border-border focus:border-primary/50"
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label>{t('password')}</Label>
-                    <Input type="password" placeholder="• • • • • • • •" className="bg-background/50 border-border focus:border-primary/50" />
+                    <Input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="• • • • • • • •"
+                        className="bg-background/50 border-border focus:border-primary/50"
+                    />
                 </div>
-                <Button className="w-full bg-primary hover:bg-primary/90 text-black font-bold shadow-lg shadow-primary/20">
+                <Button
+                    className="w-full bg-primary hover:bg-primary/90 text-black font-bold shadow-lg shadow-primary/20"
+                    onClick={handleAuthenticate}
+                    disabled={!email.trim() || !password.trim()}
+                >
                     {t('authenticate')}
                 </Button>
             </div>
