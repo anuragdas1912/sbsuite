@@ -32,16 +32,20 @@ import {
   Printer,
   Bell,
   ClipboardList,
-  Send
+  Send,
+  Building2,
+  LayoutDashboard,
+  List
 } from 'lucide-react';
 
 type Lang = 'en' | 'hi';
-type Tab = 'stats' | 'tenants' | 'managers' | 'rates' | 'complaints' | 'broadcasts' | 'messages' | 'compliance';
+type Tab = 'stats' | 'tenants' | 'managers' | 'rates' | 'complaints' | 'compliance' | 'messages' | 'broadcasts';
 
-export default function OwnerDashboard() {
+export default function OwnerPortal() {
   const router = useRouter();
   const [lang, setLang] = useState<Lang>('en');
   const [activeTab, setActiveTab] = useState<Tab>('stats');
+  const [rosterViewMode, setRosterViewMode] = useState<'list' | 'map'>('list');
 
   // Database State
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -1276,17 +1280,35 @@ export default function OwnerDashboard() {
               </form>
             </div>
 
-            {/* List */}
+            {/* List / Spatial Map */}
             <div className="md:col-span-8 bg-[#0E0F12] border border-[#1B1C21] p-5 sm:p-6 rounded-xl space-y-4">
               <div className="flex justify-between items-center border-b border-[#1B1C21]/60 pb-3 flex-wrap sm:flex-nowrap gap-3">
-                <h2 className="text-sm font-serif font-semibold text-slate-200">Registered Tenants List</h2>
+                <div className="flex items-center gap-4">
+                  <h2 className="text-sm font-serif font-semibold text-slate-200">
+                    {rosterViewMode === 'list' ? 'Registered Tenants List' : 'Spatial Twin Dashboard'}
+                  </h2>
+                  <div className="flex items-center bg-[#060608] border border-[#1B1C21] rounded-lg p-0.5">
+                    <button 
+                      onClick={() => setRosterViewMode('list')} 
+                      className={`p-1.5 rounded-md transition-colors ${rosterViewMode === 'list' ? 'bg-slate-800 text-gold' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                      <List className="w-3.5 h-3.5" />
+                    </button>
+                    <button 
+                      onClick={() => setRosterViewMode('map')} 
+                      className={`p-1.5 rounded-md transition-colors ${rosterViewMode === 'map' ? 'bg-slate-800 text-gold' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                      <LayoutDashboard className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
                 
                 <div className="flex items-center gap-2 flex-wrap">
                   {/* Sort Selector */}
                   <select
                     value={tenantSortOption}
                     onChange={(e) => setTenantSortOption(e.target.value as 'default' | 'dues_desc' | 'dues_asc')}
-                    className="rounded bg-[#060608] border border-[#1B1C21] text-xs px-2.5 py-1.5 focus:outline-none focus:border-gold/50 text-slate-250 w-44 animate-luxury-card text-xs"
+                    className="rounded bg-[#060608] border border-[#1B1C21] text-xs px-2.5 py-1.5 focus:outline-none focus:border-gold/50 text-slate-250 w-44 animate-luxury-card"
                   >
                     <option value="default">Default Sort (क्रमानुसार)</option>
                     <option value="dues_desc">Dues: High to Low (बकाया: अधिक से कम)</option>
@@ -1304,50 +1326,91 @@ export default function OwnerDashboard() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto text-xs font-light text-slate-300">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-[#1B1C21] text-slate-500 text-[10px] uppercase font-bold">
-                      <th className="py-2">Name</th>
-                      <th className="py-2">Unit</th>
-                      <th className="py-2">Outstanding Dues</th>
-                      <th className="py-2">Phone</th>
-                      <th className="py-2 text-right">Delete</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#1B1C21]/50">
-                    {(() => {
-                      let filtered = tenants.filter(t => t.name.toLowerCase().includes(tenantSearch.toLowerCase()) || t.unit_name.toLowerCase().includes(tenantSearch.toLowerCase()));
+              {rosterViewMode === 'list' ? (
+                <div className="overflow-x-auto text-xs font-light text-slate-300">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-[#1B1C21] text-slate-500 text-[10px] uppercase font-bold">
+                        <th className="py-2">Name</th>
+                        <th className="py-2">Unit</th>
+                        <th className="py-2">Outstanding Dues</th>
+                        <th className="py-2">Phone</th>
+                        <th className="py-2 text-right">Delete</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#1B1C21]/50">
+                      {(() => {
+                        let filtered = tenants.filter(t => t.name.toLowerCase().includes(tenantSearch.toLowerCase()) || t.unit_name.toLowerCase().includes(tenantSearch.toLowerCase()));
+                        
+                        if (tenantSortOption === 'dues_desc') {
+                          filtered = [...filtered].sort((a, b) => getTenantOutstandingDues(b) - getTenantOutstandingDues(a));
+                        } else if (tenantSortOption === 'dues_asc') {
+                          filtered = [...filtered].sort((a, b) => getTenantOutstandingDues(a) - getTenantOutstandingDues(b));
+                        }
+                        
+                        return filtered.map(ten => {
+                          const dues = getTenantOutstandingDues(ten);
+                          return (
+                            <tr key={ten.id} className="hover:bg-[#060608]/20 transition-colors">
+                              <td className="py-3 font-semibold text-slate-250">{ten.name.split(' (')[0]} <span className="text-[8px] bg-slate-900 border border-[#1B1C21] px-1.5 py-0.5 rounded text-slate-500 uppercase">{ten.role}</span></td>
+                              <td className="py-3">{ten.unit_name}</td>
+                              <td className="py-3 font-mono font-bold text-rose-400">₹{dues.toLocaleString('en-IN')}</td>
+                              <td className="py-3 font-mono">{ten.phone}</td>
+                              <td className="py-3 text-right">
+                                <button
+                                  onClick={() => handleRemoveTenant(ten.id, ten.name)}
+                                  className="p-1.5 bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 rounded transition cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        });
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 pt-2">
+                  {(() => {
+                    let filtered = tenants.filter(t => t.name.toLowerCase().includes(tenantSearch.toLowerCase()) || t.unit_name.toLowerCase().includes(tenantSearch.toLowerCase()));
+                    
+                    if (tenantSortOption === 'dues_desc') {
+                      filtered = [...filtered].sort((a, b) => getTenantOutstandingDues(b) - getTenantOutstandingDues(a));
+                    } else if (tenantSortOption === 'dues_asc') {
+                      filtered = [...filtered].sort((a, b) => getTenantOutstandingDues(a) - getTenantOutstandingDues(b));
+                    }
+
+                    return filtered.map(ten => {
+                      const hasDues = getTenantOutstandingDues(ten) > 0;
+                      const hasActiveComplaint = complaints.some(c => c.tenant_id === ten.id && c.status !== 'Resolved');
                       
-                      if (tenantSortOption === 'dues_desc') {
-                        filtered = [...filtered].sort((a, b) => getTenantOutstandingDues(b) - getTenantOutstandingDues(a));
-                      } else if (tenantSortOption === 'dues_asc') {
-                        filtered = [...filtered].sort((a, b) => getTenantOutstandingDues(a) - getTenantOutstandingDues(b));
+                      let statusColor = 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400';
+                      let indicator = 'bg-emerald-500';
+                      
+                      if (hasDues) {
+                        statusColor = 'bg-rose-500/5 border-rose-500/30 text-rose-400';
+                        indicator = 'bg-rose-500';
+                      } else if (hasActiveComplaint) {
+                        statusColor = 'bg-amber-500/10 border-amber-500/30 text-amber-400';
+                        indicator = 'bg-amber-500 animate-pulse';
                       }
-                      
-                      return filtered.map(ten => {
-                        const dues = getTenantOutstandingDues(ten);
-                        return (
-                          <tr key={ten.id} className="hover:bg-[#060608]/20 transition-colors">
-                            <td className="py-3 font-semibold text-slate-250">{ten.name.split(' (')[0]} <span className="text-[8px] bg-slate-900 border border-[#1B1C21] px-1.5 py-0.5 rounded text-slate-500 uppercase">{ten.role}</span></td>
-                            <td className="py-3">{ten.unit_name}</td>
-                            <td className="py-3 font-mono font-bold text-rose-400">₹{dues.toLocaleString('en-IN')}</td>
-                            <td className="py-3 font-mono">{ten.phone}</td>
-                            <td className="py-3 text-right">
-                              <button
-                                onClick={() => handleRemoveTenant(ten.id, ten.name)}
-                                className="p-1.5 bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 rounded transition cursor-pointer"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      });
-                    })()}
-                  </tbody>
-                </table>
-              </div>
+
+                      return (
+                        <div 
+                          key={ten.id} 
+                          className={`relative flex flex-col items-center justify-center py-4 px-2 rounded-xl border ${statusColor} cursor-pointer hover:bg-opacity-20 hover:scale-[1.02] transition-all`}
+                        >
+                          <div className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${indicator} shadow-[0_0_5px_currentColor]`} />
+                          <strong className="text-sm font-mono mt-1">{ten.unit_name.match(/\d+/)?.[0] || ten.unit_name.slice(0,4)}</strong>
+                          <span className="text-[8px] uppercase tracking-widest mt-1 opacity-80">{ten.role.slice(0,3)}</span>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
             </div>
 
           </div>

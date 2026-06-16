@@ -32,7 +32,10 @@ import {
   QrCode,
   Send,
   ClipboardList,
-  X
+  X,
+  LayoutDashboard,
+  Map,
+  List
 } from 'lucide-react';
 
 type Lang = 'en' | 'hi';
@@ -42,6 +45,7 @@ export default function ManagerPortal() {
   const router = useRouter();
   const [lang, setLang] = useState<Lang>('en');
   const [activeTab, setActiveTab] = useState<Tab>('roster');
+  const [rosterViewMode, setRosterViewMode] = useState<'list' | 'map'>('list');
   
   // Data State
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -485,6 +489,29 @@ export default function ManagerPortal() {
     }
   };
 
+  // Tenant outstanding dues helper
+  const getTenantOutstandingDues = (tenant: Tenant) => {
+    const rentAmount = tenant.base_rent;
+    const isEvUser = tenant.ev_charger;
+    const powerRate = tenant.electricity_rate || (tenant.role === 'commercial' ? 15 : tenant.role === 'parking' ? 12 : 10);
+    const prevReading = tenant.previous_reading || 0;
+    const currReading = tenant.current_reading || 0;
+    const unitsConsumed = currReading > prevReading ? currReading - prevReading : 0;
+    const electricityCharge = (tenant.role !== 'parking' || isEvUser) ? (unitsConsumed * powerRate) : 0;
+    const totalOutstanding = rentAmount + electricityCharge;
+
+    const currentMonthPaid = transactions
+      .filter(tx => {
+        if (tx.tenant_id !== tenant.id) return false;
+        const txDate = new Date(tx.created_at);
+        const now = new Date();
+        return txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear();
+      })
+      .reduce((sum, tx) => sum + tx.amount_paid, 0);
+
+    return Math.max(0, totalOutstanding - currentMonthPaid);
+  };
+
   const t = {
     en: {
       title: 'Manager Console',
@@ -661,12 +688,28 @@ export default function ManagerPortal() {
               </div>
             </div>
 
-            {/* Searchable Roster Table */}
+            {/* Searchable Roster Table / Spatial Map */}
             <div className="bg-[#0E0F12] border border-[#1B1C21] rounded-xl p-5 sm:p-6 space-y-4">
               <div className="flex justify-between items-center border-b border-[#1B1C21]/60 pb-3 flex-wrap sm:flex-nowrap gap-3">
-                <h2 className="text-sm font-serif font-semibold text-slate-200">
-                  {t.rosterTitle}
-                </h2>
+                <div className="flex items-center gap-4">
+                  <h2 className="text-sm font-serif font-semibold text-slate-200">
+                    {rosterViewMode === 'list' ? t.rosterTitle : (lang === 'en' ? 'Spatial Twin Dashboard' : 'स्थानिक डैशबोर्ड')}
+                  </h2>
+                  <div className="flex items-center bg-[#060608] border border-[#1B1C21] rounded-lg p-0.5">
+                    <button 
+                      onClick={() => setRosterViewMode('list')} 
+                      className={`p-1.5 rounded-md transition-colors ${rosterViewMode === 'list' ? 'bg-slate-800 text-gold' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                      <List className="w-3.5 h-3.5" />
+                    </button>
+                    <button 
+                      onClick={() => setRosterViewMode('map')} 
+                      className={`p-1.5 rounded-md transition-colors ${rosterViewMode === 'map' ? 'bg-slate-800 text-gold' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                      <LayoutDashboard className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
                 
                 {/* Search Inputs */}
                 <div className="relative w-full sm:w-64 text-xs">
@@ -683,33 +726,65 @@ export default function ManagerPortal() {
                 </div>
               </div>
 
-              {/* Roster list */}
-              <div className="divide-y divide-[#1B1C21]/60 text-xs">
-                {filteredTenants.map(ten => {
-                  const roleLabel = ten.role === 'residential' ? t.catRes : ten.role === 'commercial' ? t.catCom : t.catPark;
-                  return (
-                    <div 
-                      key={ten.id} 
-                      onClick={() => setSelectedTenant(ten)}
-                      className="py-3 flex justify-between items-center hover:bg-slate-900/20 px-2 rounded-lg cursor-pointer transition duration-150"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 bg-gold/5 border border-gold/20 rounded-full flex items-center justify-center font-serif text-gold font-bold">
-                          {ten.unit_name.match(/\d+/)?.[0] || ten.unit_name.slice(-2)}
+              {/* Roster list or Map Grid */}
+              {rosterViewMode === 'list' ? (
+                <div className="divide-y divide-[#1B1C21]/60 text-xs">
+                  {filteredTenants.map(ten => {
+                    const roleLabel = ten.role === 'residential' ? t.catRes : ten.role === 'commercial' ? t.catCom : t.catPark;
+                    return (
+                      <div 
+                        key={ten.id} 
+                        onClick={() => setSelectedTenant(ten)}
+                        className="py-3 flex justify-between items-center hover:bg-slate-900/20 px-2 rounded-lg cursor-pointer transition duration-150"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-7 h-7 bg-gold/5 border border-gold/20 rounded-full flex items-center justify-center font-serif text-gold font-bold">
+                            {ten.unit_name.match(/\d+/)?.[0] || ten.unit_name.slice(-2)}
+                          </div>
+                          <div>
+                            <strong className="text-slate-200 block">{ten.name.split(' (')[0]}</strong>
+                            <span className="text-[9px] text-slate-500 uppercase tracking-wider">{roleLabel} • {ten.unit_name}</span>
+                          </div>
                         </div>
-                        <div>
-                          <strong className="text-slate-200 block">{ten.name.split(' (')[0]}</strong>
-                          <span className="text-[9px] text-slate-500 uppercase tracking-wider">{roleLabel} • {ten.unit_name}</span>
+                        <div className="flex items-center gap-2 text-slate-500">
+                          <span className="font-mono text-slate-400 font-semibold">₹{ten.base_rent}</span>
+                          <ChevronRight className="w-4 h-4 text-slate-650" />
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-slate-500">
-                        <span className="font-mono text-slate-400 font-semibold">₹{ten.base_rent}</span>
-                        <ChevronRight className="w-4 h-4 text-slate-650" />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 pt-2">
+                  {filteredTenants.map(ten => {
+                    const hasDues = getTenantOutstandingDues(ten) > 0;
+                    const hasActiveComplaint = complaints.some(c => c.tenant_id === ten.id && c.status !== 'Resolved');
+                    
+                    let statusColor = 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400';
+                    let indicator = 'bg-emerald-500';
+                    
+                    if (hasDues) {
+                      statusColor = 'bg-rose-500/5 border-rose-500/30 text-rose-400';
+                      indicator = 'bg-rose-500';
+                    } else if (hasActiveComplaint) {
+                      statusColor = 'bg-amber-500/10 border-amber-500/30 text-amber-400';
+                      indicator = 'bg-amber-500 animate-pulse';
+                    }
+
+                    return (
+                      <div 
+                        key={ten.id} 
+                        onClick={() => setSelectedTenant(ten)} 
+                        className={`relative flex flex-col items-center justify-center py-4 px-2 rounded-xl border ${statusColor} cursor-pointer hover:bg-opacity-20 hover:scale-[1.02] transition-all`}
+                      >
+                        <div className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${indicator} shadow-[0_0_5px_currentColor]`} />
+                        <strong className="text-sm font-mono mt-1">{ten.unit_name.match(/\d+/)?.[0] || ten.unit_name.slice(0,4)}</strong>
+                        <span className="text-[8px] uppercase tracking-widest mt-1 opacity-80">{ten.role.slice(0,3)}</span>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
           </div>

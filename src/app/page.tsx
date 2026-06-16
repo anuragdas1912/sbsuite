@@ -40,6 +40,14 @@ export default function LandingPage() {
     }
   }, [selectedRole, prevRole]);
 
+  // Persistent Secure Session Auto-Login
+  useEffect(() => {
+    const savedRole = localStorage.getItem('sb_current_role');
+    if (savedRole && ['owner', 'manager', 'residential', 'commercial', 'parking'].includes(savedRole)) {
+      router.push(`/${savedRole}`);
+    }
+  }, [router]);
+
   const t = {
     en: {
       tagline: 'SHREE BALAJI PROPERTIES',

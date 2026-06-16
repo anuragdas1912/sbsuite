@@ -17,6 +17,13 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "SB Suite | Shree Balaji Properties",
   description: "High-end luxury property management gateway for Shree Balaji Properties.",
+  manifest: "/manifest.json",
+  themeColor: "#060608",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "SB Suite"
+  }
 };
 
 export default function RootLayout({
