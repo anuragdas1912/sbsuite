@@ -1,26 +1,165 @@
 @import "tailwindcss";
 
+@theme {
+  --font-serif: var(--font-playfair-display), serif;
+  --font-sans: var(--font-inter), sans-serif;
+
+  --color-gold: #C5A880; /* Soft champagne luxury gold */
+  --color-gold-hover: #DFD3C3;
+  --color-gold-dark: #9A805E;
+  
+  --color-luxury-black: #060608;
+  --color-luxury-gray: #0E0F12;
+  --color-luxury-border: #1B1C21;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #060608;
+  --foreground: #F4F4F5;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
+
+/* Custom Luxury Scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #060608;
+}
+::-webkit-scrollbar-thumb {
+  background: #1B1C21;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C5A880;
+}
+
+/* 2026 Cyber Grid Background Drift Animation */
+@keyframes grid-drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 60px 60px; }
+}
+
+.animated-grid {
+  background-image: 
+    linear-gradient(to right, rgba(197, 168, 128, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(197, 168, 128, 0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: grid-drift 30s linear infinite;
+}
+
+/* Rotating holographic ring for logo */
+@keyframes rotate-ring {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-rotate-ring {
+  animation: rotate-ring 12s linear infinite;
+}
+
+/* Floating background mesh keyframes */
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-25px) scale(1.08) rotate(5deg);
+  }
+}
+
+@keyframes float-reverse {
+  0%, 100% {
+    transform: translateY(0px) scale(1.08) rotate(0deg);
+  }
+  50% {
+    transform: translateY(25px) scale(1) rotate(-5deg);
+  }
+}
+
+.animate-float-1 {
+  animation: float-slow 14s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: float-reverse 16s ease-in-out infinite;
+}
+
+/* Luxury slide-up with ambient gold shadows */
+@keyframes slide-up-glow {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-luxury-card {
+  animation: slide-up-glow 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.delay-75 { animation-delay: 75ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-300 { animation-delay: 300ms; }
+
+/* 2026 Glassmorphic Panels with Interactive Border Shines */
+.glass-panel-2026 {
+  background: rgba(14, 15, 18, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(197, 168, 128, 0.08);
+}
+
+.glass-card-interactive-2026 {
+  background: rgba(14, 15, 18, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card-interactive-2026:hover {
+  background: rgba(14, 15, 18, 0.7);
+  border-color: rgba(197, 168, 128, 0.3);
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(197, 168, 128, 0.05);
+}
+
+.glass-card-active-2026 {
+  background: rgba(14, 15, 18, 0.85);
+  border-color: rgba(197, 168, 128, 0.7);
+  transform: translateY(-5px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 40px rgba(197, 168, 128, 0.15);
+}
+
+/* Floating labels for sleek inputs */
+.luxury-input-wrapper {
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: border-color 0.3s ease;
+}
+
+.luxury-input-wrapper:focus-within {
+  border-color: #C5A880;
+}
+
+.luxury-input-field {
+  width: 150%;
+  background: transparent;
+  outline: none;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+
+
+
