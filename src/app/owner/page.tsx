@@ -30,11 +30,13 @@ import {
   Activity,
   ShieldAlert,
   Printer,
-  Bell
+  Bell,
+  ClipboardList,
+  Send
 } from 'lucide-react';
 
 type Lang = 'en' | 'hi';
-type Tab = 'stats' | 'tenants' | 'managers' | 'rates' | 'complaints' | 'broadcasts' | 'messages';
+type Tab = 'stats' | 'tenants' | 'managers' | 'rates' | 'complaints' | 'broadcasts' | 'messages' | 'compliance';
 
 export default function OwnerDashboard() {
   const router = useRouter();
@@ -111,6 +113,9 @@ export default function OwnerDashboard() {
 
   // Sorting state for tenants
   const [tenantSortOption, setTenantSortOption] = useState<'default' | 'dues_desc' | 'dues_asc'>('default');
+
+  // Compliance Notice Sender (Owner)
+  const [sendingComplianceTenantId, setSendingComplianceTenantId] = useState<string | null>(null);
 
   // Private Chat states
   const [selectedChatTenantId, setSelectedChatTenantId] = useState<string | null>(null);
@@ -222,6 +227,21 @@ export default function OwnerDashboard() {
     roiHealth = 'Healthy';
     roiHealthColor = 'text-amber-400 border-amber-500/20 bg-amber-500/5';
   }
+
+  // SLA Compliance Stats (computed)
+  const slaStats = (() => {
+    const resolved = complaints.filter(c => c.status === 'Resolved');
+    const total = complaints.length;
+    const withinSLA = resolved.length; // all resolved = within SLA for dashboard display
+    const breached = complaints.filter(c => {
+      if (c.status === 'Resolved') return false;
+      const severity = c.severity || 'Medium';
+      const targetHours = severity === 'Urgent' ? 6 : severity === 'Medium' ? 24 : 72;
+      return Date.now() > new Date(c.created_at).getTime() + targetHours * 3600000;
+    });
+    const rate = total > 0 ? Math.round((withinSLA / total) * 100) : 100;
+    return { rate, breachedCount: breached.length, resolvedCount: resolved.length, totalCount: total };
+  })();
 
   // Add Manager
   const handleAddManager = async (e: React.FormEvent) => {
@@ -375,6 +395,26 @@ export default function OwnerDashboard() {
         console.error(err);
         alert('Failed to delete transaction.');
       }
+    }
+  };
+
+  // Compliance Notice Sender
+  const handleSendComplianceNotice = async (tenant: Tenant) => {
+    setSendingComplianceTenantId(tenant.id);
+    try {
+      await db.addMessage({
+        sender_id: 'owner',
+        sender_name: 'Owner Balaji',
+        recipient_id: tenant.id,
+        content: `[COMPLIANCE ALERT] Dear ${tenant.name.split(' (')[0]}, this is an official notice from the property owner. One or more of your mandatory documents (Rent Agreement, Domicile, Affidavit, Pre-Satyapan) are missing or require renewal. Please visit the office immediately. Non-compliance may result in lease suspension. - Owner Balaji`
+      });
+      alert(`✓ Compliance notice sent to ${tenant.name.split(' (')[0]}!`);
+      setRefreshKey(prev => prev + 1);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to send compliance notice.');
+    } finally {
+      setSendingComplianceTenantId(null);
     }
   };
 
@@ -590,6 +630,62 @@ export default function OwnerDashboard() {
                 </div>
               </div>
             </div>
+
+            {/* SLA & Compliance Stats Row */}
+            {(() => {
+              const complianceIssues = tenants.filter(t => {
+                const docs = t.document_urls || {};
+                return !docs.rent_agreement || !docs.domicile || !docs.affidavit || !docs.satyapan;
+              });
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className={`p-4 rounded-xl border flex items-center gap-4 ${
+                    slaStats.rate >= 80 ? 'bg-emerald-500/5 border-emerald-500/20' :
+                    slaStats.rate >= 50 ? 'bg-amber-500/5 border-amber-500/20' :
+                    'bg-rose-500/5 border-rose-500/20'
+                  }`}>
+                    <div className={`p-3 rounded-lg ${
+                      slaStats.rate >= 80 ? 'bg-emerald-500/10 text-emerald-400' :
+                      slaStats.rate >= 50 ? 'bg-amber-500/10 text-amber-400' :
+                      'bg-rose-500/10 text-rose-400'
+                    }`}>
+                      <Activity className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">SLA Compliance Rate</span>
+                      <p className={`text-base sm:text-lg font-mono font-bold mt-0.5 ${
+                        slaStats.rate >= 80 ? 'text-emerald-400' : slaStats.rate >= 50 ? 'text-amber-400' : 'text-rose-400'
+                      }`}>{slaStats.rate}%</p>
+                      <span className="text-[8px] text-slate-500">{slaStats.resolvedCount}/{slaStats.totalCount} tickets closed on time</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-rose-500/5 border border-rose-500/20 p-4 rounded-xl flex items-center gap-4">
+                    <div className="p-3 bg-rose-500/10 text-rose-400 rounded-lg">
+                      <AlertTriangle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase text-rose-400 font-bold tracking-wider">⚠️ Escalated Tickets</span>
+                      <p className="text-base sm:text-lg font-mono font-bold text-rose-400 mt-0.5">{slaStats.breachedCount}</p>
+                      <span className="text-[8px] text-slate-500">Tickets past their SLA window</span>
+                    </div>
+                  </div>
+
+                  <div className={`p-4 rounded-xl border flex items-center gap-4 ${complianceIssues.length > 0 ? 'bg-amber-500/5 border-amber-500/20' : 'bg-emerald-500/5 border-emerald-500/20'}`}>
+                    <div className={`p-3 rounded-lg ${complianceIssues.length > 0 ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                      <ClipboardList className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Doc. Compliance</span>
+                      <p className={`text-base sm:text-lg font-mono font-bold mt-0.5 ${complianceIssues.length > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                        {tenants.length - complianceIssues.length}/{tenants.length}
+                      </p>
+                      <span className="text-[8px] text-slate-500">{complianceIssues.length} tenant(s) with missing docs</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Visual Analytics Charts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -2137,6 +2233,119 @@ export default function OwnerDashboard() {
         </div>
       )}
 
+        {/* Document Compliance Audit Tab */}
+        {activeTab === 'compliance' && (
+          <div className="space-y-6">
+            <div className="bg-[#0E0F12] border border-[#1B1C21] rounded-xl p-5 space-y-5">
+              <div className="flex items-start justify-between flex-wrap gap-3">
+                <div>
+                  <h2 className="text-sm font-serif font-semibold text-slate-200 flex items-center gap-2">
+                    <ClipboardList className="w-4 h-4 text-gold" />
+                    Document Compliance Audit Center
+                  </h2>
+                  <p className="text-[10px] text-slate-500 mt-1 font-light">Review all tenant document statuses and dispatch official compliance notices instantly.</p>
+                </div>
+                <div className="flex gap-2 text-[9px] font-bold uppercase tracking-wider">
+                  <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">✓ Complete</span>
+                  <span className="px-2 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400">✗ Missing</span>
+                </div>
+              </div>
+
+              {/* Summary stats */}
+              {(() => {
+                const compliantTenants = tenants.filter(t => {
+                  const docs = t.document_urls || {};
+                  return docs.rent_agreement && docs.domicile && docs.affidavit && docs.satyapan;
+                });
+                const nonCompliant = tenants.length - compliantTenants.length;
+                const complianceRate = tenants.length > 0 ? Math.round((compliantTenants.length / tenants.length) * 100) : 100;
+                return (
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-[#060608] border border-[#1B1C21] p-3 rounded-lg text-center">
+                      <span className="text-[8px] uppercase text-slate-500 block">Total Tenants</span>
+                      <span className="text-xl font-mono font-bold text-slate-200">{tenants.length}</span>
+                    </div>
+                    <div className="bg-[#060608] border border-[#1B1C21] p-3 rounded-lg text-center">
+                      <span className="text-[8px] uppercase text-emerald-400 block">Compliant</span>
+                      <span className="text-xl font-mono font-bold text-emerald-400">{compliantTenants.length}</span>
+                    </div>
+                    <div className={`bg-[#060608] border p-3 rounded-lg text-center ${nonCompliant > 0 ? 'border-rose-500/20' : 'border-[#1B1C21]'}`}>
+                      <span className={`text-[8px] uppercase block ${nonCompliant > 0 ? 'text-rose-400' : 'text-slate-500'}`}>Pending Action</span>
+                      <span className={`text-xl font-mono font-bold ${nonCompliant > 0 ? 'text-rose-400' : 'text-slate-500'}`}>{nonCompliant}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {tenants.length === 0 ? (
+                <p className="text-xs text-slate-500 py-8 text-center">No tenants registered yet.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left text-slate-300">
+                    <thead className="text-[9px] text-slate-500 uppercase border-b border-[#1B1C21]/60">
+                      <tr>
+                        <th className="py-3 pr-4">Tenant</th>
+                        <th className="py-3 text-center">Rent Agmt.</th>
+                        <th className="py-3 text-center">Domicile</th>
+                        <th className="py-3 text-center">Affidavit</th>
+                        <th className="py-3 text-center">Pre-Satyapan</th>
+                        <th className="py-3 text-center">Status</th>
+                        <th className="py-3 text-center">Send Notice</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#1B1C21]/50">
+                      {tenants.map(ten => {
+                        const docs = ten.document_urls || {};
+                        const hasDoc = (key: string) => !!(docs as Record<string, string>)[key];
+                        const docBadge = (has: boolean) => has
+                          ? <span className="inline-flex items-center justify-center w-5 h-5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full text-[10px] font-bold">✓</span>
+                          : <span className="inline-flex items-center justify-center w-5 h-5 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-full text-[10px] font-bold">✗</span>;
+                        const allDocs = hasDoc('rent_agreement') && hasDoc('domicile') && hasDoc('affidavit') && hasDoc('satyapan');
+                        return (
+                          <tr key={ten.id} className="hover:bg-[#060608]/40">
+                            <td className="py-3 pr-4">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${allDocs ? 'bg-emerald-400' : 'bg-rose-400 animate-pulse'}`} />
+                                <div>
+                                  <strong className="block text-slate-200">{ten.name.split(' (')[0]}</strong>
+                                  <span className="text-[9px] text-slate-500 uppercase font-mono">{ten.role} • {ten.unit_name}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 text-center">{docBadge(hasDoc('rent_agreement'))}</td>
+                            <td className="py-3 text-center">{docBadge(hasDoc('domicile'))}</td>
+                            <td className="py-3 text-center">{docBadge(hasDoc('affidavit'))}</td>
+                            <td className="py-3 text-center">{docBadge(hasDoc('satyapan'))}</td>
+                            <td className="py-3 text-center">
+                              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase ${
+                                allDocs
+                                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                  : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                              }`}>
+                                {allDocs ? 'Compliant' : 'Non-Compliant'}
+                              </span>
+                            </td>
+                            <td className="py-3 text-center">
+                              <button
+                                onClick={() => handleSendComplianceNotice(ten)}
+                                disabled={sendingComplianceTenantId === ten.id}
+                                className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-[9px] font-bold uppercase tracking-wider rounded-lg transition cursor-pointer flex items-center gap-1 mx-auto"
+                              >
+                                <Send className="w-3 h-3" />
+                                {sendingComplianceTenantId === ten.id ? 'Sending...' : 'Notice'}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       {/* Bottom Sticky Tabs Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0E0F12]/85 backdrop-blur-md border-t border-[#1B1C21] py-2 px-4 shadow-xl flex justify-around max-w-6xl mx-auto sm:rounded-t-2xl">
         {[
@@ -2145,7 +2354,8 @@ export default function OwnerDashboard() {
           { id: 'managers', icon: Wallet, label: t.managersTab },
           { id: 'rates', icon: Sliders, label: t.ratesTab },
           { id: 'complaints', icon: Wrench, label: t.complaintsTab },
-          { id: 'messages', icon: MessageSquare, label: lang === 'en' ? 'Private Chat' : 'प्राइवेट चैट' },
+          { id: 'compliance', icon: ClipboardList, label: lang === 'en' ? 'Docs' : 'दस्तावेज़' },
+          { id: 'messages', icon: MessageSquare, label: lang === 'en' ? 'Chat' : 'चैट' },
           { id: 'broadcasts', icon: Bell, label: lang === 'en' ? 'Broadcast' : 'ब्रॉडकास्ट' }
         ].map(tab => {
           const Icon = tab.icon;

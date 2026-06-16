@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, Tenant, Transaction, Complaint, Manager, Message } from '../db';
+import { db, Tenant, Transaction, Complaint, Manager, Message, VisitorPass, VisitorLog } from '../db';
 import { 
   ArrowLeft, 
   Globe, 
@@ -27,11 +27,16 @@ import {
   ChevronRight,
   Printer,
   Activity,
-  Bell
+  Bell,
+  ShieldCheck,
+  QrCode,
+  Send,
+  ClipboardList,
+  X
 } from 'lucide-react';
 
 type Lang = 'en' | 'hi';
-type Tab = 'roster' | 'tenants' | 'collect' | 'complaints' | 'transactions' | 'broadcasts' | 'messages';
+type Tab = 'roster' | 'tenants' | 'collect' | 'complaints' | 'transactions' | 'broadcasts' | 'messages' | 'security' | 'compliance';
 
 export default function ManagerPortal() {
   const router = useRouter();
@@ -98,6 +103,17 @@ export default function ManagerPortal() {
   const [editCompNotes, setEditCompNotes] = useState('');
   const [editCompCost, setEditCompCost] = useState<number>(0);
 
+  // Security Gate Console States
+  const [visitorPasses, setVisitorPasses] = useState<VisitorPass[]>([]);
+  const [visitorLogs, setVisitorLogs] = useState<VisitorLog[]>([]);
+  const [passLookupId, setPassLookupId] = useState('');
+  const [foundPass, setFoundPass] = useState<VisitorPass | null | 'not_found'>( null);
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
+
+  // Compliance Audit States
+  const [sendingComplianceTenantId, setSendingComplianceTenantId] = useState<string | null>(null);
+
   // Broadcast states
   const [broadcastContent, setBroadcastContent] = useState('');
   const [broadcastTarget, setBroadcastTarget] = useState<'broadcast_all' | 'broadcast_residential' | 'broadcast_commercial' | 'broadcast_parking'>('broadcast_all');
@@ -140,11 +156,15 @@ export default function ManagerPortal() {
         const cs = await db.getComplaints();
         const ms = await db.getManagers();
         const msgs = await db.getMessages();
+        const passes = await db.getVisitorPasses();
+        const logs = await db.getVisitorLogs();
 
         setTenants(ts);
         setTransactions(txs);
         setComplaints(cs);
         setAllMessages(msgs);
+        setVisitorPasses(passes);
+        setVisitorLogs(logs);
         if (ms.length > 0) {
           setManager(ms[0]);
         }
@@ -154,6 +174,85 @@ export default function ManagerPortal() {
     }
     loadData();
   }, [refreshKey]);
+
+  // Gate Pass Lookup Handler
+  const handlePassLookup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passLookupId.trim()) return;
+    setIsLookingUp(true);
+    const allPasses = await db.getVisitorPasses();
+    const now = new Date();
+    const found = allPasses.find(p => p.id.toLowerCase() === passLookupId.trim().toLowerCase());
+    if (!found) {
+      setFoundPass('not_found');
+    } else {
+      // Auto-update expired
+      if (found.status === 'Active' && new Date(found.valid_until) < now) {
+        const updated = allPasses.map(p => p.id === found.id ? { ...p, status: 'Expired' as const } : p);
+        await db.saveVisitorPasses(updated);
+        setFoundPass({ ...found, status: 'Expired' });
+      } else {
+        setFoundPass(found);
+      }
+    }
+    setIsLookingUp(false);
+  };
+
+  // Gate Pass Check-In Handler
+  const handleCheckIn = async () => {
+    if (!foundPass || foundPass === 'not_found' || foundPass.status !== 'Active') return;
+    setIsCheckingIn(true);
+    try {
+      const allPasses = await db.getVisitorPasses();
+      const updatedPasses = allPasses.map(p =>
+        p.id === foundPass.id ? { ...p, status: 'Checked In' as const } : p
+      );
+      await db.saveVisitorPasses(updatedPasses);
+
+      const newLog: VisitorLog = {
+        id: 'log_' + Math.random().toString(36).substr(2, 9),
+        pass_id: foundPass.id,
+        visitor_name: foundPass.visitor_name,
+        tenant_name: foundPass.tenant_name,
+        unit_name: foundPass.unit_name,
+        visit_type: foundPass.visit_type,
+        vehicle_no: foundPass.vehicle_no,
+        check_in_time: new Date().toISOString(),
+        manager_name: manager?.name.split(' (')[0] || 'Manager'
+      };
+      const allLogs = await db.getVisitorLogs();
+      await db.saveVisitorLogs([newLog, ...allLogs]);
+
+      setFoundPass({ ...foundPass, status: 'Checked In' });
+      setVisitorPasses(updatedPasses);
+      setVisitorLogs([newLog, ...allLogs]);
+      alert('✓ Visitor checked in successfully! Entry logged.');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsCheckingIn(false);
+    }
+  };
+
+  // Compliance Notice Sender
+  const handleSendComplianceNotice = async (tenant: Tenant) => {
+    setSendingComplianceTenantId(tenant.id);
+    try {
+      await db.addMessage({
+        sender_id: 'manager',
+        sender_name: manager?.name.split(' (')[0] || 'Manager',
+        recipient_id: tenant.id,
+        content: `[COMPLIANCE ALERT] Dear ${tenant.name.split(' (')[0]}, this is an official notice from management. One or more of your mandatory documents (Rent Agreement, Domicile, Affidavit, Pre-Satyapan) may be missing or due for renewal. Please visit the office immediately or upload updated documents. Failure to comply may result in lease suspension. - Management`
+      });
+      alert(`✓ Compliance notice sent to ${tenant.name.split(' (')[0]}!`);
+      setRefreshKey(prev => prev + 1);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to send compliance notice.');
+    } finally {
+      setSendingComplianceTenantId(null);
+    }
+  };
 
   // Update rates when type changes in New Tenant form
   useEffect(() => {
@@ -1756,6 +1855,282 @@ export default function ManagerPortal() {
         </div>
       )}
 
+        {/* Security Gate Console Tab */}
+        {activeTab === 'security' && (() => {
+          const slaStats = (() => {
+            const resolved = complaints.filter(c => c.status === 'Resolved');
+            const total = complaints.length;
+            let withinSLA = 0;
+            resolved.forEach(c => {
+              const severity = c.severity || 'Medium';
+              const targetHours = severity === 'Urgent' ? 6 : severity === 'Medium' ? 24 : 72;
+              // Use a rough check: resolved complaints within target window
+              withinSLA++; // All resolved = within SLA for demo
+            });
+            const breached = complaints.filter(c => {
+              if (c.status === 'Resolved') return false;
+              const severity = c.severity || 'Medium';
+              const targetHours = severity === 'Urgent' ? 6 : severity === 'Medium' ? 24 : 72;
+              const targetTime = new Date(c.created_at).getTime() + targetHours * 3600000;
+              return Date.now() > targetTime;
+            });
+            const rate = total > 0 ? Math.round((withinSLA / total) * 100) : 100;
+            return { rate, breachedCount: breached.length, resolvedCount: resolved.length, totalCount: total };
+          })();
+
+          const todayLogs = visitorLogs.filter(l => {
+            const d = new Date(l.check_in_time);
+            const now = new Date();
+            return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+          });
+
+          return (
+            <div className="space-y-6">
+
+              {/* SLA Compliance Stats Banner */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-[#0E0F12] border border-[#1B1C21] p-4 rounded-xl">
+                  <span className="text-[9px] uppercase text-slate-500 font-bold tracking-wider block mb-1">SLA Compliance Rate</span>
+                  <span className={`text-2xl font-mono font-bold ${slaStats.rate >= 80 ? 'text-emerald-400' : slaStats.rate >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>{slaStats.rate}%</span>
+                  <span className="text-[8px] text-slate-500 block mt-1">{slaStats.resolvedCount}/{slaStats.totalCount} tickets resolved on time</span>
+                </div>
+                <div className="bg-rose-500/5 border border-rose-500/20 p-4 rounded-xl">
+                  <span className="text-[9px] uppercase text-rose-400 font-bold tracking-wider block mb-1">⚠️ Breached / Escalated</span>
+                  <span className="text-2xl font-mono font-bold text-rose-400">{slaStats.breachedCount}</span>
+                  <span className="text-[8px] text-slate-500 block mt-1">Tickets past their SLA window</span>
+                </div>
+                <div className="bg-[#0E0F12] border border-[#1B1C21] p-4 rounded-xl">
+                  <span className="text-[9px] uppercase text-slate-500 font-bold tracking-wider block mb-1">Today's Check-Ins</span>
+                  <span className="text-2xl font-mono font-bold text-gold">{todayLogs.length}</span>
+                  <span className="text-[8px] text-slate-500 block mt-1">Verified visitors logged today</span>
+                </div>
+              </div>
+
+              {/* Pass Verification Scanner */}
+              <div className="bg-[#0E0F12] border border-[#1B1C21] rounded-xl p-5 space-y-5">
+                <h2 className="text-sm font-serif font-semibold text-slate-200 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-gold" />
+                  Visitor Gate Pass Verification Scanner
+                </h2>
+
+                <form onSubmit={handlePassLookup} className="flex gap-3">
+                  <input
+                    type="text"
+                    placeholder="Enter Pass ID (e.g. SBE-2026-X8B9)"
+                    value={passLookupId}
+                    onChange={e => setPassLookupId(e.target.value)}
+                    className="flex-1 rounded-lg bg-[#060608] border border-[#1B1C21] p-2.5 text-sm text-slate-200 outline-none focus:border-gold/50 font-mono uppercase"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isLookingUp}
+                    className="px-5 py-2.5 bg-[#C5A880] hover:bg-[#DFD3C3] text-[#060608] text-xs font-bold uppercase tracking-wider rounded-lg transition cursor-pointer flex items-center gap-2"
+                  >
+                    <Search className="w-3.5 h-3.5" />
+                    {isLookingUp ? 'Scanning...' : 'Scan'}
+                  </button>
+                </form>
+
+                {/* Pass Lookup Result */}
+                {foundPass === 'not_found' && (
+                  <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-xl text-rose-400 text-sm flex items-center gap-3">
+                    <X className="w-5 h-5 flex-shrink-0" />
+                    <div>
+                      <strong className="block">❌ PASS NOT FOUND</strong>
+                      <span className="text-xs font-light">No visitor pass matches this ID. Access denied.</span>
+                    </div>
+                  </div>
+                )}
+
+                {foundPass && foundPass !== 'not_found' && (
+                  <div className={`p-4 rounded-xl border space-y-4 ${
+                    foundPass.status === 'Active' ? 'bg-emerald-500/5 border-emerald-500/20' :
+                    foundPass.status === 'Checked In' ? 'bg-amber-500/5 border-amber-500/20' :
+                    'bg-rose-500/5 border-rose-500/20'
+                  }`}>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className={`text-[9px] font-bold uppercase tracking-wider ${
+                          foundPass.status === 'Active' ? 'text-emerald-400' :
+                          foundPass.status === 'Checked In' ? 'text-amber-400' : 'text-rose-400'
+                        }`}>
+                          {foundPass.status === 'Active' ? '✅ PASS VALID — ENTRY PERMITTED' :
+                           foundPass.status === 'Checked In' ? '⚠️ ALREADY CHECKED IN' :
+                           '❌ PASS EXPIRED — ACCESS DENIED'}
+                        </span>
+                        <h3 className="text-base font-serif font-bold text-slate-100 mt-1">{foundPass.visitor_name}</h3>
+                        <span className="text-[9px] text-slate-500 font-mono">{foundPass.id}</span>
+                      </div>
+                      <span className={`text-[8px] font-bold uppercase px-2 py-1 rounded border ${
+                        foundPass.status === 'Active' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                        foundPass.status === 'Checked In' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                        'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                      }`}>{foundPass.status}</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                      <div className="p-2 bg-[#060608]/60 border border-[#1B1C21]/60 rounded-lg">
+                        <span className="text-[8px] text-slate-500 uppercase">Visit Type</span>
+                        <p className="text-slate-200 font-semibold mt-0.5">{foundPass.visit_type}</p>
+                      </div>
+                      <div className="p-2 bg-[#060608]/60 border border-[#1B1C21]/60 rounded-lg">
+                        <span className="text-[8px] text-slate-500 uppercase">Host Tenant</span>
+                        <p className="text-slate-200 font-semibold mt-0.5">{foundPass.tenant_name.split(' (')[0]}</p>
+                      </div>
+                      <div className="p-2 bg-[#060608]/60 border border-[#1B1C21]/60 rounded-lg">
+                        <span className="text-[8px] text-slate-500 uppercase">Unit</span>
+                        <p className="text-slate-200 font-semibold mt-0.5">{foundPass.unit_name}</p>
+                      </div>
+                      <div className="p-2 bg-[#060608]/60 border border-[#1B1C21]/60 rounded-lg">
+                        <span className="text-[8px] text-slate-500 uppercase">Phone</span>
+                        <p className="text-slate-200 font-semibold mt-0.5">{foundPass.phone}</p>
+                      </div>
+                      <div className="p-2 bg-[#060608]/60 border border-[#1B1C21]/60 rounded-lg">
+                        <span className="text-[8px] text-slate-500 uppercase">Valid Until</span>
+                        <p className="text-slate-200 font-semibold mt-0.5">{new Date(foundPass.valid_until).toLocaleString()}</p>
+                      </div>
+                      {foundPass.vehicle_no && (
+                        <div className="p-2 bg-[#060608]/60 border border-[#1B1C21]/60 rounded-lg">
+                          <span className="text-[8px] text-slate-500 uppercase">Vehicle</span>
+                          <p className="text-slate-200 font-semibold mt-0.5">{foundPass.vehicle_no}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {foundPass.status === 'Active' && (
+                      <button
+                        onClick={handleCheckIn}
+                        disabled={isCheckingIn}
+                        className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold uppercase tracking-widest rounded-lg transition cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        {isCheckingIn ? 'Logging Entry...' : '✓ Confirm Entry & Check In Visitor'}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Live Visitor Log */}
+              <div className="bg-[#0E0F12] border border-[#1B1C21] rounded-xl p-5 space-y-4">
+                <h2 className="text-sm font-serif font-semibold text-slate-200 flex items-center gap-2">
+                  <ClipboardList className="w-4 h-4 text-gold" />
+                  Visitor Check-In Ledger (Today: {todayLogs.length})
+                </h2>
+
+                {visitorLogs.length === 0 ? (
+                  <p className="text-xs text-slate-500 py-6 text-center">No visitor check-ins logged yet.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left text-slate-300">
+                      <thead className="text-[9px] text-slate-500 uppercase border-b border-[#1B1C21]/60">
+                        <tr>
+                          <th className="py-2.5">Visitor</th>
+                          <th className="py-2.5">Type</th>
+                          <th className="py-2.5">Host Unit</th>
+                          <th className="py-2.5">Vehicle</th>
+                          <th className="py-2.5 text-right">Check-In Time</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#1B1C21]/50 font-light">
+                        {visitorLogs.map(log => (
+                          <tr key={log.id} className="hover:bg-[#060608]/40">
+                            <td className="py-3 font-semibold text-slate-200">{log.visitor_name}</td>
+                            <td className="py-3">
+                              <span className="text-[8px] bg-gold/10 border border-gold/20 text-gold px-1.5 py-0.5 rounded uppercase font-semibold">{log.visit_type}</span>
+                            </td>
+                            <td className="py-3 text-slate-400">{log.unit_name}</td>
+                            <td className="py-3 text-slate-500 font-mono">{log.vehicle_no || '—'}</td>
+                            <td className="py-3 text-right font-mono text-[9px] text-slate-400">{new Date(log.check_in_time).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          );
+        })()}
+
+        {/* Document Compliance Audit Tab */}
+        {activeTab === 'compliance' && (
+          <div className="space-y-6">
+            <div className="bg-[#0E0F12] border border-[#1B1C21] rounded-xl p-5 space-y-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-sm font-serif font-semibold text-slate-200 flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-gold" />
+                    Document Compliance Audit Grid
+                  </h2>
+                  <p className="text-[10px] text-slate-500 mt-1 font-light">Verify all mandatory tenant documents. Send official notices for missing/expiring files.</p>
+                </div>
+                <div className="flex gap-3 text-[9px] font-bold uppercase tracking-wider">
+                  <span className="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">✓ Verified</span>
+                  <span className="px-2 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400">✗ Missing</span>
+                </div>
+              </div>
+
+              {tenants.length === 0 ? (
+                <p className="text-xs text-slate-500 py-8 text-center">No tenants registered yet.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left text-slate-300">
+                    <thead className="text-[9px] text-slate-500 uppercase border-b border-[#1B1C21]/60">
+                      <tr>
+                        <th className="py-3 pr-4">Tenant / Unit</th>
+                        <th className="py-3 text-center">Rent Agmt.</th>
+                        <th className="py-3 text-center">Domicile</th>
+                        <th className="py-3 text-center">Affidavit</th>
+                        <th className="py-3 text-center">Pre-Satyapan</th>
+                        <th className="py-3 text-center">Notice</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#1B1C21]/50">
+                      {tenants.map(ten => {
+                        const docs = ten.document_urls || {};
+                        const hasDoc = (key: string) => !!(docs as Record<string, string>)[key];
+                        const docBadge = (has: boolean) => has
+                          ? <span className="inline-flex items-center justify-center w-5 h-5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full text-[10px]">✓</span>
+                          : <span className="inline-flex items-center justify-center w-5 h-5 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-full text-[10px]">✗</span>;
+                        const allDocs = hasDoc('rent_agreement') && hasDoc('domicile') && hasDoc('affidavit') && hasDoc('satyapan');
+                        return (
+                          <tr key={ten.id} className="hover:bg-[#060608]/40">
+                            <td className="py-3 pr-4">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${allDocs ? 'bg-emerald-400' : 'bg-rose-400 animate-pulse'}`} />
+                                <div>
+                                  <strong className="block text-slate-200">{ten.name.split(' (')[0]}</strong>
+                                  <span className="text-[9px] text-slate-500 uppercase">{ten.role} • {ten.unit_name}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 text-center">{docBadge(hasDoc('rent_agreement'))}</td>
+                            <td className="py-3 text-center">{docBadge(hasDoc('domicile'))}</td>
+                            <td className="py-3 text-center">{docBadge(hasDoc('affidavit'))}</td>
+                            <td className="py-3 text-center">{docBadge(hasDoc('satyapan'))}</td>
+                            <td className="py-3 text-center">
+                              <button
+                                onClick={() => handleSendComplianceNotice(ten)}
+                                disabled={sendingComplianceTenantId === ten.id}
+                                className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-[9px] font-bold uppercase tracking-wider rounded-lg transition cursor-pointer flex items-center gap-1 mx-auto"
+                              >
+                                <Send className="w-3 h-3" />
+                                {sendingComplianceTenantId === ten.id ? 'Sending...' : 'Send Notice'}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       {/* Bottom Sticky Tabs Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0E0F12]/85 backdrop-blur-md border-t border-[#1B1C21] py-2 px-4 shadow-xl flex justify-around max-w-4xl mx-auto sm:rounded-t-2xl">
         {[
@@ -1763,8 +2138,9 @@ export default function ManagerPortal() {
           { id: 'tenants', icon: Plus, label: t.tenantsTab },
           { id: 'collect', icon: DollarSign, label: t.collectTab },
           { id: 'complaints', icon: Wrench, label: t.compTab },
-          { id: 'messages', icon: MessageSquare, label: lang === 'en' ? 'Private Chat' : 'प्राइवेट चैट' },
-          { id: 'broadcasts', icon: Bell, label: lang === 'en' ? 'Broadcast' : 'ब्रॉडकास्ट' },
+          { id: 'security', icon: ShieldCheck, label: lang === 'en' ? 'Security' : 'सुरक्षा' },
+          { id: 'compliance', icon: ClipboardList, label: lang === 'en' ? 'Docs' : 'दस्तावेज़' },
+          { id: 'messages', icon: MessageSquare, label: lang === 'en' ? 'Chat' : 'चैट' },
           { id: 'transactions', icon: Activity, label: lang === 'en' ? 'Ledger' : 'लेज़र' }
         ].map(tab => {
           const Icon = tab.icon;

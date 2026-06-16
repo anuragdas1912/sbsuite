@@ -68,6 +68,32 @@ export interface Message {
   created_at: string;
 }
 
+export interface VisitorPass {
+  id: string;
+  tenant_id: string;
+  tenant_name: string;
+  unit_name: string;
+  visitor_name: string;
+  phone: string;
+  visit_type: 'Guest' | 'Delivery' | 'Maintenance' | 'Other';
+  vehicle_no?: string;
+  valid_until: string;
+  status: 'Active' | 'Checked In' | 'Expired';
+  created_at: string;
+}
+
+export interface VisitorLog {
+  id: string;
+  pass_id: string;
+  visitor_name: string;
+  tenant_name: string;
+  unit_name: string;
+  visit_type: string;
+  vehicle_no?: string;
+  check_in_time: string;
+  manager_name: string;
+}
+
 export interface Manager {
   id: string;
   name: string;
@@ -410,5 +436,22 @@ export const db = {
 
   async saveRates(rates: { rent: Record<string, number>; power: Record<string, number> }): Promise<void> {
     saveData('sb_global_rates', rates);
+  },
+
+  // --- Visitor Passes & Logs ---
+  async getVisitorPasses(): Promise<VisitorPass[]> {
+    return loadData<VisitorPass[]>('sb_visitor_passes', []);
+  },
+
+  async saveVisitorPasses(passes: VisitorPass[]): Promise<void> {
+    saveData('sb_visitor_passes', passes);
+  },
+
+  async getVisitorLogs(): Promise<VisitorLog[]> {
+    return loadData<VisitorLog[]>('sb_visitor_logs', []);
+  },
+
+  async saveVisitorLogs(logs: VisitorLog[]): Promise<void> {
+    saveData('sb_visitor_logs', logs);
   }
 };

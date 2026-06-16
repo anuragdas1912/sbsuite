@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, Tenant, Transaction, Complaint, Message } from '../db';
+import { db, Tenant, Transaction, Complaint, Message, VisitorPass } from '../db';
 import { 
   ArrowLeft, 
   Globe, 
@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 
 type Lang = 'en' | 'hi';
-type Tab = 'home' | 'payments' | 'complaints' | 'documents' | 'messages';
+type Tab = 'home' | 'payments' | 'complaints' | 'documents' | 'messages' | 'passes';
 
 export default function ResidentialPortal() {
   const router = useRouter();
@@ -38,6 +38,17 @@ export default function ResidentialPortal() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+
+  // Gate Pass States
+  const [passes, setPasses] = useState<VisitorPass[]>([]);
+  const [passName, setPassName] = useState('');
+  const [passPhone, setPassPhone] = useState('');
+  const [passType, setPassType] = useState<'Guest' | 'Delivery' | 'Maintenance' | 'Other'>('Guest');
+  const [passVehicle, setPassVehicle] = useState('');
+  const [passDuration, setPassDuration] = useState('2'); // hours
+  const [showPassModal, setShowPassModal] = useState(false);
+  const [selectedPass, setSelectedPass] = useState<VisitorPass | null>(null);
+  const [isGeneratingPass, setIsGeneratingPass] = useState(false);
 
   // Payment Modal States
   const [showPayModal, setShowPayModal] = useState(false);
@@ -85,6 +96,9 @@ export default function ResidentialPortal() {
 
         const msgs = await db.getMessages();
         setMessages(msgs);
+
+        const allPasses = await db.getVisitorPasses();
+        setPasses(allPasses.filter(p => p.tenant_id === activeTenant.id));
       }
     } catch (err) {
       console.error(err);
@@ -195,11 +209,10 @@ export default function ResidentialPortal() {
       selectMode: 'Choose Payment Method',
       modeUPI: 'UPI Transfer (Scan QR)',
       modeCash: 'Cash to Manager (Amit)',
-      upiInstructions: 'Scan this QR code with any UPI app (GPay/PhonePe/Paytm) to complete payment.',
-      cashInstructions: 'Please hand over the cash to manager Amit. Your status will update once logged.',
       payConfirmBtn: 'Confirm & Complete Payment',
       payProcessing: 'Authenticating Transaction...',
-      paySuccessMsg: 'Payment completed successfully! Database record updated.'
+      paySuccessMsg: 'Payment completed successfully! Database record updated.',
+      passesTab: 'Gate Passes'
     },
     hi: {
       dashboard: 'निवासी पोर्टल',
@@ -268,7 +281,8 @@ export default function ResidentialPortal() {
       cashInstructions: 'कृपया नकद राशि मैनेजर अमित को सौंपें। मैनेजर के लॉग करते ही रसीद अपडेट हो जाएगी।',
       payConfirmBtn: 'भुगतान की पुष्टि करें',
       payProcessing: 'लेनदेन सत्यापित किया जा रहा है...',
-      paySuccessMsg: 'भुगतान सफलतापूर्वक पूरा हुआ! डेटाबेस रिकॉर्ड अपडेट हो गया है।'
+      paySuccessMsg: 'भुगतान सफलतापूर्वक पूरा हुआ! डेटाबेस रिकॉर्ड अपडेट हो गया है।',
+      passesTab: 'गेट पास'
     }
   }[lang];
 
@@ -283,6 +297,52 @@ export default function ResidentialPortal() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Generate Visitor Gate Pass
+  const handleGeneratePass = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passName || !passPhone) return;
+    setIsGeneratingPass(true);
+    try {
+      const passId = 'SBE-2026-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+      const now = new Date();
+      const validUntil = new Date(now.getTime() + Number(passDuration) * 60 * 60 * 1000).toISOString();
+      
+      const newPass: VisitorPass = {
+        id: passId,
+        tenant_id: tenant.id,
+        tenant_name: tenant.name,
+        unit_name: tenant.unit_name,
+        visitor_name: passName,
+        phone: passPhone,
+        visit_type: passType,
+        vehicle_no: passVehicle || undefined,
+        valid_until: validUntil,
+        status: 'Active',
+        created_at: now.toISOString()
+      };
+
+      const allPasses = await db.getVisitorPasses();
+      const updated = [newPass, ...allPasses];
+      await db.saveVisitorPasses(updated);
+      
+      setPasses(updated.filter(p => p.tenant_id === tenant.id));
+      setSelectedPass(newPass);
+      setShowPassModal(true);
+      
+      // Reset form
+      setPassName('');
+      setPassPhone('');
+      setPassVehicle('');
+      setPassType('Guest');
+      setPassDuration('2');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to generate gate pass.');
+    } finally {
+      setIsGeneratingPass(false);
+    }
   };
 
   // Raise Complaint
@@ -705,6 +765,76 @@ export default function ResidentialPortal() {
               );
             })()}
 
+            {/* Predictive Smart Grid & Anomaly Insights */}
+            {(() => {
+              const allPowerTxs = transactions.filter(tx => tx.units_consumed !== null && tx.units_consumed > 0);
+              if (allPowerTxs.length === 0) return null;
+              
+              const avgUnits = allPowerTxs.reduce((sum, tx) => sum + Number(tx.units_consumed), 0) / allPowerTxs.length;
+              const latestTx = allPowerTxs[allPowerTxs.length - 1];
+              const latestUnits = Number(latestTx.units_consumed || 0);
+              const isAnomaly = latestUnits > avgUnits * 1.3 && avgUnits > 0;
+              
+              const predictedUnits = Math.round(avgUnits * 1.05);
+              const predictedCost = Math.round(predictedUnits * powerRate);
+              
+              let ecoGrade = 'B (Good)';
+              let ecoColor = 'text-amber-400';
+              if (latestUnits < 250) {
+                ecoGrade = 'A+ (Elite Eco)';
+                ecoColor = 'text-emerald-400';
+              } else if (latestUnits > 450) {
+                ecoGrade = 'C (Needs Optimization)';
+                ecoColor = 'text-rose-450';
+              }
+
+              return (
+                <div className="bg-[#060608]/40 border border-[#1B1C21] rounded-xl p-5 space-y-4 animate-luxury-card">
+                  <h3 className="text-xs font-serif font-semibold text-slate-200 flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-emerald-400" />
+                    MNC Smart Grid & Predictive Utility Insights
+                  </h3>
+                  
+                  {isAnomaly && (
+                    <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-400 text-xs flex gap-2 items-start animate-pulse">
+                      <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="block font-bold">⚠️ GRID ANOMALY DETECTED</strong>
+                        Your latest consumption of {latestUnits} kWh is {(latestUnits / avgUnits * 100 - 100).toFixed(0)}% higher than your monthly average of {Math.round(avgUnits)} kWh. Please check for electrical leakages or heavy load appliances left running.
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                    <div className="p-3 bg-[#0E0F12] border border-[#1B1C21] rounded-lg">
+                      <span className="text-slate-500 block text-[9px] uppercase font-mono mb-1">Projected Next Month Usage</span>
+                      <span className="font-mono text-base font-bold text-slate-200">{predictedUnits} kWh</span>
+                      <span className="block text-[8px] text-slate-500 mt-1">Based on rolling usage patterns</span>
+                    </div>
+                    <div className="p-3 bg-[#0E0F12] border border-[#1B1C21] rounded-lg">
+                      <span className="text-slate-500 block text-[9px] uppercase font-mono mb-1">Projected Next Month Cost</span>
+                      <span className="font-mono text-base font-bold text-slate-200">₹{predictedCost.toLocaleString('en-IN')}</span>
+                      <span className="block text-[8px] text-slate-500 mt-1">At current ₹{powerRate}/kWh tariff</span>
+                    </div>
+                    <div className="p-3 bg-[#0E0F12] border border-[#1B1C21] rounded-lg">
+                      <span className="text-slate-500 block text-[9px] uppercase font-mono mb-1">MNC Eco-Score Grade</span>
+                      <span className={`text-base font-bold uppercase tracking-wider ${ecoColor}`}>{ecoGrade}</span>
+                      <span className="block text-[8px] text-slate-500 mt-1">Property baseline: 500 kWh</span>
+                    </div>
+                  </div>
+
+                  <div className="text-[10px] text-slate-400 space-y-2 leading-relaxed bg-[#0E0F12]/30 p-3 rounded-lg border border-[#1B1C21]/40">
+                    <strong className="block text-[9px] uppercase tracking-wider text-slate-500 font-mono">Enterprise Efficiency Recommendations:</strong>
+                    <ul className="list-disc pl-4 space-y-1 font-light">
+                      <li>Configure your heating/cooling equipment to turn off during peak grid tariff hours.</li>
+                      <li>Shift laundry or water pumps operation to early morning hours to balance phase load.</li>
+                      <li>Maintain clean HVAC filters to reduce compressor energy drag by up to 15%.</li>
+                    </ul>
+                  </div>
+                </div>
+              );
+            })()}
+
             {transactions.length === 0 ? (
               <p className="text-xs text-slate-500 py-8 text-center">{t.noTx}</p>
             ) : (
@@ -844,10 +974,47 @@ export default function ResidentialPortal() {
                 <div className="divide-y divide-[#1B1C21]/60 text-xs">
                   {complaints.map(comp => {
                     const statusText = comp.status;
+                    
+                    // SLA Calculations
+                    let slaLabel = '';
+                    let slaColor = '';
+                    let isBreached = false;
+
+                    if (statusText === 'Resolved') {
+                      slaLabel = 'SLA MET ✓';
+                      slaColor = 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5';
+                    } else {
+                      const createdDate = new Date(comp.created_at);
+                      const severity = comp.severity || 'Medium';
+                      const targetHours = severity === 'Urgent' ? 6 : severity === 'Medium' ? 24 : 72;
+                      const targetTime = createdDate.getTime() + targetHours * 60 * 60 * 1000;
+                      const now = Date.now();
+                      const diffMs = targetTime - now;
+
+                      if (diffMs < 0) {
+                        isBreached = true;
+                        const hoursBreached = Math.ceil(Math.abs(diffMs) / (1000 * 60 * 60));
+                        slaLabel = `⚠️ ESCALATED TO OWNER (SLA Breached by ${hoursBreached}h)`;
+                        slaColor = 'text-rose-450 border-rose-500/30 bg-rose-500/5 animate-pulse font-bold';
+                      } else {
+                        const hoursLeft = Math.floor(diffMs / (1000 * 60 * 60));
+                        const minsLeft = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                        slaLabel = `SLA Active: ${hoursLeft}h ${minsLeft}m remaining`;
+                        slaColor = 'text-amber-400 border-amber-500/20 bg-amber-500/5';
+                      }
+                    }
+
                     return (
                       <div key={comp.id} className="py-4 space-y-3">
                         <div className="flex justify-between items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-slate-200 text-sm">{comp.subject}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-slate-200 text-sm">{comp.subject}</span>
+                            {isBreached && (
+                              <span className="bg-rose-500/15 border border-rose-500/30 text-rose-400 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded animate-pulse">
+                                Escalated
+                              </span>
+                            )}
+                          </div>
                           <span className={`text-[8px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded border ${
                             statusText === 'Resolved' 
                               ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400'
@@ -873,6 +1040,12 @@ export default function ResidentialPortal() {
                           )}
                         </div>
 
+                        {/* SLA Resolution Timer Badge */}
+                        <div className={`border p-2 rounded-lg text-[9px] font-mono flex items-center justify-between gap-2 ${slaColor}`}>
+                          <span>Resolution SLA Target:</span>
+                          <span className="font-bold">{slaLabel}</span>
+                        </div>
+
                         {/* Progress timeline bars */}
                         <div className="flex items-center gap-2 pt-1">
                           <div className="flex-1 h-1 rounded bg-rose-500" title="Submitted" />
@@ -894,6 +1067,30 @@ export default function ResidentialPortal() {
         {/* Tab 4: Documents */}
         {activeTab === 'documents' && (
           <div className="bg-[#0E0F12] border border-[#1B1C21] rounded-xl p-5 sm:p-6 space-y-5">
+            {/* Document Compliance Alert Banner */}
+            {(() => {
+              const complianceAlert = messages.find(
+                m => m.recipient_id === tenant.id && m.content.startsWith('[COMPLIANCE ALERT]')
+              );
+              if (!complianceAlert) return null;
+              return (
+                <div className="bg-rose-500/5 border border-rose-500/30 p-4 rounded-xl flex items-start gap-3 shadow-md animate-luxury-card">
+                  <AlertTriangle className="w-5 h-5 text-rose-450 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[9px] uppercase font-bold tracking-wider text-rose-400">
+                      Urgent Administrative Notice
+                    </span>
+                    <p className="text-xs text-slate-350 mt-1 leading-relaxed font-semibold">
+                      {complianceAlert.content.replace('[COMPLIANCE ALERT]', '').trim()}
+                    </p>
+                    <span className="text-[7.5px] text-slate-500 font-mono block mt-1">
+                      Received: {new Date(complianceAlert.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+
             <div>
               <h2 className="text-sm sm:text-base font-serif font-semibold text-slate-200 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-gold" />
@@ -1029,6 +1226,148 @@ export default function ResidentialPortal() {
           </div>
         )}
 
+        {/* Tab 6: Gate Passes */}
+        {activeTab === 'passes' && (
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            {/* Left Column: Form to generate pass */}
+            <div className="md:col-span-5 bg-[#0E0F12] border border-[#1B1C21] p-5 rounded-xl space-y-4 h-fit">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <QrCode className="w-3.5 h-3.5 text-gold" />
+                Generate Pre-Approved Gate Pass
+              </h2>
+              
+              <form onSubmit={handleGeneratePass} className="space-y-4 text-xs">
+                <div className="space-y-1.5">
+                  <label className="text-slate-500 uppercase text-[9px] font-bold">Visitor Name *</label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder="e.g. Ramesh Kumar"
+                    value={passName}
+                    onChange={(e) => setPassName(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none focus:border-gold/50"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-slate-500 uppercase text-[9px] font-bold">Visitor Phone *</label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder="e.g. +91 9876543210"
+                    value={passPhone}
+                    onChange={(e) => setPassPhone(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none focus:border-gold/50"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-slate-500 uppercase text-[9px] font-bold">Visit Type</label>
+                    <select
+                      value={passType}
+                      onChange={(e) => setPassType(e.target.value as any)}
+                      className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none focus:border-gold/50"
+                    >
+                      <option value="Guest">Guest</option>
+                      <option value="Delivery">Delivery</option>
+                      <option value="Maintenance">Maintenance</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-500 uppercase text-[9px] font-bold">Duration Valid</label>
+                    <select
+                      value={passDuration}
+                      onChange={(e) => setPassDuration(e.target.value)}
+                      className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none focus:border-gold/50"
+                    >
+                      <option value="2">2 Hours</option>
+                      <option value="6">6 Hours</option>
+                      <option value="12">12 Hours</option>
+                      <option value="24">24 Hours</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-slate-500 uppercase text-[9px] font-bold">Vehicle No (Optional)</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. UK06-AB-1234"
+                    value={passVehicle}
+                    onChange={(e) => setPassVehicle(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none focus:border-gold/50"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isGeneratingPass}
+                  className="w-full bg-[#C5A880] hover:bg-[#DFD3C3] text-[#060608] text-[9px] font-bold uppercase tracking-wider py-3 rounded-lg transition-colors cursor-pointer"
+                >
+                  {isGeneratingPass ? 'Generating...' : 'Generate Digital Pass'}
+                </button>
+              </form>
+            </div>
+
+            {/* Right Column: List of passes */}
+            <div className="md:col-span-7 bg-[#0E0F12] border border-[#1B1C21] p-5 rounded-xl space-y-4">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <QrCode className="w-3.5 h-3.5 text-gold" />
+                Active Pre-Approved Gate Passes
+              </h2>
+
+              {passes.length === 0 ? (
+                <p className="text-xs text-slate-500 py-8 text-center">No active passes generated. Pre-approve guests for security gate checks.</p>
+              ) : (
+                <div className="divide-y divide-[#1B1C21]/60 text-xs">
+                  {passes.map(pass => {
+                    const isValid = new Date(pass.valid_until).getTime() > Date.now();
+                    const statusText = !isValid ? 'Expired' : pass.status;
+                    
+                    return (
+                      <div key={pass.id} className="py-4 flex justify-between items-center gap-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-slate-200 text-sm">{pass.visitor_name}</span>
+                            <span className={`text-[7px] font-mono tracking-wider px-1 rounded uppercase font-bold ${
+                              statusText === 'Active' 
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                                : statusText === 'Checked In'
+                                ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                                : 'bg-rose-500/10 text-rose-450 border border-rose-500/20'
+                            }`}>
+                              {statusText}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-400">
+                            Type: <strong className="text-slate-300">{pass.visit_type}</strong> | Code: <strong className="text-gold font-mono">{pass.id}</strong>
+                          </div>
+                          <span className="text-[8px] text-slate-500 font-mono block">
+                            Valid Until: {new Date(pass.valid_until).toLocaleString()}
+                          </span>
+                        </div>
+                        
+                        <button
+                          onClick={() => {
+                            setSelectedPass(pass);
+                            setShowPassModal(true);
+                          }}
+                          className="px-3 py-1.5 bg-gold/10 hover:bg-gold/20 text-gold text-[8.5px] font-bold uppercase tracking-wider rounded border border-gold/25 cursor-pointer transition"
+                        >
+                          View Pass
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       </main>
 
       {/* Payment Secure Modal popup overlay */}
@@ -1155,6 +1494,7 @@ export default function ResidentialPortal() {
           { id: 'payments', icon: FileText, label: t.payTab },
           { id: 'complaints', icon: Wrench, label: t.compTab },
           { id: 'documents', icon: FileText, label: t.docTab },
+          { id: 'passes', icon: QrCode, label: t.passesTab || 'Passes' },
           { id: 'messages', icon: MessageSquare, label: t.msgTab }
         ].map(tab => {
           const Icon = tab.icon;
@@ -1175,6 +1515,97 @@ export default function ResidentialPortal() {
           );
         })}
       </nav>
+
+      {/* Visitor Pass QR Modal Overlay */}
+      {showPassModal && selectedPass && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-[#0E0F12] border border-gold/25 rounded-2xl p-6 shadow-2xl relative space-y-6 animate-luxury-card">
+            
+            {/* Seal / Header */}
+            <div className="text-center space-y-1">
+              <div className="mx-auto w-10 h-10 rounded-full border border-gold/30 bg-gold/5 flex items-center justify-center">
+                <QrCode className="w-5 h-5 text-gold" />
+              </div>
+              <h4 className="text-xs font-mono font-semibold uppercase tracking-widest text-gold mt-2">Shree Balaji Estate</h4>
+              <p className="text-[8px] text-slate-500 font-light tracking-wide uppercase">Official Visitor Gate Pass</p>
+            </div>
+
+            {/* Generated Pass Body */}
+            <div className="bg-[#060608] border border-[#1B1C21] p-4 rounded-xl space-y-4 relative overflow-hidden">
+              
+              {/* Holographic background stripe */}
+              <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-gold via-slate-800 to-gold" />
+
+              {/* QR Code */}
+              <div className="py-2 text-center">
+                <svg className="w-28 h-28 mx-auto bg-white p-2.5 rounded-lg border-2 border-gold/20" viewBox="0 0 100 100">
+                  <rect x="5" y="5" width="20" height="20" fill="#060608" />
+                  <rect x="9" y="9" width="12" height="12" fill="white" />
+                  <rect x="11" y="11" width="8" height="8" fill="#060608" />
+                  
+                  <rect x="75" y="5" width="20" height="20" fill="#060608" />
+                  <rect x="79" y="9" width="12" height="12" fill="white" />
+                  <rect x="81" y="11" width="8" height="8" fill="#060608" />
+                  
+                  <rect x="5" y="75" width="20" height="20" fill="#060608" />
+                  <rect x="9" y="79" width="12" height="12" fill="white" />
+                  <rect x="11" y="81" width="8" height="8" fill="#060608" />
+
+                  {/* Random dots */}
+                  <rect x="35" y="10" width="8" height="8" fill="#060608" />
+                  <rect x="50" y="15" width="8" height="4" fill="#060608" />
+                  <rect x="40" y="25" width="12" height="8" fill="#060608" />
+                  <rect x="60" y="30" width="8" height="12" fill="#060608" />
+                  <rect x="30" y="45" width="16" height="4" fill="#060608" />
+                  <rect x="50" y="45" width="12" height="12" fill="#060608" />
+                  <rect x="70" y="50" width="8" height="8" fill="#060608" />
+                  <rect x="35" y="65" width="12" height="8" fill="#060608" />
+                  <rect x="55" y="65" width="8" height="16" fill="#060608" />
+                  <rect x="75" y="65" width="12" height="8" fill="#060608" />
+                </svg>
+                <div className="font-mono text-xs font-bold text-gold tracking-widest mt-2">{selectedPass.id}</div>
+              </div>
+
+              {/* Grid details */}
+              <div className="grid grid-cols-2 gap-2 text-[10px] border-t border-[#1B1C21] pt-3">
+                <div>
+                  <span className="text-slate-500 block uppercase text-[7.5px] font-mono">Visitor Name</span>
+                  <strong className="text-slate-350 text-xs font-semibold">{selectedPass.visitor_name}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 block uppercase text-[7.5px] font-mono">Phone</span>
+                  <strong className="text-slate-350 text-xs font-semibold">{selectedPass.phone}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 block uppercase text-[7.5px] font-mono">Authorized By</span>
+                  <strong className="text-slate-350 font-semibold text-[9.5px]">{selectedPass.tenant_name} ({selectedPass.unit_name})</strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 block uppercase text-[7.5px] font-mono">Visit Purpose</span>
+                  <strong className="text-slate-350 font-semibold">{selectedPass.visit_type}</strong>
+                </div>
+                {selectedPass.vehicle_no && (
+                  <div className="col-span-2">
+                    <span className="text-slate-500 block uppercase text-[7.5px] font-mono">Vehicle Number</span>
+                    <strong className="text-slate-350 font-semibold font-mono text-xs">{selectedPass.vehicle_no}</strong>
+                  </div>
+                )}
+                <div className="col-span-2 border-t border-[#1B1C21]/60 pt-2 text-center">
+                  <span className="text-slate-500 block uppercase text-[7.5px] font-mono">Validity Limit</span>
+                  <strong className="text-slate-300">{new Date(selectedPass.valid_until).toLocaleString()}</strong>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => { setShowPassModal(false); setSelectedPass(null); }}
+              className="w-full bg-[#1B1C21] hover:bg-slate-900 text-slate-300 text-xs py-3 rounded-lg cursor-pointer transition uppercase tracking-wider font-semibold text-center"
+            >
+              Close Gate Pass
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

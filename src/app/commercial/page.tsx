@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, Tenant, Transaction, Complaint, Message } from '../db';
+import { db, Tenant, Transaction, Complaint, Message, VisitorPass } from '../db';
 import { 
   ArrowLeft, 
   Globe, 
@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 
 type Lang = 'en' | 'hi';
-type Tab = 'home' | 'payments' | 'complaints' | 'documents' | 'messages';
+type Tab = 'home' | 'payments' | 'complaints' | 'documents' | 'messages' | 'passes';
 
 export default function CommercialPortal() {
   const router = useRouter();
@@ -38,6 +38,17 @@ export default function CommercialPortal() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+
+  // Gate Pass States
+  const [passes, setPasses] = useState<VisitorPass[]>([]);
+  const [passName, setPassName] = useState('');
+  const [passPhone, setPassPhone] = useState('');
+  const [passType, setPassType] = useState<'Guest' | 'Delivery' | 'Maintenance' | 'Other'>('Guest');
+  const [passVehicle, setPassVehicle] = useState('');
+  const [passDuration, setPassDuration] = useState('2'); // hours
+  const [showPassModal, setShowPassModal] = useState(false);
+  const [selectedPass, setSelectedPass] = useState<VisitorPass | null>(null);
+  const [isGeneratingPass, setIsGeneratingPass] = useState(false);
 
   // Payment Modal States
   const [showPayModal, setShowPayModal] = useState(false);
@@ -85,6 +96,9 @@ export default function CommercialPortal() {
 
         const msgs = await db.getMessages();
         setMessages(msgs);
+
+        const allPasses = await db.getVisitorPasses();
+        setPasses(allPasses.filter(p => p.tenant_id === activeTenant.id));
       }
     } catch (err) {
       console.error(err);
