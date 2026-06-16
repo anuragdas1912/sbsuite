@@ -2347,16 +2347,16 @@ export default function OwnerDashboard() {
         )}
 
       {/* Bottom Sticky Tabs Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0E0F12]/85 backdrop-blur-md border-t border-[#1B1C21] py-2 px-4 shadow-xl flex justify-around max-w-6xl mx-auto sm:rounded-t-2xl">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0E0F12]/90 backdrop-blur-md border-t border-[#1B1C21] shadow-xl flex items-center" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {[
-          { id: 'stats', icon: Activity, label: t.overview },
-          { id: 'tenants', icon: User, label: t.tenantsTab },
-          { id: 'managers', icon: Wallet, label: t.managersTab },
-          { id: 'rates', icon: Sliders, label: t.ratesTab },
-          { id: 'complaints', icon: Wrench, label: t.complaintsTab },
-          { id: 'compliance', icon: ClipboardList, label: lang === 'en' ? 'Docs' : 'दस्तावेज़' },
+          { id: 'stats', icon: Activity, label: lang === 'en' ? 'Stats' : 'स्तिति' },
+          { id: 'tenants', icon: User, label: lang === 'en' ? 'Tenants' : 'किरायेदार' },
+          { id: 'managers', icon: Wallet, label: lang === 'en' ? 'Mgrs' : 'मैनेजर' },
+          { id: 'rates', icon: Sliders, label: lang === 'en' ? 'Rates' : 'दरें' },
+          { id: 'complaints', icon: Wrench, label: lang === 'en' ? 'Issues' : 'शिकायतें' },
+          { id: 'compliance', icon: ClipboardList, label: lang === 'en' ? 'Docs' : 'डॉक्स' },
           { id: 'messages', icon: MessageSquare, label: lang === 'en' ? 'Chat' : 'चैट' },
-          { id: 'broadcasts', icon: Bell, label: lang === 'en' ? 'Broadcast' : 'ब्रॉडकास्ट' }
+          { id: 'broadcasts', icon: Bell, label: lang === 'en' ? 'Alert' : 'अलर्ट' }
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -2364,14 +2364,18 @@ export default function OwnerDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as Tab)}
-              className={`flex flex-col items-center gap-1 cursor-pointer transition duration-200 py-1.5 px-3 rounded-xl ${
-                isActive 
-                  ? 'text-gold bg-gold/5 shadow-[0_0_10px_rgba(197,168,128,0.05)] font-bold' 
-                  : 'text-slate-500 hover:text-slate-300 font-light'
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 cursor-pointer transition-all duration-200 py-2 ${
+                isActive ? 'text-gold' : 'text-slate-500 active:text-slate-300'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              <span className="text-[9px] tracking-wider uppercase font-medium">{tab.label}</span>
+              <div className={`p-1 rounded-lg transition-all duration-200 ${
+                isActive ? 'bg-gold/10' : ''
+              }`}>
+                <Icon className="w-[16px] h-[16px]" />
+              </div>
+              <span className={`text-[7px] uppercase font-semibold tracking-wide leading-none ${
+                isActive ? 'text-gold' : 'text-slate-600'
+              }`}>{tab.label}</span>
             </button>
           );
         })}

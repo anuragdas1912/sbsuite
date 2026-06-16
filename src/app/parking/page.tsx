@@ -969,13 +969,13 @@ export default function ParkingPortal() {
         </div>
       )}
 
-      {/* Bottom Sticky Tabs Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0E0F12]/85 backdrop-blur-md border-t border-[#1B1C21] py-2 px-4 shadow-xl flex justify-around max-w-4xl mx-auto sm:rounded-t-2xl">
+      {/* Bottom Sticky Tabs Bar — Mobile-first full-width */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0E0F12]/90 backdrop-blur-md border-t border-[#1B1C21] shadow-xl flex items-center" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {[
-          { id: 'home', icon: CreditCard, label: t.homeTab },
-          { id: 'payments', icon: FileText, label: t.payTab },
-          { id: 'documents', icon: FileText, label: t.docTab },
-          { id: 'messages', icon: MessageSquare, label: t.msgTab }
+          { id: 'home', icon: CreditCard, label: lang === 'en' ? 'Home' : 'होम' },
+          { id: 'payments', icon: FileText, label: lang === 'en' ? 'Ledger' : 'खाता' },
+          { id: 'documents', icon: FileText, label: lang === 'en' ? 'Docs' : 'डॉक्स' },
+          { id: 'messages', icon: MessageSquare, label: lang === 'en' ? 'Chat' : 'चैट' }
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -983,14 +983,20 @@ export default function ParkingPortal() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as Tab)}
-              className={`flex flex-col items-center gap-1 cursor-pointer transition duration-200 py-1.5 px-3 rounded-xl ${
-                isActive 
-                  ? 'text-gold bg-gold/5 shadow-[0_0_10px_rgba(197,168,128,0.05)] font-bold' 
-                  : 'text-slate-500 hover:text-slate-300 font-light'
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 cursor-pointer transition-all duration-200 py-2 ${
+                isActive
+                  ? 'text-gold'
+                  : 'text-slate-500 active:text-slate-300'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              <span className="text-[9px] tracking-wider uppercase font-medium">{tab.label}</span>
+              <div className={`p-1.5 rounded-lg transition-all duration-200 ${
+                isActive ? 'bg-gold/10' : ''
+              }`}>
+                <Icon className="w-[18px] h-[18px]" />
+              </div>
+              <span className={`text-[8px] uppercase font-semibold tracking-wide leading-none ${
+                isActive ? 'text-gold' : 'text-slate-600'
+              }`}>{tab.label}</span>
             </button>
           );
         })}
