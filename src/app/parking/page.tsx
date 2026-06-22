@@ -90,6 +90,7 @@ export default function ParkingPortal() {
     const role = localStorage.getItem('sb_current_role');
 
     if (!tenantId || role !== 'parking') {
+      localStorage.clear();
       router.push('/');
       return;
     }

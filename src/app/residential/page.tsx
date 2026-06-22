@@ -106,6 +106,7 @@ export default function ResidentialPortal() {
     const role = localStorage.getItem('sb_current_role');
 
     if (!tenantId || role !== 'residential') {
+      localStorage.clear();
       router.push('/');
       return;
     }

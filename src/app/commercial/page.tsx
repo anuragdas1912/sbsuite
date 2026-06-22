@@ -106,6 +106,7 @@ export default function CommercialPortal() {
     const role = localStorage.getItem('sb_current_role');
 
     if (!tenantId || role !== 'commercial') {
+      localStorage.clear();
       router.push('/');
       return;
     }

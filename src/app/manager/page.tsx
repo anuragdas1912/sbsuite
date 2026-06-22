@@ -168,6 +168,7 @@ export default function ManagerPortal() {
         const currentRole = localStorage.getItem('sb_current_role');
         
         if (!session || currentRole !== 'manager') {
+          localStorage.clear();
           router.push('/');
           return;
         }
@@ -764,7 +765,7 @@ export default function ManagerPortal() {
 
           {/* Logout */}
           <button
-            onClick={() => { localStorage.clear(); router.push('/'); }}
+            onClick={async () => { await supabase.auth.signOut(); localStorage.clear(); router.push('/'); }}
             className="p-1.5 rounded hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
             title={t.logout}
           >
