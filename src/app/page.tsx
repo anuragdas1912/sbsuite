@@ -115,8 +115,12 @@ export default function LandingPage() {
     try {
       // 1 & 2. Owner and Manager Login via Supabase Auth
       if (selectedRole === 'owner' || selectedRole === 'manager') {
+        let loginEmail = email.trim();
+        if (!loginEmail.includes('@')) {
+          loginEmail = `${loginEmail}@sbsuite.in`;
+        }
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email: loginEmail,
           password: password
         });
 
