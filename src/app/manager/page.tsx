@@ -45,6 +45,7 @@ type Tab = 'roster' | 'tenants' | 'collect' | 'complaints' | 'transactions' | 'b
 export default function ManagerPortal() {
   const router = useRouter();
   const [lang, setLang] = useState<Lang>('en');
+  const [authorized, setAuthorized] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('roster');
   const [rosterViewMode, setRosterViewMode] = useState<'list' | 'map'>('list');
   
@@ -159,8 +160,20 @@ export default function ManagerPortal() {
 
   // Load Manager session and Data
   useEffect(() => {
-    async function loadData() {
+    let channel: any = null;
+    
+    async function checkSessionAndLoad() {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const currentRole = localStorage.getItem('sb_current_role');
+        
+        if (!session || currentRole !== 'manager') {
+          router.push('/');
+          return;
+        }
+        
+        setAuthorized(true);
+
         const ts = await db.getTenants();
         const txs = await db.getTransactions();
         const cs = await db.getComplaints();
@@ -189,36 +202,42 @@ export default function ManagerPortal() {
           if (matchedMgr) {
             setManager(matchedMgr);
           } else {
-            // Fallback (or could kick out)
+            localStorage.clear();
+            router.push('/');
+            return;
+          }
+        } else {
+          if (ms.length > 0) {
             setManager(ms[0]);
           }
-        } else if (ms.length > 0) {
-          setManager(ms[0]);
         }
+
+        // Setup Supabase Realtime for Messages, Visitor Logs, and Complaints
+        channel = supabase
+          .channel('manager_realtime')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+            setAllMessages((prev) => [...prev, payload.new as Message]);
+          })
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'visitor_logs' }, (payload) => {
+            setVisitorLogs((prev) => [payload.new as VisitorLog, ...prev]);
+          })
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'complaints' }, (payload) => {
+            setComplaints((prev) => [payload.new as Complaint, ...prev]);
+          })
+          .subscribe();
       } catch (err) {
         console.error('Error loading manager data:', err);
       }
     }
-    loadData();
-
-    // Setup Supabase Realtime for Messages, Visitor Logs, and Complaints
-    const channel = supabase
-      .channel('manager_realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-        setAllMessages((prev) => [...prev, payload.new as Message]);
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'visitor_logs' }, (payload) => {
-        setVisitorLogs((prev) => [payload.new as VisitorLog, ...prev]);
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'complaints' }, (payload) => {
-        setComplaints((prev) => [payload.new as Complaint, ...prev]);
-      })
-      .subscribe();
+    
+    checkSessionAndLoad();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
-  }, [refreshKey]);
+  }, [refreshKey, router]);
 
   // Gate Pass Lookup Handler
   const handlePassLookup = async (e: React.FormEvent) => {
@@ -643,52 +662,60 @@ export default function ManagerPortal() {
       catPark: 'Parking'
     },
     hi: {
-      title: 'मैनेजर ऑपरेशंस',
-      subtitle: 'दैनिक संचालन नियंत्रण',
+      title: 'मैनेजर पैनल',
+      subtitle: 'डेली प्रॉपर्टी मैनेजमेंट',
       langLabel: 'English',
       logout: 'लॉगआउट',
       rosterTab: 'रोस्टर',
-      tenantsTab: 'किरायेदार',
-      collectTab: 'भुगतान',
+      tenantsTab: 'किरायेदार (Tenants)',
+      collectTab: 'पेमेंट रिकॉर्ड',
       compTab: 'शिकायतें',
       cashWallet: 'मैनेजर कैश बॉक्स',
-      activeTenants: 'सक्रिय किरायेदार',
-      searchPlaceholder: 'नाम, कमरा/दुकान या केटेगरी से खोजें...',
-      rosterTitle: 'खोजने योग्य किरायेदार रोस्टर',
-      profileTitle: 'किरायेदार प्रोफ़ाइल विवरण',
+      activeTenants: 'एक्टिव किरायेदार',
+      searchPlaceholder: 'नाम, रूम/शॉप या केटेगरी से खोजें...',
+      rosterTitle: 'किरायेदार सूची (Roster)',
+      profileTitle: 'किरायेदार प्रोफाइल डिटेल्स',
       aadhaar: 'आधार कार्ड',
-      vehicleRc: 'वाहन आर.सी.',
-      baseRent: 'मूल किराया',
-      electricRate: 'बिजली दर',
-      latestMeter: 'बिजली मीटर रीडिंग',
-      payHistory: 'भुगतान इतिहास',
-      noTx: 'कोई पुराना भुगतान रिकॉर्ड नहीं है।',
-      addTenantTitle: 'नया किरायेदार पंजीकृत करें',
+      vehicleRc: 'वाहन आर.सी. (RC)',
+      baseRent: 'बेस रेंट (मूल किराया)',
+      electricRate: 'बिजली दर (₹/यूनिट)',
+      latestMeter: 'करेंट मीटर रीडिंग',
+      payHistory: 'पेमेंट लॉग्स',
+      noTx: 'कोई पुराना पेमेंट रिकॉर्ड नहीं है।',
+      addTenantTitle: 'नया किरायेदार रजिस्टर करें',
       nameLabel: 'पूरा नाम',
-      roleLabel: 'श्रेणी (Category)',
-      unitLabel: 'कमरा / दुकान / स्लॉट नंबर',
+      roleLabel: 'केटेगरी टाइप (Category)',
+      unitLabel: 'रूम / शॉप / स्लॉट नंबर',
       phoneLabel: 'फोन नंबर',
       passwordLabel: 'लॉगिन पासवर्ड',
       aadhaarLabel: 'आधार कार्ड नंबर (अनिवार्य)',
       rcLabel: 'वाहन आर.सी. नंबर (पार्किंग के लिए अनिवार्य)',
-      prevReadLabel: 'प्रारंभिक मीटर रीडिंग (kWh)',
-      evLabel: 'ईवी पावर चार्जिंग चालू करें',
-      submitTenantBtn: 'किरायेदार जोड़ें',
-      collectTitle: 'किराया एवं बिजली भुगतान दर्ज करें',
-      selectTenant: 'किरायेदार प्रोफ़ाइल चुनें',
-      collectAmtLabel: 'प्राप्त राशि (₹)',
-      collectModeLabel: 'भुगतान का माध्यम',
-      cashMode: 'नकद (कैश बॉक्स में जोड़ें)',
-      onlineMode: 'ऑनलाइन ट्रांसफर',
-      submitCollectBtn: 'भुगतान सेव करें',
-      compTitle: 'किरायेदार शिकायत निवारण',
-      toggleStatus: 'स्थिति बदलें',
-      noComplaints: 'कोई सक्रिय शिकायत दर्ज नहीं है।',
+      prevReadLabel: 'शुरुआती मीटर रीडिंग (kWh)',
+      evLabel: 'ईवी चार्जिंग ऑन करें',
+      submitTenantBtn: 'किरायेदार रजिस्टर करें',
+      collectTitle: 'किराया और बिजली पेमेंट रिसीव करें',
+      selectTenant: 'किरायेदार प्रोफाइल चुनें',
+      collectAmtLabel: 'पेमेंट की राशि (₹)',
+      collectModeLabel: 'पेमेंट का मोड (Mode)',
+      cashMode: 'कैश (कैश बॉक्स में जोड़ें)',
+      onlineMode: 'ऑनलाइन ट्रांसफर (UPI/Net)',
+      submitCollectBtn: 'पेमेंट सेव करें',
+      compTitle: 'किरायेदारों की शिकायतें',
+      toggleStatus: 'स्टेटस बदलें',
+      noComplaints: 'कोई पेंडिंग शिकायत नहीं है।',
       catRes: 'Residential (आवासीय)',
       catCom: 'Commercial (व्यावसायिक)',
       catPark: 'Parking (पार्किंग)'
     }
   }[lang];
+
+  if (!authorized) {
+    return (
+      <div className="min-h-screen bg-[#060608] flex items-center justify-center text-[#F4F4F5]">
+        <Loader2 className="w-8 h-8 animate-spin text-gold" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#060608] text-[#F4F4F5] font-sans antialiased pb-24">

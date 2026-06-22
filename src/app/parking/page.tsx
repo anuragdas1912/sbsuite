@@ -66,24 +66,17 @@ export default function ParkingPortal() {
       const allTenants = await db.getTenants();
       const currentTenant = allTenants.find(t => t.id === tenantId);
       
-      let activeTenant = currentTenant;
       if (currentTenant && currentTenant.role === 'parking') {
         setTenant(currentTenant);
-      } else {
-        const fallback = allTenants.find(t => t.role === 'parking');
-        if (fallback) {
-          activeTenant = fallback;
-          setTenant(fallback);
-          localStorage.setItem('sb_current_tenant_id', fallback.id);
-        }
-      }
 
-      if (activeTenant) {
         const txs = await db.getTransactions();
-        setTransactions(txs.filter(tx => tx.tenant_id === activeTenant.id));
+        setTransactions(txs.filter(tx => tx.tenant_id === currentTenant.id));
 
         const msgs = await db.getMessages();
         setMessages(msgs);
+      } else {
+        localStorage.clear();
+        router.push('/');
       }
     } catch (err) {
       console.error(err);
@@ -93,7 +86,14 @@ export default function ParkingPortal() {
   };
 
   useEffect(() => {
-    const tenantId = localStorage.getItem('sb_current_tenant_id') || 't5';
+    const tenantId = localStorage.getItem('sb_current_tenant_id');
+    const role = localStorage.getItem('sb_current_role');
+
+    if (!tenantId || role !== 'parking') {
+      router.push('/');
+      return;
+    }
+
     loadDatabase(tenantId);
 
     // Setup Supabase Realtime for Messages
@@ -205,64 +205,64 @@ export default function ParkingPortal() {
       paySuccessMsg: 'Payment completed successfully! Database record updated.'
     },
     hi: {
-      dashboard: 'स्मार्ट पार्किंग पोर्टल',
+      dashboard: 'स्मार्ट पार्किंग पोर्टल (Parking Portal)',
       logout: 'लॉगआउट',
       langLabel: 'English',
-      regVerified: 'पंजीकरण के लिए वाहन आर.सी. और आधार कार्ड सत्यापित है।',
-      homeTab: 'होम',
-      payTab: 'भुगतान',
-      docTab: 'दस्तावेज़',
-      msgTab: 'संदेश',
+      regVerified: 'पंजीकरण के लिए वाहन आर.सी. (RC) और आधार कार्ड वेरीफाइड हैं।',
+      homeTab: 'होम (Home)',
+      payTab: 'पेमेंट (Payments)',
+      docTab: 'डॉक्युमेंट्स (Documents)',
+      msgTab: 'मैसेज (Chat)',
       welcome: 'स्वागत है,',
-      slotLabel: 'आवंटित पार्किंग स्लॉट',
-      vehicleLabel: 'वाहन नंबर',
-      rentSummary: 'पार्किंग शुल्क विवरण',
-      rentLabel: 'पार्किंग स्लॉट मासिक शुल्क',
-      electricLabel: 'ईवी चार्जिंग बिजली शुल्क',
-      totalBill: 'कुल देय राशि',
-      statusLabel: 'गेट पास की स्थिति',
-      activePass: 'सक्रिय है ✓',
-      pendingPass: 'रिन्यूअल आवश्यक',
-      payBtn: 'भुगतान करें',
-      evDetails: 'ईवी चार्जिंग मीटर रीडिंग',
-      prevRead: 'पिछली रीडिंग',
-      currRead: 'मौजूदा रीडिंग',
-      consumed: 'कुल प्रयुक्त यूनिट्स',
-      rate: 'बिजली दर',
-      digitalPass: 'डिजिटल गेट पास (QR)',
-      passDesc: 'स्वचालित प्रवेश के लिए बालाजी स्मार्ट गेट पर इस क्यू.आर. कोड को स्कैन करें।',
-      ledgerTitle: 'पार्किंग भुगतान इतिहास',
-      dateCol: 'तारीख',
-      typeCol: 'प्रकार',
-      amtCol: 'राशि',
-      modeCol: 'माध्यम',
-      receiptCol: 'रसीद',
-      downloadBtn: 'डाउनलोड',
-      noTx: 'कोई पुराना भुगतान रिकॉर्ड नहीं मिला।',
-      docsTitle: 'पंजीकृत पार्किंग दस्तावेज़',
+      slotLabel: 'आवंटित पार्किंग स्लॉट (Slot)',
+      vehicleLabel: 'वाहन नंबर (Vehicle No)',
+      rentSummary: 'पार्किंग शुल्क डिटेल्स',
+      rentLabel: 'पार्किंग स्लॉट मंथली फीस',
+      electricLabel: 'ईवी चार्जिंग बिजली बिल',
+      totalBill: 'कुल देय राशि (Total Due)',
+      statusLabel: 'गेट पास स्टेटस (Gate Pass Status)',
+      activePass: 'एक्टिव है (Active) ✓',
+      pendingPass: 'रिन्यूअल आवश्यक (Renew)',
+      payBtn: 'पेमेंट करें',
+      evDetails: 'ईवी चार्जिंग मीटर रीडिंग डिटेल्स',
+      prevRead: 'पुरानी मीटर रीडिंग',
+      currRead: 'नई मीटर रीडिंग',
+      consumed: 'कुल खर्च यूनिट्स',
+      rate: 'बिजली रेट (प्रति यूनिट)',
+      digitalPass: 'डिजिटल गेट पास (QR Pass)',
+      passDesc: 'ऑटोमेटिक एंट्री के लिए बालाजी स्मार्ट गेट पर इस QR कोड को स्कैन करें।',
+      ledgerTitle: 'पार्किंग पेमेंट हिस्ट्री (Ledger)',
+      dateCol: 'तारीख (Date)',
+      typeCol: 'पेमेंट टाइप',
+      amtCol: 'अमाउंट (Amount)',
+      modeCol: 'पेमेंट मोड',
+      receiptCol: 'रसीद (Receipt)',
+      downloadBtn: 'डाउनलोड करें',
+      noTx: 'कोई पुराना पेमेंट रिकॉर्ड नहीं मिला।',
+      docsTitle: 'पंजीकृत पार्किंग डॉक्युमेंट्स',
       vehicleRc: 'वाहन आर.सी. कॉपी (Vehicle RC)',
       rentAg: 'पार्किंग एग्रीमेंट (Agreement)',
-      domicile: 'मूल निवास प्रमाण पत्र (Domicile)',
+      domicile: 'निवास प्रमाण पत्र (Domicile)',
       aadhaarDoc: 'आधार कार्ड कॉपी (Aadhaar Copy)',
-      docDesc: 'पार्किंग स्लॉट के तहत पंजीकृत अपने सत्यापित दस्तावेज़ डाउनलोड करें।',
-      msgTitle: 'निजी संदेश और सहायता',
-      msgTo: 'संदेश प्राप्तकर्ता',
-      managerOpt: 'प्रॉपर्टी मैनेजर (अमित)',
-      ownerOpt: 'प्रॉपर्टी मालिक (बालाजी)',
-      typeMsg: 'अपना संदेश लिखें...',
-      sendBtn: 'संदेश भेजें',
-      paymentModalTitle: 'सुरक्षित भुगतान प्रक्रिया',
+      docDesc: 'पार्किंग स्लॉट के तहत रजिस्टर किए गए अपने वेरीफाइड डॉक्युमेंट्स डाउनलोड करें।',
+      msgTitle: 'प्राइवेट चैट/मैसेज (Chat)',
+      msgTo: 'मैसेज भेजें (Send to)',
+      managerOpt: 'मैनेजर अमित',
+      ownerOpt: 'ओनर बालाजी',
+      typeMsg: 'अपना मैसेज लिखें...',
+      sendBtn: 'मैसेज भेजें',
+      paymentModalTitle: 'सिक्योर पेमेंट गेटवे (Secure Payment)',
       payRent: 'केवल पार्किंग स्लॉट शुल्क',
       payElectric: 'केवल ईवी चार्जर बिल',
       payBoth: 'पार्किंग शुल्क + ईवी चार्जर',
-      selectMode: 'भुगतान का माध्यम चुनें',
-      modeUPI: 'UPI ट्रांसफर (QR कोड)',
-      modeCash: 'मैनेजर (अमित) को नकद',
-      upiInstructions: 'भुगतान पूरा करने के लिए किसी भी UPI ऐप (GPay/PhonePe/Paytm) से इस QR कोड को स्कैन करें।',
-      cashInstructions: 'कृपया नकद राशि मैनेजर अमित को सौंपें। मैनेजर के लॉग करते ही रसीद अपडेट हो जाएगी।',
-      payConfirmBtn: 'भुगतान की पुष्टि करें',
-      payProcessing: 'लेनदेन सत्यापित किया जा रहा है...',
-      paySuccessMsg: 'भुगतान सफलतापूर्वक पूरा हुआ! डेटाबेस रिकॉर्ड अपडेट हो गया है।'
+      selectMode: 'पेमेंट करने का मोड चुनें (Payment Mode)',
+      modeUPI: 'UPI ट्रांसफर (QR कोड स्कैन करें)',
+      modeCash: 'मैनेजर अमित को कैश दें',
+      upiInstructions: 'पेमेंट पूरा करने के लिए किसी भी UPI ऐप (GPay/PhonePe/Paytm) से इस QR कोड को स्कैन करें।',
+      cashInstructions: 'कृपया कैश अमाउंट मैनेजर अमित को दें। मैनेजर के अपडेट करते ही आपकी पेमेंट रसीद यहाँ दिखने लगेगी।',
+      payConfirmBtn: 'पेमेंट कन्फर्म करें (Confirm)',
+      payProcessing: 'पेमेंट प्रोसेस हो रही है, कृपया थोड़ा रुकें...',
+      paySuccessMsg: 'पेमेंट सक्सेसफुल रहा! डेटाबेस अपडेट हो गया है।'
     }
   }[lang];
 

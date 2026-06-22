@@ -76,30 +76,23 @@ export default function ResidentialPortal() {
       const allTenants = await db.getTenants();
       const currentTenant = allTenants.find(t => t.id === tenantId);
       
-      let activeTenant = currentTenant;
       if (currentTenant && currentTenant.role === 'residential') {
         setTenant(currentTenant);
-      } else {
-        const fallback = allTenants.find(t => t.role === 'residential');
-        if (fallback) {
-          activeTenant = fallback;
-          setTenant(fallback);
-          localStorage.setItem('sb_current_tenant_id', fallback.id);
-        }
-      }
 
-      if (activeTenant) {
         const txs = await db.getTransactions();
-        setTransactions(txs.filter(tx => tx.tenant_id === activeTenant.id));
+        setTransactions(txs.filter(tx => tx.tenant_id === currentTenant.id));
 
         const comps = await db.getComplaints();
-        setComplaints(comps.filter(c => c.tenant_id === activeTenant.id));
+        setComplaints(comps.filter(c => c.tenant_id === currentTenant.id));
 
         const msgs = await db.getMessages();
         setMessages(msgs);
 
         const allPasses = await db.getVisitorPasses();
-        setPasses(allPasses.filter(p => p.tenant_id === activeTenant.id));
+        setPasses(allPasses.filter(p => p.tenant_id === currentTenant.id));
+      } else {
+        localStorage.clear();
+        router.push('/');
       }
     } catch (err) {
       console.error(err);
@@ -109,7 +102,14 @@ export default function ResidentialPortal() {
   };
 
   useEffect(() => {
-    const tenantId = localStorage.getItem('sb_current_tenant_id') || 't1';
+    const tenantId = localStorage.getItem('sb_current_tenant_id');
+    const role = localStorage.getItem('sb_current_role');
+
+    if (!tenantId || role !== 'residential') {
+      router.push('/');
+      return;
+    }
+
     loadDatabase(tenantId);
 
     // Setup Supabase Realtime for Messages
@@ -228,74 +228,74 @@ export default function ResidentialPortal() {
       passesTab: 'Gate Passes'
     },
     hi: {
-      dashboard: 'निवासी पोर्टल',
+      dashboard: 'आवासीय पोर्टल (Residential Portal)',
       logout: 'लॉगआउट',
       langLabel: 'English',
-      aadhaarRequired: 'पंजीकरण के लिए आधार कार्ड सत्यापित है।',
-      homeTab: 'होम',
-      payTab: 'खाता-बही',
-      compTab: 'शिकायतें',
-      docTab: 'दस्तावेज़',
-      msgTab: 'संदेश',
+      aadhaarRequired: 'आपका आधार कार्ड वेरीफाइड (Verified) है।',
+      homeTab: 'होम (Home)',
+      payTab: 'पेमेंट लॉग्स (Ledger)',
+      compTab: 'शिकायतें (Complaints)',
+      docTab: 'डॉक्युमेंट्स (Documents)',
+      msgTab: 'मैसेज (Chat)',
       welcome: 'स्वागत है,',
       unitLabel: 'कमरा नंबर',
-      rentSummary: 'बिल एवं किराया विवरण',
-      rentLabel: 'मूल कमरा किराया',
+      rentSummary: 'बिल और किराया डिटेल्स',
+      rentLabel: 'कमरे का किराया (Rent)',
       electricLabel: 'बिजली का बिल',
-      totalBill: 'कुल देय राशि',
-      statusLabel: 'भुगतान की स्थिति',
-      paid: 'पूरा भुगतान है ✓',
-      pending: 'बकाया राशि',
-      payBtn: 'भुगतान करें',
-      meterDetails: 'बिजली मीटर रीडिंग विवरण',
-      prevRead: 'पिछली रीडिंग',
-      currRead: 'मौजूदा रीडिंग',
-      consumed: 'कुल यूनिट्स',
-      rate: 'दर (प्रति यूनिट)',
-      announcements: 'सोसाइटी नोटिस बोर्ड',
+      totalBill: 'कुल देय राशि (Total Due)',
+      statusLabel: 'पेमेंट स्टेटस (Payment Status)',
+      paid: 'पेड है (Paid) ✓',
+      pending: 'बकाया राशि (Dues)',
+      payBtn: 'पेमेंट करें',
+      meterDetails: 'बिजली मीटर रीडिंग डिटेल्स',
+      prevRead: 'पुरानी मीटर रीडिंग',
+      currRead: 'नई मीटर रीडिंग',
+      consumed: 'टोटल खर्च यूनिट्स',
+      rate: 'बिजली रेट (प्रति यूनिट)',
+      announcements: 'सोसाइटी नोटिस बोर्ड (Notice Board)',
       notice1: '📢 मंगलवार सुबह 10 बजे से दोपहर 2 बजे तक लिफ्ट का रखरखाव किया जाएगा।',
       notice2: '📢 कृपया इस महीने की 20 तारीख से पहले अपनी मीटर रीडिंग दर्ज करवाएं।',
-      ledgerTitle: 'भुगतान इतिहास रिकॉर्ड',
-      dateCol: 'तारीख',
-      typeCol: 'भुगतान प्रकार',
-      amtCol: 'राशि',
-      modeCol: 'माध्यम',
-      receiptCol: 'रसीद',
-      downloadBtn: 'डाउनलोड',
-      noTx: 'कोई पुराना भुगतान रिकॉर्ड नहीं मिला।',
-      compTitle: 'रखरखाव शिकायत दर्ज करें',
+      ledgerTitle: 'पेमेंट हिस्ट्री (Ledger)',
+      dateCol: 'तारीख (Date)',
+      typeCol: 'पेमेंट टाइप',
+      amtCol: 'अमाउंट (Amount)',
+      modeCol: 'पेमेंट मोड',
+      receiptCol: 'रसीद (Receipt)',
+      downloadBtn: 'डाउनलोड करें',
+      noTx: 'कोई पुराना पेमेंट रिकॉर्ड नहीं मिला।',
+      compTitle: 'नई शिकायत दर्ज करें (New Complaint)',
       compSubject: 'शिकायत का विषय (जैसे: प्लंबर की जरूरत है)',
-      compDesc: 'समस्या का विस्तृत विवरण',
-      compBtn: 'शिकायत दर्ज करें',
-      compSuccess: 'शिकायत सफलतापूर्वक दर्ज हो गई है! जल्द ही समाधान किया जाएगा।',
-      compHistory: 'सक्रिय शिकायत ट्रैकर',
-      compStatus: 'स्थिति',
-      noComplaints: 'अभी तक कोई शिकायत दर्ज नहीं की गई है।',
-      docsTitle: 'आपके सत्यापित दस्तावेज़',
+      compDesc: 'समस्या का पूरा विवरण (Description)',
+      compBtn: 'शिकायत सबमिट करें (Submit)',
+      compSuccess: 'शिकायत दर्ज हो गई है! जल्द ही इसे ठीक किया जाएगा।',
+      compHistory: 'पुरानी शिकायतें (Complaint Tracker)',
+      compStatus: 'स्टेटस (Status)',
+      noComplaints: 'कोई शिकायत दर्ज नहीं की गई है।',
+      docsTitle: 'आपके वेरिफाइड डॉक्युमेंट्स',
       rentAg: 'किरायानामा (Rent Agreement)',
-      domicile: 'मूल निवास प्रमाण पत्र (Domicile)',
-      affidavit: 'हलफनामा (Affidavit)',
-      satyapan: 'पुलिस सत्यापन फॉर्म (Pre Satyapan)',
-      docDesc: 'अपने पंजीकृत प्रशासनिक दस्तावेज़ नीचे से डाउनलोड करें।',
-      msgTitle: 'सुरक्षित निजी संदेश',
-      msgTo: 'संदेश प्राप्तकर्ता',
-      managerOpt: 'प्रॉपर्टी मैनेजर (अमित)',
-      ownerOpt: 'प्रॉपर्टी मालिक (बालाजी)',
-      typeMsg: 'अपना संदेश लिखें...',
-      sendBtn: 'संदेश भेजें',
-      paymentModalTitle: 'सुरक्षित भुगतान प्रक्रिया',
-      payRent: 'केवल कमरे का किराया',
-      payElectric: 'केवल बिजली का बिल',
-      payBoth: 'किराया + बिजली दोनों',
-      selectMode: 'भुगतान का माध्यम चुनें',
-      modeUPI: 'UPI ट्रांसफर (QR कोड)',
-      modeCash: 'मैनेजर (अमित) को नकद',
-      upiInstructions: 'भुगतान पूरा करने के लिए किसी भी UPI ऐप (GPay/PhonePe/Paytm) से इस QR कोड को स्कैन करें।',
-      cashInstructions: 'कृपया नकद राशि मैनेजर अमित को सौंपें। मैनेजर के लॉग करते ही रसीद अपडेट हो जाएगी।',
-      payConfirmBtn: 'भुगतान की पुष्टि करें',
-      payProcessing: 'लेनदेन सत्यापित किया जा रहा है...',
-      paySuccessMsg: 'भुगतान सफलतापूर्वक पूरा हुआ! डेटाबेस रिकॉर्ड अपडेट हो गया है।',
-      passesTab: 'गेट पास'
+      domicile: 'निवास प्रमाण पत्र (Domicile)',
+      affidavit: 'एफिडेविट (Affidavit)',
+      satyapan: 'पुलिस वेरिफिकेशन फॉर्म (Verification Form)',
+      docDesc: 'अपने रजिस्टर किए गए डॉक्युमेंट्स नीचे से डाउनलोड करें।',
+      msgTitle: 'प्राइवेट चैट/मैसेज (Chat)',
+      msgTo: 'मैसेज भेजें (Send to)',
+      managerOpt: 'मैनेजर अमित',
+      ownerOpt: 'ओनर बालाजी',
+      typeMsg: 'अपना मैसेज लिखें...',
+      sendBtn: 'मैसेज भेजें',
+      paymentModalTitle: 'सिक्योर पेमेंट गेटवे (Secure Payment)',
+      payRent: 'केवल कमरे का किराया (Rent Only)',
+      payElectric: 'केवल बिजली का बिल (Bill Only)',
+      payBoth: 'किराया + बिजली दोनों (Pay Both)',
+      selectMode: 'पेमेंट करने का मोड चुनें (Payment Mode)',
+      modeUPI: 'UPI ट्रांसफर (QR कोड स्कैन करें)',
+      modeCash: 'मैनेजर अमित को कैश दें',
+      upiInstructions: 'पेमेंट पूरा करने के लिए किसी भी UPI ऐप (GPay/PhonePe/Paytm) से इस QR कोड को स्कैन करें।',
+      cashInstructions: 'कृपया कैश अमाउंट मैनेजर अमित को दें। मैनेजर के अपडेट करते ही आपकी पेमेंट रसीद यहाँ दिखने लगेगी।',
+      payConfirmBtn: 'पेमेंट कन्फर्म करें (Confirm)',
+      payProcessing: 'पेमेंट प्रोसेस हो रही है, कृपया थोड़ा रुकें...',
+      paySuccessMsg: 'पेमेंट सक्सेसफुल रहा! डेटाबेस अपडेट हो गया है।',
+      passesTab: 'गेट पास (Passes)'
     }
   }[lang];
 

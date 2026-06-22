@@ -67,17 +67,17 @@ export default function LandingPage() {
     hi: {
       tagline: 'श्री बालाजी प्रॉपर्टीज',
       welcome: 'एस.बी. सुइट में आपका स्वागत है',
-      desc: 'अपने प्रॉपर्टी डैशबोर्ड को सुरक्षित रूप से एक्सेस करें।',
-      rememberMe: 'इस डिवाइस को याद रखें',
-      signInBtn: 'सुरक्षित प्रवेश करें',
-      emailLabel: 'ईमेल या यूजरनाम',
+      desc: 'प्रॉपर्टी डैशबोर्ड को सुरक्षित रूप से लॉगिन करके एक्सेस करें।',
+      rememberMe: 'लॉगिन याद रखें',
+      signInBtn: 'सुरक्षित लॉगिन करें',
+      emailLabel: 'ईमेल या फोन नंबर',
       passwordLabel: 'पासवर्ड',
       forgotLink: 'पासवर्ड भूल गए?',
-      staffEntrance: 'स्टाफ पोर्टल',
-      ownerBtn: 'मालिक',
-      managerBtn: 'प्रबंधक',
-      emailPlaceholder: 'अपना ईमेल या यूजरनाम दर्ज करें',
-      passwordPlaceholder: 'अपना पासवर्ड दर्ज करें'
+      staffEntrance: 'स्टाफ लॉगिन',
+      ownerBtn: 'मालिक (Owner)',
+      managerBtn: 'प्रबंधक (Manager)',
+      emailPlaceholder: 'अपना ईमेल या फोन नंबर डालें',
+      passwordPlaceholder: 'अपना पासवर्ड डालें'
     }
   }[lang];
 

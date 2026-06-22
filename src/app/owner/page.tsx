@@ -47,6 +47,7 @@ type Tab = 'stats' | 'tenants' | 'managers' | 'rates' | 'complaints' | 'complian
 export default function OwnerPortal() {
   const router = useRouter();
   const [lang, setLang] = useState<Lang>('en');
+  const [authorized, setAuthorized] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('stats');
   const [rosterViewMode, setRosterViewMode] = useState<'list' | 'map'>('list');
 
@@ -213,8 +214,20 @@ export default function OwnerPortal() {
 
   // Load stats & Realtime Subscription
   useEffect(() => {
-    async function loadData() {
+    let channel: any = null;
+    
+    async function checkSessionAndLoad() {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const currentRole = localStorage.getItem('sb_current_role');
+        
+        if (!session || currentRole !== 'owner') {
+          router.push('/');
+          return;
+        }
+        
+        setAuthorized(true);
+
         const ts = await db.getTenants();
         const txs = await db.getTransactions();
         const cs = await db.getComplaints();
@@ -234,27 +247,30 @@ export default function OwnerPortal() {
         setNotifications(notifs);
         setExpenses(exps);
         setUnits(us);
+
+        // Setup Supabase Realtime for Messages and Complaints
+        channel = supabase
+          .channel('owner_realtime')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+            setAllMessages((prev) => [...prev, payload.new as Message]);
+          })
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'complaints' }, (payload) => {
+            setComplaints((prev) => [payload.new as Complaint, ...prev]);
+          })
+          .subscribe();
       } catch (err) {
         console.error('Error loading owner stats:', err);
       }
     }
-    loadData();
-
-    // Setup Supabase Realtime for Messages and Complaints
-    const channel = supabase
-      .channel('owner_realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-        setAllMessages((prev) => [...prev, payload.new as Message]);
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'complaints' }, (payload) => {
-        setComplaints((prev) => [payload.new as Complaint, ...prev]);
-      })
-      .subscribe();
+    
+    checkSessionAndLoad();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
-  }, [refreshKey]);
+  }, [refreshKey, router]);
 
   // Update rates when type changes in New Tenant form
   useEffect(() => {
@@ -645,41 +661,49 @@ export default function OwnerPortal() {
       toggleStatus: 'Change Status'
     },
     hi: {
-      dashboard: 'मालिक मास्टर सेंटर',
+      dashboard: 'मालिक डैशबोर्ड (Owner Panel)',
       langLabel: 'English',
       logout: 'लॉगआउट',
-      overview: 'मुख्य विवरण',
-      totalRevenue: 'कुल जमा राशि',
-      activeUnits: 'सक्रिय यूनिट्स',
-      pendingDues: 'कुल अनुमानित बकाया',
-      liveLogs: 'लाइव डेटाबेस लेनदेन लॉग',
-      editBtn: 'संपादित करें',
-      deleteBtn: 'हटाएं',
-      tenantsTab: 'किरायेदार',
-      managersTab: 'मैनेजर',
-      ratesTab: 'वैश्विक दरें',
+      overview: 'ओवरव्यू (Overview)',
+      totalRevenue: 'कुल रेवेन्यू (कमाई)',
+      activeUnits: 'एक्टिव किरायेदार (Units)',
+      pendingDues: 'कुल पेंडिंग बकाया (Dues)',
+      liveLogs: 'लाइव पेमेंट और डेटाबेस लॉग्स',
+      editBtn: 'एडिट करें',
+      deleteBtn: 'डिलीट करें',
+      tenantsTab: 'किरायेदार (Tenants)',
+      managersTab: 'मैनेजर (Managers)',
+      ratesTab: 'ग्लोबल रेट्स (Rates)',
       complaintsTab: 'शिकायतें',
       cashHeld: 'कैश बॉक्स बटुआ',
-      addMgrTitle: 'नया प्रॉपर्टी मैनेजर जोड़ें',
+      addMgrTitle: 'नया प्रॉपर्टी मैनेजर रजिस्टर करें',
       mgrName: 'मैनेजर का नाम',
       mgrPhone: 'फोन नंबर',
-      addMgrBtn: 'मैनेजर जोड़ें',
-      activeMgrs: 'सक्रिय मैनेजरों की सूची',
-      ratesTitle: 'कमरा किराया एवं बिजली दरें बदलें',
+      addMgrBtn: 'मैनेजर रजिस्टर करें',
+      activeMgrs: 'एक्टिव मैनेजर्स की लिस्ट',
+      ratesTitle: 'ग्लोबल किराया और बिजली रेट्स बदलें',
       rentRes: 'आवासीय किराया (₹)',
       rentCom: 'व्यावसायिक किराया (₹)',
       rentPark: 'पार्किंग किराया (₹)',
       powerRes: 'आवासीय बिजली दर (₹/kWh)',
       powerCom: 'व्यावसायिक बिजली दर (₹/kWh)',
       powerPark: 'पार्किंग बिजली दर (₹/kWh)',
-      saveRatesBtn: 'दरें सहेजें',
-      noComplaints: 'कोई शिकायत दर्ज नहीं है।',
+      saveRatesBtn: 'रेट सेटिंग्स सेव करें',
+      noComplaints: 'कोई पेंडिंग शिकायत नहीं है।',
       catRes: 'Residential (आवासीय)',
       catCom: 'Commercial (व्यावसायिक)',
       catPark: 'Parking (पार्किंग)',
-      toggleStatus: 'स्थिति बदलें'
+      toggleStatus: 'स्टेटस बदलें'
     }
   }[lang];
+
+  if (!authorized) {
+    return (
+      <div className="min-h-screen bg-[#060608] flex items-center justify-center text-[#F4F4F5]">
+        <Loader2 className="w-8 h-8 animate-spin text-gold" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#060608] text-[#F4F4F5] font-sans antialiased pb-24">
