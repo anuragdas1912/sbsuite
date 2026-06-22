@@ -113,8 +113,8 @@ export default function LandingPage() {
     const normalizedPassword = password;
     
     try {
-      // 1 & 2. Owner and Manager Login via Supabase Auth
-      if (selectedRole === 'owner' || selectedRole === 'manager') {
+      // 1. Owner Login via Supabase Auth
+      if (selectedRole === 'owner') {
         let loginEmail = email.trim();
         if (!loginEmail.includes('@')) {
           loginEmail = `${loginEmail}@sbsuite.in`;
@@ -131,12 +131,48 @@ export default function LandingPage() {
         }
 
         localStorage.setItem('sb_current_role', selectedRole);
-        if (selectedRole === 'manager') {
-          localStorage.setItem('sb_current_manager_id', data.user.id);
-        }
         setLoading(false);
         router.push(`/${selectedRole}`);
         return;
+      }
+
+      // 2. Manager Login via Database
+      if (selectedRole === 'manager') {
+        const managers = await db.getManagers();
+        const matchedManager = managers.find(m => 
+          (m.login_id === email.trim() || m.phone === email.trim()) &&
+          m.password === password
+        );
+
+        if (matchedManager) {
+          localStorage.setItem('sb_current_manager_id', matchedManager.id);
+          localStorage.setItem('sb_current_role', selectedRole);
+          setLoading(false);
+          router.push(`/${selectedRole}`);
+          return;
+        } else {
+          // Fallback to Supabase Auth manager@sbsuite.in for backward compatibility
+          let loginEmail = email.trim();
+          if (!loginEmail.includes('@')) {
+            loginEmail = `${loginEmail}@sbsuite.in`;
+          }
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: loginEmail,
+            password: password
+          });
+
+          if (!error && data.user) {
+            localStorage.setItem('sb_current_manager_id', data.user.id);
+            localStorage.setItem('sb_current_role', selectedRole);
+            setLoading(false);
+            router.push(`/${selectedRole}`);
+            return;
+          }
+
+          alert(lang === 'en' ? 'Invalid credentials.' : 'गलत क्रेडेंशियल।');
+          setLoading(false);
+          return;
+        }
       }
       
       // 3. Check Tenant Login

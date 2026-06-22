@@ -164,16 +164,14 @@ export default function ManagerPortal() {
     
     async function checkSessionAndLoad() {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const currentRole = localStorage.getItem('sb_current_role');
+        const managerId = localStorage.getItem('sb_current_manager_id');
+        const role = localStorage.getItem('sb_current_role');
         
-        if (!session || currentRole !== 'manager') {
+        if (!managerId || role !== 'manager') {
           localStorage.clear();
           router.push('/');
           return;
         }
-        
-        setAuthorized(true);
 
         const ts = await db.getTenants();
         const txs = await db.getTransactions();
@@ -186,6 +184,37 @@ export default function ManagerPortal() {
         const exps = await db.getExpenses();
         const us = await db.getUnits();
 
+        let matchedMgr = ms.find(m => m.id === managerId);
+        
+        if (!matchedMgr && managerId === 'a9a74958-a27e-49f3-91cd-b838f1f7d7b5') {
+          // Auto-insert default manager profile in public.managers database table
+          try {
+            await supabase.from('managers').insert({
+              id: managerId,
+              name: 'Default Manager (मैनेजर)',
+              phone: '9999999999',
+              cash_wallet: 0,
+              login_id: 'manager',
+              password: 'Qwerty@252',
+              created_at: new Date().toISOString()
+            });
+            // Re-fetch managers
+            const updatedMs = await db.getManagers();
+            matchedMgr = updatedMs.find(m => m.id === managerId);
+          } catch (e) {
+            console.error('Error auto-creating default manager:', e);
+          }
+        }
+
+        if (!matchedMgr) {
+          localStorage.clear();
+          router.push('/');
+          return;
+        }
+        
+        setAuthorized(true);
+        setManager(matchedMgr);
+
         setTenants(ts);
         setTransactions(txs);
         setComplaints(cs);
@@ -195,23 +224,6 @@ export default function ManagerPortal() {
         setNotifications(notifs);
         setExpenses(exps);
         setUnits(us);
-
-        // Load currently logged-in manager
-        const currentMgrId = localStorage.getItem('sb_current_manager_id');
-        if (currentMgrId && ms.length > 0) {
-          const matchedMgr = ms.find(m => m.id === currentMgrId);
-          if (matchedMgr) {
-            setManager(matchedMgr);
-          } else {
-            localStorage.clear();
-            router.push('/');
-            return;
-          }
-        } else {
-          if (ms.length > 0) {
-            setManager(ms[0]);
-          }
-        }
 
         // Setup Supabase Realtime for Messages, Visitor Logs, and Complaints
         channel = supabase
