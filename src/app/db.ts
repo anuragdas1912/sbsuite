@@ -1,6 +1,7 @@
 'use client';
 
 import { createClient } from '@supabase/supabase-js';
+import { sendPushNotification } from './pushUtils';
 
 // Types representing the database schema
 export interface Tenant {
@@ -8,7 +9,9 @@ export interface Tenant {
   name: string;
   role: 'residential' | 'commercial' | 'parking';
   unit_name: string;
+  unit_id?: string;
   phone: string;
+  password?: string;
   aadhaar: string; // Mandatory for all
   vehicle_rc?: string; // Mandatory for parking only
   base_rent: number;
@@ -98,13 +101,51 @@ export interface Manager {
   id: string;
   name: string;
   phone: string;
+  login_id?: string;
+  password?: string;
   cash_wallet: number; // Virtual cash wallet balance
   created_at: string;
 }
 
+export interface Notification {
+  id: string;
+  tenant_id: string;
+  tenant_name: string;
+  notification_type: string;
+  message_content: string;
+  status: string;
+  created_at: string;
+}
+
+export interface Expense {
+  id: string;
+  category: string;
+  amount: number;
+  description: string;
+  date: string;
+  created_at: string;
+}
+
+export interface Unit {
+  id: string;
+  name: string;
+  type: 'residential' | 'commercial';
+  status: 'vacant' | 'occupied' | 'maintenance';
+  tenant_id: string | null;
+  created_at: string;
+}
+
+export interface PushSubscription {
+  id: string;
+  user_id: string;
+  role: string;
+  subscription: any;
+  created_at: string;
+}
+
 // Initialize Supabase Client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -147,31 +188,48 @@ export const db = {
     return data || [];
   },
 
-  async addTenant(tenant: Omit<Tenant, 'id' | 'created_at' | 'document_urls'>): Promise<Tenant> {
-    const id = 'tenant_' + Math.random().toString(36).substr(2, 9);
+  async uploadDocument(file: File, tenantId: string, docType: string): Promise<string | null> {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${tenantId}/${docType}_${Date.now()}.${fileExt}`;
+    const { data, error } = await supabase.storage.from('documents').upload(fileName, file);
+    if (error) {
+      console.error('Error uploading document:', error);
+      return null;
+    }
+    const { data: publicUrlData } = supabase.storage.from('documents').getPublicUrl(fileName);
+    return publicUrlData.publicUrl;
+  },
+
+  async addTenant(tenant: Omit<Tenant, 'created_at'>): Promise<Tenant> {
+    const { unit_id, ...insertableTenant } = tenant;
     const newTenant = {
-      ...tenant,
-      id,
-      document_urls: {
-        rent_agreement: 'rent_agreement_' + Date.now() + '.pdf',
-        domicile: 'domicile_' + Date.now() + '.pdf',
-        affidavit: 'affidavit_' + Date.now() + '.pdf',
-        satyapan: 'satyapan_' + Date.now() + '.pdf'
-      },
+      ...insertableTenant,
       created_at: new Date().toISOString()
     };
     const { error } = await supabase.from('tenants').insert(newTenant);
     if (error) throw error;
-    return newTenant;
+    
+    // Mark unit as occupied if linked
+    if (unit_id) {
+      await supabase.from('units').update({ status: 'occupied', tenant_id: tenant.id }).eq('id', unit_id);
+    }
+    
+    return {
+      ...tenant,
+      created_at: newTenant.created_at
+    };
   },
 
   async removeTenant(id: string): Promise<void> {
+    // Free the unit first before deleting tenant, or we can just update it
+    await supabase.from('units').update({ status: 'vacant', tenant_id: null }).eq('tenant_id', id);
     const { error } = await supabase.from('tenants').delete().eq('id', id);
     if (error) throw error;
   },
 
   async updateTenant(updatedTenant: Tenant): Promise<void> {
-    const { error } = await supabase.from('tenants').update(updatedTenant).eq('id', updatedTenant.id);
+    const { unit_id, ...updateableTenant } = updatedTenant;
+    const { error } = await supabase.from('tenants').update(updateableTenant).eq('id', updatedTenant.id);
     if (error) throw error;
   },
 
@@ -356,12 +414,21 @@ export const db = {
     };
     const { error } = await supabase.from('complaints').insert(newComplaint);
     if (error) throw error;
+    
+    // Notify manager that a new complaint was created
+    sendPushNotification('manager', null, 'New Complaint Raised', `${c.tenant_name}: ${c.subject}`);
     return newComplaint;
   },
 
   async updateComplaintStatus(id: string, status: 'Pending' | 'In Progress' | 'Resolved'): Promise<void> {
     const { error } = await supabase.from('complaints').update({ status }).eq('id', id);
     if (error) throw error;
+
+    // Fetch complaint to get tenant ID
+    const { data } = await supabase.from('complaints').select('tenant_id, subject').eq('id', id).single();
+    if (data) {
+      sendPushNotification(null as any, data.tenant_id, 'Complaint Update', `Your complaint "${data.subject}" is now ${status}`);
+    }
   },
 
   async updateComplaint(updated: Complaint): Promise<void> {
@@ -391,6 +458,20 @@ export const db = {
     };
     const { error } = await supabase.from('messages').insert(newMsg);
     if (error) throw error;
+
+    // Dispatch push notification
+    if (msg.recipient_id === 'all_tenants') {
+      sendPushNotification('residential', null, 'New Broadcast Message', msg.content);
+      sendPushNotification('commercial', null, 'New Broadcast Message', msg.content);
+      sendPushNotification('parking', null, 'New Broadcast Message', msg.content);
+    } else if (msg.recipient_id === 'owner') {
+      sendPushNotification('owner', 'owner', 'New Message from ' + msg.sender_name, msg.content);
+    } else if (msg.recipient_id === 'manager') {
+      sendPushNotification('manager', null, 'New Message from ' + msg.sender_name, msg.content);
+    } else {
+      sendPushNotification(null as any, msg.recipient_id, 'New Message from ' + msg.sender_name, msg.content);
+    }
+
     return newMsg;
   },
 
@@ -425,33 +506,121 @@ export const db = {
     if (error) throw error;
   },
 
-  // --- Owner Configurable Global Rates (Stored locally) ---
+  // --- Owner Configurable Global Rates ---
   async getRates(): Promise<{ rent: Record<string, number>; power: Record<string, number> }> {
     const defaultRates = {
       rent: { residential: 5000, commercial: 12000, parking: 1500 },
       power: { residential: 10, commercial: 15, parking: 12 }
     };
-    return loadData('sb_global_rates', defaultRates);
+    const { data, error } = await supabase.from('global_rates').select('*').eq('id', 1).single();
+    if (error || !data) {
+      console.error('Error fetching rates:', error);
+      return defaultRates;
+    }
+    return { rent: data.rent, power: data.power };
   },
 
   async saveRates(rates: { rent: Record<string, number>; power: Record<string, number> }): Promise<void> {
-    saveData('sb_global_rates', rates);
+    const { error } = await supabase.from('global_rates').upsert({ id: 1, ...rates });
+    if (error) throw error;
   },
 
   // --- Visitor Passes & Logs ---
   async getVisitorPasses(): Promise<VisitorPass[]> {
-    return loadData<VisitorPass[]>('sb_visitor_passes', []);
+    const { data, error } = await supabase.from('visitor_passes').select('*').order('created_at', { ascending: false });
+    if (error) {
+      console.error('Error fetching visitor passes:', error);
+      return [];
+    }
+    return data || [];
   },
 
   async saveVisitorPasses(passes: VisitorPass[]): Promise<void> {
-    saveData('sb_visitor_passes', passes);
+    if (passes.length === 0) return;
+    const { error } = await supabase.from('visitor_passes').upsert(passes);
+    if (error) throw error;
   },
 
   async getVisitorLogs(): Promise<VisitorLog[]> {
-    return loadData<VisitorLog[]>('sb_visitor_logs', []);
+    const { data, error } = await supabase.from('visitor_logs').select('*').order('check_in_time', { ascending: false });
+    if (error) {
+      console.error('Error fetching visitor logs:', error);
+      return [];
+    }
+    return data || [];
   },
 
   async saveVisitorLogs(logs: VisitorLog[]): Promise<void> {
-    saveData('sb_visitor_logs', logs);
+    if (logs.length === 0) return;
+    const { error } = await supabase.from('visitor_logs').upsert(logs);
+    if (error) throw error;
+  },
+  async getNotifications(): Promise<Notification[]> {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      console.error('Error fetching notifications:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async getExpenses(): Promise<Expense[]> {
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('*')
+      .order('date', { ascending: false });
+    if (error) {
+      console.error('Error fetching expenses:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async addExpense(expense: Omit<Expense, 'id' | 'created_at'>): Promise<Expense> {
+    const id = 'exp_' + Math.random().toString(36).substr(2, 9);
+    const newExp = {
+      ...expense,
+      id,
+      created_at: new Date().toISOString()
+    };
+    const { error } = await supabase.from('expenses').insert(newExp);
+    if (error) throw error;
+    return newExp;
+  },
+
+  // Units
+  async getUnits(): Promise<Unit[]> {
+    const { data, error } = await supabase.from('units').select('*').order('name');
+    if (error) {
+      console.error('Error fetching units:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async updateUnitStatus(unitId: string, status: 'vacant' | 'occupied' | 'maintenance', tenantId: string | null): Promise<void> {
+    const { error } = await supabase
+      .from('units')
+      .update({ status, tenant_id: tenantId })
+      .eq('id', unitId);
+    if (error) throw error;
+  },
+
+  // Push Subscriptions
+  async addPushSubscription(sub: Omit<PushSubscription, 'id' | 'created_at'>): Promise<void> {
+    const { error } = await supabase.from('push_subscriptions').insert(sub);
+    if (error) throw error;
+  },
+
+  async getPushSubscriptionsByRole(role: string): Promise<PushSubscription[]> {
+    const { data, error } = await supabase.from('push_subscriptions').select('*').eq('role', role);
+    if (error) {
+      console.error('Error fetching subscriptions:', error);
+      return [];
+    }
+    return data || [];
   }
 };

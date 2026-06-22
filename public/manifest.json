@@ -1,12 +1,11 @@
 {
   "name": "SB Suite",
   "short_name": "SB Suite",
-  "description": "Shree Balaji Estate Management Dashboard",
+  "description": "Property Management System for Shree Balaji Properties",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#060608",
-  "theme_color": "#060608",
-  "orientation": "portrait-primary",
+  "theme_color": "#0E0F12",
   "icons": [
     {
       "src": "/logo.png",

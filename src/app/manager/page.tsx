@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, Tenant, Transaction, Complaint, Manager, Message, VisitorPass, VisitorLog } from '../db';
+import { db, Tenant, Transaction, Complaint, Manager, Message, VisitorPass, VisitorLog, Notification, Expense, Unit, supabase } from '../db';
+import { subscribeToPushNotifications } from '../pushUtils';
 import { 
   ArrowLeft, 
   Globe, 
@@ -53,6 +54,9 @@ export default function ManagerPortal() {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [manager, setManager] = useState<Manager | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
 
   // Selected Tenant Profile Modal
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
@@ -61,7 +65,9 @@ export default function ManagerPortal() {
   const [newTenName, setNewTenName] = useState('');
   const [newTenRole, setNewTenRole] = useState<'residential' | 'commercial' | 'parking'>('residential');
   const [newTenUnit, setNewTenUnit] = useState('');
+  const [newTenUnitId, setNewTenUnitId] = useState('');
   const [newTenPhone, setNewTenPhone] = useState('');
+  const [newTenPassword, setNewTenPassword] = useState('');
   const [newTenAadhaar, setNewTenAadhaar] = useState('');
   const [newTenRc, setNewTenRc] = useState('');
   const [newTenRent, setNewTenRent] = useState(5000);
@@ -162,6 +168,9 @@ export default function ManagerPortal() {
         const msgs = await db.getMessages();
         const passes = await db.getVisitorPasses();
         const logs = await db.getVisitorLogs();
+        const notifs = await db.getNotifications();
+        const exps = await db.getExpenses();
+        const us = await db.getUnits();
 
         setTenants(ts);
         setTransactions(txs);
@@ -169,7 +178,21 @@ export default function ManagerPortal() {
         setAllMessages(msgs);
         setVisitorPasses(passes);
         setVisitorLogs(logs);
-        if (ms.length > 0) {
+        setNotifications(notifs);
+        setExpenses(exps);
+        setUnits(us);
+
+        // Load currently logged-in manager
+        const currentMgrId = localStorage.getItem('sb_current_manager_id');
+        if (currentMgrId && ms.length > 0) {
+          const matchedMgr = ms.find(m => m.id === currentMgrId);
+          if (matchedMgr) {
+            setManager(matchedMgr);
+          } else {
+            // Fallback (or could kick out)
+            setManager(ms[0]);
+          }
+        } else if (ms.length > 0) {
           setManager(ms[0]);
         }
       } catch (err) {
@@ -177,6 +200,24 @@ export default function ManagerPortal() {
       }
     }
     loadData();
+
+    // Setup Supabase Realtime for Messages, Visitor Logs, and Complaints
+    const channel = supabase
+      .channel('manager_realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+        setAllMessages((prev) => [...prev, payload.new as Message]);
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'visitor_logs' }, (payload) => {
+        setVisitorLogs((prev) => [payload.new as VisitorLog, ...prev]);
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'complaints' }, (payload) => {
+        setComplaints((prev) => [payload.new as Complaint, ...prev]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [refreshKey]);
 
   // Gate Pass Lookup Handler
@@ -242,13 +283,19 @@ export default function ManagerPortal() {
   const handleSendComplianceNotice = async (tenant: Tenant) => {
     setSendingComplianceTenantId(tenant.id);
     try {
+      const msg = `[COMPLIANCE ALERT] Dear ${tenant.name.split(' (')[0]}, this is an official notice from management. One or more of your mandatory documents (Rent Agreement, Domicile, Affidavit, Pre-Satyapan) may be missing or due for renewal. Please visit the office immediately or upload updated documents. Failure to comply may result in lease suspension. - Management`;
       await db.addMessage({
         sender_id: 'manager',
         sender_name: manager?.name.split(' (')[0] || 'Manager',
         recipient_id: tenant.id,
-        content: `[COMPLIANCE ALERT] Dear ${tenant.name.split(' (')[0]}, this is an official notice from management. One or more of your mandatory documents (Rent Agreement, Domicile, Affidavit, Pre-Satyapan) may be missing or due for renewal. Please visit the office immediately or upload updated documents. Failure to comply may result in lease suspension. - Management`
+        content: msg
       });
-      alert(`✓ Compliance notice sent to ${tenant.name.split(' (')[0]}!`);
+      
+      // Zero-Cost WhatsApp Integration
+      const waLink = `https://wa.me/91${tenant.phone.replace(/\\D/g, '')}?text=${encodeURIComponent(msg)}`;
+      window.open(waLink, '_blank');
+      
+      alert(`✓ Compliance notice opened in WhatsApp for ${tenant.name.split(' (')[0]}!`);
       setRefreshKey(prev => prev + 1);
     } catch (err) {
       console.error(err);
@@ -277,7 +324,7 @@ export default function ManagerPortal() {
     e.preventDefault();
 
     // Validations
-    if (!newTenName || !newTenUnit || !newTenPhone || !newTenAadhaar) {
+    if (!newTenName || !newTenUnit || !newTenPhone || !newTenPassword || !newTenAadhaar) {
       alert(lang === 'en' ? 'Please fill in all mandatory fields.' : 'कृपया सभी आवश्यक फ़ील्ड भरें।');
       return;
     }
@@ -295,11 +342,16 @@ export default function ManagerPortal() {
     }
 
     try {
+      const tenantId = `ten_${Math.random().toString(36).substr(2, 9)}`;
       await db.addTenant({
+        id: tenantId,
+        document_urls: {},
         name: newTenName,
         role: newTenRole,
         unit_name: newTenUnit,
+        unit_id: newTenUnitId || undefined,
         phone: newTenPhone,
+        password: newTenPassword,
         aadhaar: newTenAadhaar,
         vehicle_rc: newTenRole === 'parking' ? newTenRc : undefined,
         base_rent: Number(newTenRent),
@@ -312,7 +364,9 @@ export default function ManagerPortal() {
       // Reset Form
       setNewTenName('');
       setNewTenUnit('');
+      setNewTenUnitId('');
       setNewTenPhone('');
+      setNewTenPassword('');
       setNewTenAadhaar('');
       setNewTenRc('');
       setNewEv(false);
@@ -411,6 +465,35 @@ export default function ManagerPortal() {
 
     try {
       await db.updateComplaintStatus(cId, nextStatus);
+      
+      if (nextStatus === 'Resolved') {
+        const comp = complaints.find(c => c.id === cId);
+        if (comp) {
+          const ten = tenants.find(t => t.id === comp.tenant_id);
+          if (ten) {
+            const content = `Dear ${ten.name}, your maintenance request regarding "${comp.category}" has been marked as Resolved. Thank you!`;
+            // Add internal message
+            await db.addMessage({
+              sender_id: manager?.id || 'manager',
+              sender_name: manager?.name || 'Manager',
+              recipient_id: ten.id,
+              content
+            });
+            // Ping Mock WhatsApp/SMS API
+            await fetch('/api/notify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                tenant_id: ten.id,
+                tenant_name: ten.name,
+                notification_type: 'WhatsApp - Complaint Resolved',
+                message_content: content
+              })
+            });
+          }
+        }
+      }
+
       setRefreshKey(prev => prev + 1);
     } catch (err) {
       console.error(err);
@@ -539,6 +622,7 @@ export default function ManagerPortal() {
       roleLabel: 'Category Type',
       unitLabel: 'Room / Shop / Slot Number',
       phoneLabel: 'Phone Number',
+      passwordLabel: 'Login Password',
       aadhaarLabel: 'Aadhaar Card Number (Mandatory)',
       rcLabel: 'Vehicle RC Number (Mandatory for Parking)',
       prevReadLabel: 'Initial Meter Reading (kWh)',
@@ -584,6 +668,7 @@ export default function ManagerPortal() {
       roleLabel: 'श्रेणी (Category)',
       unitLabel: 'कमरा / दुकान / स्लॉट नंबर',
       phoneLabel: 'फोन नंबर',
+      passwordLabel: 'लॉगिन पासवर्ड',
       aadhaarLabel: 'आधार कार्ड नंबर (अनिवार्य)',
       rcLabel: 'वाहन आर.सी. नंबर (पार्किंग के लिए अनिवार्य)',
       prevReadLabel: 'प्रारंभिक मीटर रीडिंग (kWh)',
@@ -624,6 +709,23 @@ export default function ManagerPortal() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Push Notifications Toggle */}
+          <button
+            onClick={async () => {
+              if (!manager?.login_id) return;
+              const success = await subscribeToPushNotifications(manager.login_id, 'manager');
+              if (success) {
+                alert(lang === 'en' ? 'Notifications enabled!' : 'सूचनाएं सक्षम की गईं!');
+              } else {
+                alert(lang === 'en' ? 'Failed to enable notifications.' : 'सूचनाएं सक्षम करने में विफल।');
+              }
+            }}
+            className="p-1.5 rounded hover:bg-gold/10 text-slate-400 hover:text-gold transition-colors cursor-pointer"
+            title={lang === 'en' ? 'Enable Push Notifications' : 'सूचनाएं सक्षम करें'}
+          >
+            <Bell className="w-3.5 h-3.5" />
+          </button>
+
           {/* Language switcher */}
           <button
             onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
@@ -829,14 +931,33 @@ export default function ManagerPortal() {
 
                 <div className="space-y-1.5">
                   <label className="text-slate-400 font-bold uppercase tracking-wider">{t.unitLabel} *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Room 102, Shop 3, Slot C4"
-                    value={newTenUnit}
-                    onChange={(e) => setNewTenUnit(e.target.value)}
-                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
-                  />
+                  {newTenRole === 'parking' ? (
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Parking Spot 102"
+                      value={newTenUnit}
+                      onChange={(e) => setNewTenUnit(e.target.value)}
+                      className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
+                    />
+                  ) : (
+                    <select
+                      required
+                      value={newTenUnitId}
+                      onChange={(e) => {
+                        setNewTenUnitId(e.target.value);
+                        const unit = units.find(u => u.id === e.target.value);
+                        if (unit) setNewTenUnit(unit.name);
+                        else setNewTenUnit('');
+                      }}
+                      className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
+                    >
+                      <option value="">Select a Unit</option>
+                      {units.filter(u => u.type === newTenRole && u.status === 'vacant').map(u => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -847,6 +968,18 @@ export default function ManagerPortal() {
                     placeholder="e.g. 98970XXXXX"
                     value={newTenPhone}
                     onChange={(e) => setNewTenPhone(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-slate-400 font-bold uppercase tracking-wider">{t.passwordLabel} *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Create secure password for tenant"
+                    value={newTenPassword}
+                    onChange={(e) => setNewTenPassword(e.target.value)}
                     className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
                   />
                 </div>
@@ -2097,7 +2230,7 @@ export default function ManagerPortal() {
                   <p className="text-xs text-slate-500 py-6 text-center">No visitor check-ins logged yet.</p>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-xs text-left text-slate-300">
+                    <table className="w-full text-xs text-left text-slate-300 mobile-table">
                       <thead className="text-[9px] text-slate-500 uppercase border-b border-[#1B1C21]/60">
                         <tr>
                           <th className="py-2.5">Visitor</th>
@@ -2110,13 +2243,13 @@ export default function ManagerPortal() {
                       <tbody className="divide-y divide-[#1B1C21]/50 font-light">
                         {visitorLogs.map(log => (
                           <tr key={log.id} className="hover:bg-[#060608]/40">
-                            <td className="py-3 font-semibold text-slate-200">{log.visitor_name}</td>
-                            <td className="py-3">
+                            <td data-label="Visitor" className="py-3 font-semibold text-slate-200">{log.visitor_name}</td>
+                            <td data-label="Type" className="py-3">
                               <span className="text-[8px] bg-gold/10 border border-gold/20 text-gold px-1.5 py-0.5 rounded uppercase font-semibold">{log.visit_type}</span>
                             </td>
-                            <td className="py-3 text-slate-400">{log.unit_name}</td>
-                            <td className="py-3 text-slate-500 font-mono">{log.vehicle_no || '—'}</td>
-                            <td className="py-3 text-right font-mono text-[9px] text-slate-400">{new Date(log.check_in_time).toLocaleString()}</td>
+                            <td data-label="Host Unit" className="py-3 text-slate-400">{log.unit_name}</td>
+                            <td data-label="Vehicle" className="py-3 text-slate-500 font-mono">{log.vehicle_no || '—'}</td>
+                            <td data-label="Check-In" className="py-3 text-right font-mono text-[9px] text-slate-400">{new Date(log.check_in_time).toLocaleString()}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -2151,7 +2284,7 @@ export default function ManagerPortal() {
                 <p className="text-xs text-slate-500 py-8 text-center">No tenants registered yet.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left text-slate-300">
+                  <table className="w-full text-xs text-left text-slate-300 mobile-table">
                     <thead className="text-[9px] text-slate-500 uppercase border-b border-[#1B1C21]/60">
                       <tr>
                         <th className="py-3 pr-4">Tenant / Unit</th>
@@ -2172,24 +2305,24 @@ export default function ManagerPortal() {
                         const allDocs = hasDoc('rent_agreement') && hasDoc('domicile') && hasDoc('affidavit') && hasDoc('satyapan');
                         return (
                           <tr key={ten.id} className="hover:bg-[#060608]/40">
-                            <td className="py-3 pr-4">
-                              <div className="flex items-center gap-2">
+                            <td data-label="Tenant/Unit" className="py-3 pr-4">
+                              <div className="flex items-center justify-end md:justify-start gap-2">
                                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${allDocs ? 'bg-emerald-400' : 'bg-rose-400 animate-pulse'}`} />
-                                <div>
+                                <div className="text-right md:text-left">
                                   <strong className="block text-slate-200">{ten.name.split(' (')[0]}</strong>
                                   <span className="text-[9px] text-slate-500 uppercase">{ten.role} • {ten.unit_name}</span>
                                 </div>
                               </div>
                             </td>
-                            <td className="py-3 text-center">{docBadge(hasDoc('rent_agreement'))}</td>
-                            <td className="py-3 text-center">{docBadge(hasDoc('domicile'))}</td>
-                            <td className="py-3 text-center">{docBadge(hasDoc('affidavit'))}</td>
-                            <td className="py-3 text-center">{docBadge(hasDoc('satyapan'))}</td>
-                            <td className="py-3 text-center">
+                            <td data-label="Rent Agmt." className="py-3 text-center">{docBadge(hasDoc('rent_agreement'))}</td>
+                            <td data-label="Domicile" className="py-3 text-center">{docBadge(hasDoc('domicile'))}</td>
+                            <td data-label="Affidavit" className="py-3 text-center">{docBadge(hasDoc('affidavit'))}</td>
+                            <td data-label="Pre-Satyapan" className="py-3 text-center">{docBadge(hasDoc('satyapan'))}</td>
+                            <td data-label="Action" className="py-3 text-center">
                               <button
                                 onClick={() => handleSendComplianceNotice(ten)}
                                 disabled={sendingComplianceTenantId === ten.id}
-                                className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-[9px] font-bold uppercase tracking-wider rounded-lg transition cursor-pointer flex items-center gap-1 mx-auto"
+                                className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-[9px] font-bold uppercase tracking-wider rounded-lg transition cursor-pointer flex items-center justify-center gap-1 md:mx-auto ml-auto"
                               >
                                 <Send className="w-3 h-3" />
                                 {sendingComplianceTenantId === ten.id ? 'Sending...' : 'Send Notice'}

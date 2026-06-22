@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, Tenant, Transaction, Message } from '../db';
+import { db, Tenant, Transaction, Complaint, Message, VisitorPass, supabase } from '../db';
+import { subscribeToPushNotifications } from '../pushUtils';
 import { 
   ArrowLeft, 
   Globe, 
@@ -22,7 +23,9 @@ import {
   QrCode,
   Check,
   Car,
-  Info
+  Info,
+  Zap,
+  BatteryCharging
 } from 'lucide-react';
 
 type Lang = 'en' | 'hi';
@@ -92,6 +95,18 @@ export default function ParkingPortal() {
   useEffect(() => {
     const tenantId = localStorage.getItem('sb_current_tenant_id') || 't5';
     loadDatabase(tenantId);
+
+    // Setup Supabase Realtime for Messages
+    const channel = supabase
+      .channel('parking_messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+        setMessages((prev) => [...prev, payload.new as Message]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [chatTrigger]);
 
   if (loading || !tenant) {
@@ -363,6 +378,23 @@ export default function ParkingPortal() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Push Notifications Toggle */}
+          <button
+            onClick={async () => {
+              if (!tenant?.id) return;
+              const success = await subscribeToPushNotifications(tenant.id, 'parking');
+              if (success) {
+                alert(lang === 'en' ? 'Notifications enabled!' : 'सूचनाएं सक्षम की गईं!');
+              } else {
+                alert(lang === 'en' ? 'Failed to enable notifications.' : 'सूचनाएं सक्षम करने में विफल।');
+              }
+            }}
+            className="p-1.5 rounded hover:bg-gold/10 text-slate-400 hover:text-gold transition-colors cursor-pointer"
+            title={lang === 'en' ? 'Enable Push Notifications' : 'सूचनाएं सक्षम करें'}
+          >
+            <Bell className="w-3.5 h-3.5" />
+          </button>
+
           {/* Language Toggle */}
           <button
             onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
@@ -736,7 +768,7 @@ export default function ParkingPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('vehicle_rc.pdf', 'VEHICLE RC COPY (वाहन आर.सी.)')}
+                  onClick={() => handleDownloadDoc('vehicle_rc', 'VEHICLE RC COPY (वाहन आर.सी.)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -749,7 +781,7 @@ export default function ParkingPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('aadhaar_card.pdf', 'AADHAAR CARD (आधार कार्ड)')}
+                  onClick={() => handleDownloadDoc('aadhaar_card', 'AADHAAR CARD (आधार कार्ड)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -762,7 +794,7 @@ export default function ParkingPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('parking_agreement.pdf', 'PARKING AGREEMENT (पार्किंग अनुबंध)')}
+                  onClick={() => handleDownloadDoc('rent_agreement', 'PARKING AGREEMENT (पार्किंग अनुबंध)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -775,7 +807,7 @@ export default function ParkingPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('domicile.pdf', 'DOMICILE CERTIFICATE (मूल निवास)')}
+                  onClick={() => handleDownloadDoc('domicile', 'DOMICILE CERTIFICATE (मूल निवास)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />

@@ -11,7 +11,7 @@ import {
   EyeOff,
   Globe
 } from 'lucide-react';
-import { db } from './db';
+import { db, supabase } from './db';
 
 type Role = 'residential' | 'commercial' | 'parking' | 'owner' | 'manager';
 type Lang = 'en' | 'hi';
@@ -112,57 +112,45 @@ export default function LandingPage() {
     const normalizedEmail = email.toLowerCase().trim();
     const normalizedPassword = password;
     
-    // Check Owner Credentials
-    if (normalizedEmail === 'anuragdas' && normalizedPassword === 'Qwerty@252') {
-      localStorage.setItem('sb_current_role', 'owner');
-      setLoading(false);
-      router.push('/owner');
-      return;
-    }
-    
-    // Check Manager Credentials
-    if (selectedRole === 'manager' || normalizedEmail === 'manager' || normalizedEmail === 'amit') {
-      localStorage.setItem('sb_current_role', 'manager');
-      setLoading(false);
-      router.push('/manager');
-      return;
-    }
-    
-    // Check Owner via footer/dropdown selected role
-    if (selectedRole === 'owner') {
-      if (normalizedEmail === 'anuragdas' && normalizedPassword === 'Qwerty@252') {
-        localStorage.setItem('sb_current_role', 'owner');
-        setLoading(false);
-        router.push('/owner');
-      } else {
-        alert(lang === 'en' ? 'Incorrect Owner credentials! Use: anuragdas / Qwerty@252' : 'गलत मालिक क्रेडेंशियल! कृपया correct क्रेडेंशियल डालें: anuragdas / Qwerty@252');
-        setLoading(false);
-      }
-      return;
-    }
-    
-    // Tenant Login Lookup
     try {
+      // 1 & 2. Owner and Manager Login via Supabase Auth
+      if (selectedRole === 'owner' || selectedRole === 'manager') {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password
+        });
+
+        if (error || !data.user) {
+          alert(`Login failed: ${error?.message || 'Unknown error'}`);
+          setLoading(false);
+          return;
+        }
+
+        localStorage.setItem('sb_current_role', selectedRole);
+        if (selectedRole === 'manager') {
+          localStorage.setItem('sb_current_manager_id', data.user.id);
+        }
+        setLoading(false);
+        router.push(`/${selectedRole}`);
+        return;
+      }
+      
+      // 3. Check Tenant Login
       const tenants = await db.getTenants();
       const roleTenants = tenants.filter(t => t.role === selectedRole);
       
-      // Try to match tenant by name or id
-      let matchedTenant = roleTenants.find(t => 
-        t.name.toLowerCase().includes(normalizedEmail) || 
-        t.id.toLowerCase() === normalizedEmail
+      // Tenants log in using their exact phone number or exact ID and correct password
+      const matchedTenant = roleTenants.find(t => 
+        (t.phone === normalizedEmail || t.id.toLowerCase() === normalizedEmail) &&
+        (t.password === normalizedPassword)
       );
-      
-      // Fallback to first tenant of this role if no match found (for easy demo logins)
-      if (!matchedTenant && roleTenants.length > 0) {
-        matchedTenant = roleTenants[0];
-      }
       
       if (matchedTenant) {
         localStorage.setItem('sb_current_tenant_id', matchedTenant.id);
         localStorage.setItem('sb_current_role', selectedRole);
         router.push(`/${selectedRole}`);
       } else {
-        router.push(`/${selectedRole}`);
+        alert(lang === 'en' ? 'Invalid credentials.' : 'अमान्य क्रेडेंशियल।');
       }
     } catch (err) {
       console.error(err);

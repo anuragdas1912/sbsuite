@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, Tenant, Transaction, Complaint, Message, VisitorPass } from '../db';
+import { db, Tenant, Transaction, Complaint, Message, VisitorPass, supabase } from '../db';
+import { subscribeToPushNotifications } from '../pushUtils';
 import { 
   ArrowLeft, 
   Globe, 
@@ -110,6 +111,18 @@ export default function ResidentialPortal() {
   useEffect(() => {
     const tenantId = localStorage.getItem('sb_current_tenant_id') || 't1';
     loadDatabase(tenantId);
+
+    // Setup Supabase Realtime for Messages
+    const channel = supabase
+      .channel('res_messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+        setMessages((prev) => [...prev, payload.new as Message]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [chatTrigger]);
 
   if (loading || !tenant) {
@@ -287,13 +300,21 @@ export default function ResidentialPortal() {
   }[lang];
 
   // Document download action simulation
-  const handleDownloadDoc = (docName: string, docTitle: string) => {
-    const docContent = `SHREE BALAJI PROPERTIES\nTransit Camp, Rudrapur, Uttarakhand\n---------------------------------------------\nDOCUMENT: ${docTitle}\nTENANT NAME: ${tenant.name}\nROOM NO: ${tenant.unit_name}\nAADHAAR ID: ${tenant.aadhaar}\nDATE GENERATED: ${new Date().toLocaleDateString()}\nSTATUS: VERIFIED & OFFICIAL\n---------------------------------------------\nThis is a secure system-generated copy.`;
+  const handleDownloadDoc = (docKey: string, docTitle: string) => {
+    // Check real document vault URL
+    const realUrl = (tenant?.document_urls as any)?.[docKey];
+    if (realUrl && realUrl.startsWith('http')) {
+      window.open(realUrl, '_blank');
+      return;
+    }
+
+    // Fallback for old/mock tenants
+    const docContent = `SHREE BALAJI PROPERTIES\nTransit Camp, Rudrapur, Uttarakhand\n---------------------------------------------\nDOCUMENT: ${docTitle}\nTENANT NAME: ${tenant?.name}\nROOM NO: ${tenant?.unit_name}\nAADHAAR ID: ${tenant?.aadhaar}\nDATE GENERATED: ${new Date().toLocaleDateString()}\nSTATUS: VERIFIED & OFFICIAL\n---------------------------------------------\nThis is a secure system-generated copy.`;
     const blob = new Blob([docContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `${docName.replace('.pdf', '')}.txt`);
+    link.setAttribute('download', `${docKey}.txt`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -481,6 +502,23 @@ export default function ResidentialPortal() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Push Notifications Toggle */}
+          <button
+            onClick={async () => {
+              if (!tenant?.id) return;
+              const success = await subscribeToPushNotifications(tenant.id, 'residential');
+              if (success) {
+                alert(lang === 'en' ? 'Notifications enabled!' : 'सूचनाएं सक्षम की गईं!');
+              } else {
+                alert(lang === 'en' ? 'Failed to enable notifications.' : 'सूचनाएं सक्षम करने में विफल।');
+              }
+            }}
+            className="p-1.5 rounded hover:bg-gold/10 text-slate-400 hover:text-gold transition-colors cursor-pointer"
+            title={lang === 'en' ? 'Enable Push Notifications' : 'सूचनाएं सक्षम करें'}
+          >
+            <Bell className="w-3.5 h-3.5" />
+          </button>
+
           {/* Language Toggle */}
           <button
             onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
@@ -1107,7 +1145,7 @@ export default function ResidentialPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('rent_agreement.pdf', 'RENT AGREEMENT (किरायानामा)')}
+                  onClick={() => handleDownloadDoc('rent_agreement', 'RENT AGREEMENT (किरायानामा)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -1120,7 +1158,7 @@ export default function ResidentialPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('domicile.pdf', 'DOMICILE CERTIFICATE (मूल निवास)')}
+                  onClick={() => handleDownloadDoc('domicile', 'DOMICILE CERTIFICATE (मूल निवास)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -1133,7 +1171,7 @@ export default function ResidentialPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('affidavit.pdf', 'AFFIDAVIT (हलफनामा)')}
+                  onClick={() => handleDownloadDoc('affidavit', 'AFFIDAVIT (हलफनामा)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -1146,7 +1184,7 @@ export default function ResidentialPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('police_satyapan.pdf', 'PRE SATYAPAN VERIFICATION FORM (सत्यापन प्रपत्र)')}
+                  onClick={() => handleDownloadDoc('satyapan', 'PRE SATYAPAN VERIFICATION FORM (सत्यापन प्रपत्र)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />

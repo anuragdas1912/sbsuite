@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, Tenant, Transaction, Complaint, Message, VisitorPass } from '../db';
+import { db, Tenant, Transaction, Complaint, Message, VisitorPass, supabase } from '../db';
+import { subscribeToPushNotifications } from '../pushUtils';
 import { 
   ArrowLeft, 
   Globe, 
@@ -110,6 +111,18 @@ export default function CommercialPortal() {
   useEffect(() => {
     const tenantId = localStorage.getItem('sb_current_tenant_id') || 't3';
     loadDatabase(tenantId);
+
+    // Setup Supabase Realtime for Messages
+    const channel = supabase
+      .channel('com_messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+        setMessages((prev) => [...prev, payload.new as Message]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [chatTrigger]);
 
   if (loading || !tenant) {
@@ -435,6 +448,23 @@ export default function CommercialPortal() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Push Notifications Toggle */}
+          <button
+            onClick={async () => {
+              if (!tenant?.id) return;
+              const success = await subscribeToPushNotifications(tenant.id, 'commercial');
+              if (success) {
+                alert(lang === 'en' ? 'Notifications enabled!' : 'सूचनाएं सक्षम की गईं!');
+              } else {
+                alert(lang === 'en' ? 'Failed to enable notifications.' : 'सूचनाएं सक्षम करने में विफल।');
+              }
+            }}
+            className="p-1.5 rounded hover:bg-gold/10 text-slate-400 hover:text-gold transition-colors cursor-pointer"
+            title={lang === 'en' ? 'Enable Push Notifications' : 'सूचनाएं सक्षम करें'}
+          >
+            <Bell className="w-3.5 h-3.5" />
+          </button>
+
           {/* Language Toggle */}
           <button
             onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
@@ -924,7 +954,7 @@ export default function CommercialPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('lease_agreement.pdf', 'SHOP LEASE AGREEMENT (दुकान लीज)')}
+                  onClick={() => handleDownloadDoc('rent_agreement', 'SHOP LEASE AGREEMENT (दुकान लीज)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -937,7 +967,7 @@ export default function CommercialPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('domicile.pdf', 'DOMICILE CERTIFICATE (मूल निवास)')}
+                  onClick={() => handleDownloadDoc('domicile', 'DOMICILE CERTIFICATE (मूल निवास)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -950,7 +980,7 @@ export default function CommercialPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('affidavit.pdf', 'AFFIDAVIT (हलफनामा)')}
+                  onClick={() => handleDownloadDoc('affidavit', 'AFFIDAVIT (हलफनामा)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -963,7 +993,7 @@ export default function CommercialPortal() {
                   <span className="text-[9px] text-slate-500 font-mono">Format: PDF (Verified)</span>
                 </div>
                 <button
-                  onClick={() => handleDownloadDoc('police_satyapan.pdf', 'PRE SATYAPAN VERIFICATION FORM (सत्यापन प्रपत्र)')}
+                  onClick={() => handleDownloadDoc('satyapan', 'PRE SATYAPAN VERIFICATION FORM (सत्यापन प्रपत्र)')}
                   className="p-2 bg-gold/10 hover:bg-gold/25 border border-gold/20 text-gold rounded-lg transition duration-200 cursor-pointer"
                 >
                   <Download className="w-4 h-4" />

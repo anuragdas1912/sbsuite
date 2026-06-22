@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, Tenant, Transaction, Complaint, Manager, Message } from '../db';
+import { db, Tenant, Transaction, Complaint, Manager, Message, Notification, Expense, Unit, supabase } from '../db';
+import { subscribeToPushNotifications } from '../pushUtils';
 import { 
   ArrowLeft, 
   Globe, 
@@ -35,11 +36,13 @@ import {
   Send,
   Building2,
   LayoutDashboard,
-  List
+  List,
+  Smartphone,
+  PieChart
 } from 'lucide-react';
 
 type Lang = 'en' | 'hi';
-type Tab = 'stats' | 'tenants' | 'managers' | 'rates' | 'complaints' | 'compliance' | 'messages' | 'broadcasts';
+type Tab = 'stats' | 'tenants' | 'managers' | 'rates' | 'complaints' | 'compliance' | 'messages' | 'broadcasts' | 'comms' | 'finances';
 
 export default function OwnerPortal() {
   const router = useRouter();
@@ -68,11 +71,14 @@ export default function OwnerPortal() {
   // Add Manager Form States
   const [newMgrName, setNewMgrName] = useState('');
   const [newMgrPhone, setNewMgrPhone] = useState('');
+  const [newMgrLoginId, setNewMgrLoginId] = useState('');
+  const [newMgrPassword, setNewMgrPassword] = useState('');
 
   // Add Tenant Form States
   const [newTenName, setNewTenName] = useState('');
   const [newTenRole, setNewTenRole] = useState<'residential' | 'commercial' | 'parking'>('residential');
   const [newTenUnit, setNewTenUnit] = useState('');
+  const [newTenUnitId, setNewTenUnitId] = useState('');
   const [newTenPhone, setNewTenPhone] = useState('');
   const [newTenAadhaar, setNewTenAadhaar] = useState('');
   const [newTenRc, setNewTenRc] = useState('');
@@ -80,6 +86,13 @@ export default function OwnerPortal() {
   const [newTenPowerRate, setNewTenPowerRate] = useState(10);
   const [newTenPrevReading, setNewTenPrevReading] = useState(1000);
   const [newTenEv, setNewEv] = useState(false);
+  
+  // Document Files
+  const [newTenRentAgreement, setNewTenRentAgreement] = useState<File | null>(null);
+  const [newTenDomicile, setNewTenDomicile] = useState<File | null>(null);
+  const [newTenAffidavit, setNewTenAffidavit] = useState<File | null>(null);
+  const [newTenSatyapan, setNewTenSatyapan] = useState<File | null>(null);
+  const [isAddingTenant, setIsAddingTenant] = useState(false);
 
   // Search
   const [tenantSearch, setTenantSearch] = useState('');
@@ -89,6 +102,7 @@ export default function OwnerPortal() {
   const [txFilterType, setTxFilterType] = useState<string>('all');
   const [txFilterMode, setTxFilterMode] = useState<string>('all');
   const [txPage, setTxPage] = useState(1);
+  const TX_PER_PAGE = 10;
 
   // Hover Category state for SVG Chart
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
@@ -100,6 +114,16 @@ export default function OwnerPortal() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const [allMessages, setAllMessages] = useState<Message[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
+  
+  // Expenses State
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [newExpCategory, setNewExpCategory] = useState('');
+  const [newExpAmount, setNewExpAmount] = useState('');
+  const [newExpDesc, setNewExpDesc] = useState('');
+  const [newExpDate, setNewExpDate] = useState('');
+  const [isAddingExpense, setIsAddingExpense] = useState(false);
 
   // Complaint editing states
   const [editingCompId, setEditingCompId] = useState<string | null>(null);
@@ -141,7 +165,7 @@ export default function OwnerPortal() {
         content: chatInputText
       });
       setChatInputText('');
-      setRefreshKey(prev => prev + 1);
+      // No refreshKey bump needed since realtime handles it
     } catch (err) {
       console.error(err);
       alert('Failed to send message.');
@@ -156,13 +180,28 @@ export default function OwnerPortal() {
     if (dues <= 0) return;
     setSendingAlertTenantId(tenant.id);
     try {
+      const content = `Dear ${tenant.name.split(' (')[0]}, this is a friendly reminder that you have an outstanding due of ₹${dues.toLocaleString('en-IN')} for your unit ${tenant.unit_name}. Please complete your payment as soon as possible. - Owner Balaji`;
       await db.addMessage({
         sender_id: 'owner',
         sender_name: 'Owner Balaji',
         recipient_id: tenant.id,
-        content: `Dear ${tenant.name.split(' (')[0]}, this is a friendly reminder that you have an outstanding due of ₹${dues.toLocaleString('en-IN')} for your unit ${tenant.unit_name}. Please complete your payment as soon as possible. - Owner Balaji`
+        content
       });
+
+      // Ping Mock WhatsApp/SMS API
+      await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: tenant.id,
+          tenant_name: tenant.name,
+          notification_type: 'WhatsApp - Due Reminder',
+          message_content: content
+        })
+      });
+
       alert(`✓ Payment reminder sent to ${tenant.name.split(' (')[0]}!`);
+      // Since it's a simulated API, we can fetch notifications again
       setRefreshKey(prev => prev + 1);
     } catch (err) {
       console.error(err);
@@ -172,7 +211,7 @@ export default function OwnerPortal() {
     }
   };
 
-  // Load stats
+  // Load stats & Realtime Subscription
   useEffect(() => {
     async function loadData() {
       try {
@@ -182,6 +221,9 @@ export default function OwnerPortal() {
         const ms = await db.getManagers();
         const rs = await db.getRates();
         const msgs = await db.getMessages();
+        const notifs = await db.getNotifications();
+        const exps = await db.getExpenses();
+        const us = await db.getUnits();
 
         setTenants(ts);
         setTransactions(txs);
@@ -189,11 +231,29 @@ export default function OwnerPortal() {
         setManagers(ms);
         setGlobalRates(rs);
         setAllMessages(msgs);
+        setNotifications(notifs);
+        setExpenses(exps);
+        setUnits(us);
       } catch (err) {
         console.error('Error loading owner stats:', err);
       }
     }
     loadData();
+
+    // Setup Supabase Realtime for Messages and Complaints
+    const channel = supabase
+      .channel('owner_realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+        setAllMessages((prev) => [...prev, payload.new as Message]);
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'complaints' }, (payload) => {
+        setComplaints((prev) => [payload.new as Complaint, ...prev]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [refreshKey]);
 
   // Update rates when type changes in New Tenant form
@@ -247,23 +307,57 @@ export default function OwnerPortal() {
     return { rate, breachedCount: breached.length, resolvedCount: resolved.length, totalCount: total };
   })();
 
+  // Add Expense
+  const handleAddExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newExpCategory || !newExpAmount || !newExpDate) return;
+    setIsAddingExpense(true);
+    try {
+      await db.addExpense({
+        category: newExpCategory,
+        amount: Number(newExpAmount),
+        description: newExpDesc,
+        date: newExpDate,
+      });
+      setRefreshKey(r => r + 1);
+      setNewExpCategory('');
+      setNewExpAmount('');
+      setNewExpDesc('');
+      setNewExpDate('');
+      setIsAddingExpense(false);
+      alert(lang === 'en' ? 'Expense added successfully!' : 'खर्च सफलतापूर्वक जोड़ा गया!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to add expense.');
+      setIsAddingExpense(false);
+    }
+  };
+
   // Add Manager
   const handleAddManager = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMgrName || !newMgrPhone) return;
+    if (!newMgrName || !newMgrPhone || !newMgrLoginId || !newMgrPassword) return;
 
     try {
       await db.addManager({
         name: newMgrName,
-        phone: newMgrPhone
+        phone: newMgrPhone,
+        login_id: newMgrLoginId,
+        password: newMgrPassword
       });
       setNewMgrName('');
       setNewMgrPhone('');
+      setNewMgrLoginId('');
+      setNewMgrPassword('');
       setRefreshKey(prev => prev + 1);
       alert(lang === 'en' ? 'Manager registered.' : 'मैनेजर पंजीकृत कर दिया गया है।');
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Failed to register manager.');
+      if (err.code === '23505') {
+        alert('Login ID already exists. Choose a different one.');
+      } else {
+        alert('Failed to register manager.');
+      }
     }
   };
 
@@ -297,11 +391,28 @@ export default function OwnerPortal() {
       return;
     }
 
+    setIsAddingTenant(true);
     try {
+      const generatedTenantId = 'tenant_' + Math.random().toString(36).substr(2, 9);
+      
+      const docUrls = {
+        rent_agreement: '',
+        domicile: '',
+        affidavit: '',
+        satyapan: ''
+      };
+
+      if (newTenRentAgreement) docUrls.rent_agreement = await db.uploadDocument(newTenRentAgreement, generatedTenantId, 'rent_agreement') || '';
+      if (newTenDomicile) docUrls.domicile = await db.uploadDocument(newTenDomicile, generatedTenantId, 'domicile') || '';
+      if (newTenAffidavit) docUrls.affidavit = await db.uploadDocument(newTenAffidavit, generatedTenantId, 'affidavit') || '';
+      if (newTenSatyapan) docUrls.satyapan = await db.uploadDocument(newTenSatyapan, generatedTenantId, 'satyapan') || '';
+
       await db.addTenant({
+        id: generatedTenantId,
         name: newTenName,
         role: newTenRole,
         unit_name: newTenUnit,
+        unit_id: newTenUnitId || undefined,
         phone: newTenPhone,
         aadhaar: newTenAadhaar,
         vehicle_rc: newTenRole === 'parking' ? newTenRc : undefined,
@@ -309,20 +420,28 @@ export default function OwnerPortal() {
         electricity_rate: Number(newTenPowerRate),
         previous_reading: Number(newTenPrevReading),
         current_reading: Number(newTenPrevReading),
-        ev_charger: newTenRole === 'parking' ? newTenEv : false
+        ev_charger: newTenRole === 'parking' ? newTenEv : false,
+        document_urls: docUrls
       });
 
       setNewTenName('');
       setNewTenUnit('');
+      setNewTenUnitId('');
       setNewTenPhone('');
       setNewTenAadhaar('');
       setNewTenRc('');
       setNewEv(false);
+      setNewTenRentAgreement(null);
+      setNewTenDomicile(null);
+      setNewTenAffidavit(null);
+      setNewTenSatyapan(null);
       setRefreshKey(prev => prev + 1);
       alert(lang === 'en' ? 'Tenant added.' : 'किरायेदार जोड़ा गया।');
     } catch (err) {
       console.error(err);
       alert('Failed to add tenant.');
+    } finally {
+      setIsAddingTenant(false);
     }
   };
 
@@ -406,13 +525,19 @@ export default function OwnerPortal() {
   const handleSendComplianceNotice = async (tenant: Tenant) => {
     setSendingComplianceTenantId(tenant.id);
     try {
+      const msg = `[COMPLIANCE ALERT] Dear ${tenant.name.split(' (')[0]}, this is an official notice from the property owner. One or more of your mandatory documents (Rent Agreement, Domicile, Affidavit, Pre-Satyapan) are missing or require renewal. Please visit the office immediately. Non-compliance may result in lease suspension. - Owner Balaji`;
       await db.addMessage({
         sender_id: 'owner',
         sender_name: 'Owner Balaji',
         recipient_id: tenant.id,
-        content: `[COMPLIANCE ALERT] Dear ${tenant.name.split(' (')[0]}, this is an official notice from the property owner. One or more of your mandatory documents (Rent Agreement, Domicile, Affidavit, Pre-Satyapan) are missing or require renewal. Please visit the office immediately. Non-compliance may result in lease suspension. - Owner Balaji`
+        content: msg
       });
-      alert(`✓ Compliance notice sent to ${tenant.name.split(' (')[0]}!`);
+      
+      // Zero-Cost WhatsApp Integration
+      const waLink = `https://wa.me/91${tenant.phone.replace(/\\D/g, '')}?text=${encodeURIComponent(msg)}`;
+      window.open(waLink, '_blank');
+      
+      alert(`✓ Compliance notice opened in WhatsApp for ${tenant.name.split(' (')[0]}!`);
       setRefreshKey(prev => prev + 1);
     } catch (err) {
       console.error(err);
@@ -575,6 +700,22 @@ export default function OwnerPortal() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Push Notifications Toggle */}
+          <button
+            onClick={async () => {
+              const success = await subscribeToPushNotifications('owner', 'owner');
+              if (success) {
+                alert(lang === 'en' ? 'Notifications enabled!' : 'सूचनाएं सक्षम की गईं!');
+              } else {
+                alert(lang === 'en' ? 'Failed to enable notifications.' : 'सूचनाएं सक्षम करने में विफल।');
+              }
+            }}
+            className="p-1.5 rounded hover:bg-gold/10 text-slate-400 hover:text-gold transition-colors cursor-pointer"
+            title={lang === 'en' ? 'Enable Push Notifications' : 'सूचनाएं सक्षम करें'}
+          >
+            <Bell className="w-3.5 h-3.5" />
+          </button>
+
           {/* Language Toggle */}
           <button
             onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
@@ -1026,6 +1167,36 @@ export default function OwnerPortal() {
               </div>
             </div>
 
+            {/* Property Map Grid */}
+            <div className="bg-[#0E0F12] border border-[#1B1C21] rounded-xl p-5 sm:p-6 space-y-4">
+              <h2 className="text-sm font-serif font-semibold text-slate-200 flex items-center gap-2">
+                <Globe className="w-4 h-4 text-gold" />
+                Property Status Map
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                {units.map((u) => (
+                  <div 
+                    key={u.id}
+                    className={`p-3 rounded-lg border flex flex-col justify-center items-center gap-1 transition ${
+                      u.status === 'vacant' ? 'bg-emerald-500/10 border-emerald-500/20' : 
+                      u.status === 'occupied' ? 'bg-rose-500/10 border-rose-500/20' : 
+                      'bg-amber-500/10 border-amber-500/20'
+                    }`}
+                  >
+                    <span className="text-xs font-bold text-slate-300 text-center">{u.name}</span>
+                    <span className={`text-[9px] uppercase tracking-wider font-bold ${
+                      u.status === 'vacant' ? 'text-emerald-400' : 
+                      u.status === 'occupied' ? 'text-rose-400' : 
+                      'text-amber-400'
+                    }`}>{u.status}</span>
+                  </div>
+                ))}
+              </div>
+              {units.length === 0 && (
+                <p className="text-slate-500 text-xs text-center py-4">No units configured.</p>
+              )}
+            </div>
+
             {/* Transaction log lists */}
             <div className="bg-[#0E0F12] border border-[#1B1C21] rounded-xl p-5 sm:p-6 space-y-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[#1B1C21]/60 pb-3 gap-3">
@@ -1185,6 +1356,155 @@ export default function OwnerPortal() {
           </div>
         )}
 
+        {/* Tab: Finances */}
+        {activeTab === 'finances' && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-playfair font-semibold text-white tracking-wide flex items-center gap-2">
+              <PieChart className="text-gold w-6 h-6" />
+              {lang === 'en' ? 'Finances & Profit Tracker' : 'वित्त और लाभ ट्रैकर'}
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-[#0E0F12] border border-[#1B1C21] rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl -mr-10 -mt-10" />
+                <h3 className="text-slate-400 text-sm font-medium mb-1 relative z-10">{lang === 'en' ? 'Total Revenue (Rent)' : 'कुल आय (किराया)'}</h3>
+                <p className="text-2xl font-semibold text-emerald-400 relative z-10">
+                  ₹{transactions.filter(tx => (tx.type === 'rent' || tx.type === 'both' || tx.type === 'parking')).reduce((sum, tx) => sum + tx.amount_paid, 0).toLocaleString('en-IN')}
+                </p>
+              </div>
+
+              <div className="bg-[#0E0F12] border border-[#1B1C21] rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl -mr-10 -mt-10" />
+                <h3 className="text-slate-400 text-sm font-medium mb-1 relative z-10">{lang === 'en' ? 'Total Expenses' : 'कुल खर्च'}</h3>
+                <p className="text-2xl font-semibold text-rose-400 relative z-10">
+                  ₹{expenses.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString('en-IN')}
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-gold/20 to-transparent border border-gold/30 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gold/10 rounded-full blur-2xl -mr-10 -mt-10" />
+                <h3 className="text-gold text-sm font-medium mb-1 relative z-10">{lang === 'en' ? 'Net Profit' : 'शुद्ध लाभ'}</h3>
+                <p className="text-2xl font-bold text-white relative z-10">
+                  ₹{(
+                    transactions.filter(tx => (tx.type === 'rent' || tx.type === 'both' || tx.type === 'parking')).reduce((sum, tx) => sum + tx.amount_paid, 0) -
+                    expenses.reduce((sum, exp) => sum + exp.amount, 0)
+                  ).toLocaleString('en-IN')}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              <div className="md:col-span-4 bg-[#0E0F12] border border-[#1B1C21] rounded-2xl p-6 shadow-sm">
+                <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-gold" />
+                  {lang === 'en' ? 'Add Expense' : 'खर्च जोड़ें'}
+                </h3>
+                <form onSubmit={handleAddExpense} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">{lang === 'en' ? 'Category' : 'श्रेणी'}</label>
+                    <select
+                      value={newExpCategory}
+                      onChange={(e) => setNewExpCategory(e.target.value)}
+                      required
+                      className="w-full bg-[#060608] border border-[#1B1C21] rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:border-gold focus:ring-1 focus:ring-gold transition-all"
+                    >
+                      <option value="">{lang === 'en' ? 'Select Category' : 'श्रेणी चुनें'}</option>
+                      <option value="Maintenance Staff Salary">Maintenance Staff Salary</option>
+                      <option value="Electricity Bill (Common)">Electricity Bill (Common)</option>
+                      <option value="Water Bill">Water Bill</option>
+                      <option value="Plumbing/Repairs">Plumbing/Repairs</option>
+                      <option value="Cleaning Supplies">Cleaning Supplies</option>
+                      <option value="Miscellaneous">Miscellaneous</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">{lang === 'en' ? 'Amount (₹)' : 'राशि (₹)'}</label>
+                    <input
+                      type="number"
+                      required
+                      value={newExpAmount}
+                      onChange={(e) => setNewExpAmount(e.target.value)}
+                      className="w-full bg-[#060608] border border-[#1B1C21] rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:border-gold focus:ring-1 focus:ring-gold transition-all"
+                      placeholder="e.g. 5000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">{lang === 'en' ? 'Date' : 'तारीख'}</label>
+                    <input
+                      type="date"
+                      required
+                      value={newExpDate}
+                      onChange={(e) => setNewExpDate(e.target.value)}
+                      className="w-full bg-[#060608] border border-[#1B1C21] rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:border-gold focus:ring-1 focus:ring-gold transition-all [color-scheme:dark]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">{lang === 'en' ? 'Description' : 'विवरण'}</label>
+                    <textarea
+                      value={newExpDesc}
+                      onChange={(e) => setNewExpDesc(e.target.value)}
+                      className="w-full bg-[#060608] border border-[#1B1C21] rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:border-gold focus:ring-1 focus:ring-gold transition-all"
+                      placeholder={lang === 'en' ? 'Optional details...' : 'वैकल्पिक विवरण...'}
+                      rows={2}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isAddingExpense}
+                    className="w-full bg-gold hover:bg-gold/90 text-[#020617] font-semibold py-3 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isAddingExpense ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+                    {lang === 'en' ? 'Save Expense' : 'खर्च सहेजें'}
+                  </button>
+                </form>
+              </div>
+
+              <div className="md:col-span-8 bg-[#0E0F12] border border-[#1B1C21] rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                <div className="p-4 border-b border-[#1B1C21]">
+                  <h3 className="text-white font-semibold flex items-center gap-2">
+                    <List className="w-5 h-5 text-gold" />
+                    {lang === 'en' ? 'Expense Log' : 'खर्च लॉग'}
+                  </h3>
+                </div>
+                <div className="flex-1 overflow-auto p-0">
+                  <table className="w-full text-left text-sm mobile-table">
+                    <thead className="bg-[#1B1C21]/50 text-slate-400 text-xs uppercase tracking-wider sticky top-0 z-10">
+                      <tr>
+                        <th className="p-4 font-medium">{lang === 'en' ? 'Date' : 'तारीख'}</th>
+                        <th className="p-4 font-medium">{lang === 'en' ? 'Category' : 'श्रेणी'}</th>
+                        <th className="p-4 font-medium">{lang === 'en' ? 'Description' : 'विवरण'}</th>
+                        <th className="p-4 font-medium text-right">{lang === 'en' ? 'Amount' : 'राशि'}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#1B1C21]">
+                      {expenses.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="p-8 text-center text-slate-500">
+                            {lang === 'en' ? 'No expenses recorded yet.' : 'अभी तक कोई खर्च दर्ज नहीं किया गया है।'}
+                          </td>
+                        </tr>
+                      ) : (
+                        expenses.map((exp, idx) => (
+                          <tr key={idx} className="hover:bg-[#1B1C21]/30 transition-colors">
+                            <td data-label="Date" className="p-4 text-slate-300 whitespace-nowrap">{new Date(exp.date).toLocaleDateString('en-IN')}</td>
+                            <td data-label="Category" className="p-4 text-white font-medium">
+                              <span className="bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded text-xs border border-rose-500/20">
+                                {exp.category}
+                              </span>
+                            </td>
+                            <td data-label="Description" className="p-4 text-slate-400">{exp.description || '-'}</td>
+                            <td data-label="Amount" className="p-4 text-white font-semibold text-right">₹{exp.amount.toLocaleString('en-IN')}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Tab 2: Manage Tenants */}
         {activeTab === 'tenants' && (
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -1224,14 +1544,33 @@ export default function OwnerPortal() {
 
                 <div className="space-y-1.5">
                   <label className="text-slate-500 font-bold uppercase">Unit / Room No</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Room 102"
-                    value={newTenUnit}
-                    onChange={(e) => setNewTenUnit(e.target.value)}
-                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
-                  />
+                  {newTenRole === 'parking' ? (
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Parking Spot 102"
+                      value={newTenUnit}
+                      onChange={(e) => setNewTenUnit(e.target.value)}
+                      className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
+                    />
+                  ) : (
+                    <select
+                      required
+                      value={newTenUnitId}
+                      onChange={(e) => {
+                        setNewTenUnitId(e.target.value);
+                        const unit = units.find(u => u.id === e.target.value);
+                        if (unit) setNewTenUnit(unit.name);
+                        else setNewTenUnit('');
+                      }}
+                      className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
+                    >
+                      <option value="">Select a Unit</option>
+                      {units.filter(u => u.type === newTenRole && u.status === 'vacant').map(u => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -1271,11 +1610,48 @@ export default function OwnerPortal() {
                   </div>
                 )}
 
+                <div className="pt-2 border-t border-[#1B1C21]/60 space-y-4">
+                  <h3 className="text-slate-400 font-semibold mb-2">Documents Vault</h3>
+                  <div className="space-y-1.5">
+                    <label className="text-slate-500 font-bold uppercase">Rent Agreement</label>
+                    <input
+                      type="file"
+                      onChange={(e) => setNewTenRentAgreement(e.target.files?.[0] || null)}
+                      className="w-full text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#1B1C21] file:text-gold hover:file:bg-[#2A2B32] cursor-pointer"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-slate-500 font-bold uppercase">Domicile / Permanent Address</label>
+                    <input
+                      type="file"
+                      onChange={(e) => setNewTenDomicile(e.target.files?.[0] || null)}
+                      className="w-full text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#1B1C21] file:text-gold hover:file:bg-[#2A2B32] cursor-pointer"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-slate-500 font-bold uppercase">Affidavit / Undertaking</label>
+                    <input
+                      type="file"
+                      onChange={(e) => setNewTenAffidavit(e.target.files?.[0] || null)}
+                      className="w-full text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#1B1C21] file:text-gold hover:file:bg-[#2A2B32] cursor-pointer"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-slate-500 font-bold uppercase">Police Satyapan (Verification)</label>
+                    <input
+                      type="file"
+                      onChange={(e) => setNewTenSatyapan(e.target.files?.[0] || null)}
+                      className="w-full text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#1B1C21] file:text-gold hover:file:bg-[#2A2B32] cursor-pointer"
+                    />
+                  </div>
+                </div>
+
                 <button
                   type="submit"
-                  className="w-full bg-[#C5A880] hover:bg-[#DFD3C3] text-[#060608] text-[9px] font-bold uppercase tracking-wider py-3.5 rounded-lg transition"
+                  disabled={isAddingTenant}
+                  className="w-full bg-[#C5A880] hover:bg-[#DFD3C3] disabled:opacity-50 disabled:cursor-not-allowed text-[#060608] text-[9px] font-bold uppercase tracking-wider py-3.5 rounded-lg transition flex items-center justify-center gap-2"
                 >
-                  Create Tenant
+                  {isAddingTenant ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading & Creating...</> : 'Create Tenant'}
                 </button>
               </form>
             </div>
@@ -1328,7 +1704,7 @@ export default function OwnerPortal() {
 
               {rosterViewMode === 'list' ? (
                 <div className="overflow-x-auto text-xs font-light text-slate-300">
-                  <table className="w-full text-left">
+                  <table className="w-full text-left mobile-table">
                     <thead>
                       <tr className="border-b border-[#1B1C21] text-slate-500 text-[10px] uppercase font-bold">
                         <th className="py-2">Name</th>
@@ -1352,14 +1728,14 @@ export default function OwnerPortal() {
                           const dues = getTenantOutstandingDues(ten);
                           return (
                             <tr key={ten.id} className="hover:bg-[#060608]/20 transition-colors">
-                              <td className="py-3 font-semibold text-slate-250">{ten.name.split(' (')[0]} <span className="text-[8px] bg-slate-900 border border-[#1B1C21] px-1.5 py-0.5 rounded text-slate-500 uppercase">{ten.role}</span></td>
-                              <td className="py-3">{ten.unit_name}</td>
-                              <td className="py-3 font-mono font-bold text-rose-400">₹{dues.toLocaleString('en-IN')}</td>
-                              <td className="py-3 font-mono">{ten.phone}</td>
-                              <td className="py-3 text-right">
+                              <td data-label="Name" className="py-3 font-semibold text-slate-250">{ten.name.split(' (')[0]} <span className="text-[8px] bg-slate-900 border border-[#1B1C21] px-1.5 py-0.5 rounded text-slate-500 uppercase">{ten.role}</span></td>
+                              <td data-label="Unit" className="py-3">{ten.unit_name}</td>
+                              <td data-label="Dues" className="py-3 font-mono font-bold text-rose-400">₹{dues.toLocaleString('en-IN')}</td>
+                              <td data-label="Phone" className="py-3 font-mono">{ten.phone}</td>
+                              <td data-label="Action" className="py-3 text-right">
                                 <button
                                   onClick={() => handleRemoveTenant(ten.id, ten.name)}
-                                  className="p-1.5 bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 rounded transition cursor-pointer"
+                                  className="p-1.5 bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 rounded transition cursor-pointer md:ml-auto"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -1448,6 +1824,30 @@ export default function OwnerPortal() {
                     placeholder="e.g. 99999-XXXXX"
                     value={newMgrPhone}
                     onChange={(e) => setNewMgrPhone(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-slate-500 font-bold uppercase">{lang === 'en' ? 'Login ID *' : 'लॉगिन आईडी *'}</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. suresh.mgr"
+                    value={newMgrLoginId}
+                    onChange={(e) => setNewMgrLoginId(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-slate-500 font-bold uppercase">{lang === 'en' ? 'Password *' : 'पासवर्ड *'}</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter password"
+                    value={newMgrPassword}
+                    onChange={(e) => setNewMgrPassword(e.target.value)}
                     className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
                   />
                 </div>
@@ -2344,7 +2744,7 @@ export default function OwnerPortal() {
                 <p className="text-xs text-slate-500 py-8 text-center">No tenants registered yet.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left text-slate-300">
+                  <table className="w-full text-xs text-left text-slate-300 mobile-table">
                     <thead className="text-[9px] text-slate-500 uppercase border-b border-[#1B1C21]/60">
                       <tr>
                         <th className="py-3 pr-4">Tenant</th>
@@ -2366,20 +2766,20 @@ export default function OwnerPortal() {
                         const allDocs = hasDoc('rent_agreement') && hasDoc('domicile') && hasDoc('affidavit') && hasDoc('satyapan');
                         return (
                           <tr key={ten.id} className="hover:bg-[#060608]/40">
-                            <td className="py-3 pr-4">
-                              <div className="flex items-center gap-2">
+                            <td data-label="Tenant" className="py-3 pr-4">
+                              <div className="flex items-center justify-end md:justify-start gap-2">
                                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${allDocs ? 'bg-emerald-400' : 'bg-rose-400 animate-pulse'}`} />
-                                <div>
+                                <div className="text-right md:text-left">
                                   <strong className="block text-slate-200">{ten.name.split(' (')[0]}</strong>
                                   <span className="text-[9px] text-slate-500 uppercase font-mono">{ten.role} • {ten.unit_name}</span>
                                 </div>
                               </div>
                             </td>
-                            <td className="py-3 text-center">{docBadge(hasDoc('rent_agreement'))}</td>
-                            <td className="py-3 text-center">{docBadge(hasDoc('domicile'))}</td>
-                            <td className="py-3 text-center">{docBadge(hasDoc('affidavit'))}</td>
-                            <td className="py-3 text-center">{docBadge(hasDoc('satyapan'))}</td>
-                            <td className="py-3 text-center">
+                            <td data-label="Rent Agmt." className="py-3 text-center">{docBadge(hasDoc('rent_agreement'))}</td>
+                            <td data-label="Domicile" className="py-3 text-center">{docBadge(hasDoc('domicile'))}</td>
+                            <td data-label="Affidavit" className="py-3 text-center">{docBadge(hasDoc('affidavit'))}</td>
+                            <td data-label="Pre-Satyapan" className="py-3 text-center">{docBadge(hasDoc('satyapan'))}</td>
+                            <td data-label="Status" className="py-3 text-center">
                               <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase ${
                                 allDocs
                                   ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
@@ -2388,11 +2788,11 @@ export default function OwnerPortal() {
                                 {allDocs ? 'Compliant' : 'Non-Compliant'}
                               </span>
                             </td>
-                            <td className="py-3 text-center">
+                            <td data-label="Action" className="py-3 text-center">
                               <button
                                 onClick={() => handleSendComplianceNotice(ten)}
                                 disabled={sendingComplianceTenantId === ten.id}
-                                className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-[9px] font-bold uppercase tracking-wider rounded-lg transition cursor-pointer flex items-center gap-1 mx-auto"
+                                className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-[9px] font-bold uppercase tracking-wider rounded-lg transition cursor-pointer flex items-center gap-1 md:mx-auto ml-auto"
                               >
                                 <Send className="w-3 h-3" />
                                 {sendingComplianceTenantId === ten.id ? 'Sending...' : 'Notice'}
@@ -2409,18 +2809,88 @@ export default function OwnerPortal() {
           </div>
         )}
 
+        {activeTab === 'comms' && (
+          <div className="max-w-[1600px] mx-auto space-y-4 animate-fade-in pb-20">
+            <header className="mb-4">
+              <h1 className="text-xl sm:text-2xl font-serif font-bold text-slate-200 tracking-wide flex items-center gap-2">
+                <Smartphone className="w-6 h-6 text-gold" />
+                {lang === 'en' ? 'Communications Log' : 'संचार लॉग'}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-400 font-light mt-1">
+                {lang === 'en' ? 'Track all automated WhatsApp/SMS notifications sent to tenants.' : 'किरायेदारों को भेजे गए सभी स्वचालित WhatsApp/SMS सूचनाओं को ट्रैक करें।'}
+              </p>
+            </header>
+
+            <div className="bg-[#0E0F12] border border-[#1B1C21] p-5 sm:p-6 rounded-xl overflow-x-auto shadow-2xl">
+              {notifications.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-slate-500 font-light italic">No notifications sent yet.</p>
+                </div>
+              ) : (
+                <div className="min-w-[800px]">
+                  <table className="w-full text-left border-collapse mobile-table">
+                    <thead>
+                      <tr className="border-b border-[#1B1C21]">
+                        <th className="py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-32">Date/Time</th>
+                        <th className="py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-40">Recipient</th>
+                        <th className="py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-40">Type</th>
+                        <th className="py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Message Content</th>
+                        <th className="py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-24">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#1B1C21]/50 text-xs text-slate-300">
+                      {notifications.map(notif => (
+                        <tr key={notif.id} className="hover:bg-[#1B1C21]/20 transition duration-150">
+                          <td data-label="Date/Time" className="py-3 font-mono text-[10px] text-slate-500">
+                            {new Date(notif.created_at).toLocaleString()}
+                          </td>
+                          <td data-label="Recipient" className="py-3 font-semibold text-slate-200">
+                            {notif.tenant_name.split(' (')[0]}
+                          </td>
+                          <td data-label="Type" className="py-3">
+                            <span className="text-[9px] px-2 py-0.5 rounded border border-blue-500/20 bg-blue-500/10 text-blue-400 font-mono">
+                              {notif.notification_type}
+                            </span>
+                          </td>
+                          <td data-label="Content" className="py-3">
+                            <p className="text-xs text-slate-400 line-clamp-2 max-w-sm" title={notif.message_content}>
+                              {notif.message_content}
+                            </p>
+                          </td>
+                          <td data-label="Status" className="py-3">
+                            <span className={`text-[9px] px-2 py-0.5 rounded border font-bold uppercase tracking-wider ${
+                              notif.status === 'Sent'
+                                ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
+                                : 'border-rose-500/20 bg-rose-500/10 text-rose-400'
+                            }`}>
+                              {notif.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       {/* Bottom Sticky Tabs Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0E0F12]/90 backdrop-blur-md border-t border-[#1B1C21] shadow-xl flex items-center" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-        {[
-          { id: 'stats', icon: Activity, label: lang === 'en' ? 'Stats' : 'स्तिति' },
-          { id: 'tenants', icon: User, label: lang === 'en' ? 'Tenants' : 'किरायेदार' },
-          { id: 'managers', icon: Wallet, label: lang === 'en' ? 'Mgrs' : 'मैनेजर' },
-          { id: 'rates', icon: Sliders, label: lang === 'en' ? 'Rates' : 'दरें' },
-          { id: 'complaints', icon: Wrench, label: lang === 'en' ? 'Issues' : 'शिकायतें' },
-          { id: 'compliance', icon: ClipboardList, label: lang === 'en' ? 'Docs' : 'डॉक्स' },
-          { id: 'messages', icon: MessageSquare, label: lang === 'en' ? 'Chat' : 'चैट' },
-          { id: 'broadcasts', icon: Bell, label: lang === 'en' ? 'Alert' : 'अलर्ट' }
-        ].map(tab => {
+        <div className="flex w-full overflow-x-auto snap-x hide-scrollbar">
+          {[
+            { id: 'stats', icon: Activity, label: lang === 'en' ? 'Stats' : 'स्तिति' },
+            { id: 'finances', icon: PieChart, label: lang === 'en' ? 'Finance' : 'वित्त' },
+            { id: 'tenants', icon: User, label: lang === 'en' ? 'Tenants' : 'किरायेदार' },
+            { id: 'managers', icon: Wallet, label: lang === 'en' ? 'Mgrs' : 'मैनेजर' },
+            { id: 'rates', icon: Sliders, label: lang === 'en' ? 'Rates' : 'दरें' },
+            { id: 'complaints', icon: Wrench, label: lang === 'en' ? 'Issues' : 'शिकायतें' },
+            { id: 'compliance', icon: ClipboardList, label: lang === 'en' ? 'Docs' : 'डॉक्स' },
+            { id: 'messages', icon: MessageSquare, label: lang === 'en' ? 'Chat' : 'चैट' },
+            { id: 'broadcasts', icon: Bell, label: lang === 'en' ? 'Alert' : 'अलर्ट' },
+            { id: 'comms', icon: Smartphone, label: lang === 'en' ? 'Comms' : 'कॉम्स' }
+          ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
@@ -2442,6 +2912,7 @@ export default function OwnerPortal() {
             </button>
           );
         })}
+        </div>
       </nav>
 
     </div>

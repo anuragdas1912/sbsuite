@@ -8,7 +8,11 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   turbopack: {},
-  /* config options here */
+  // Disable dev indicators by casting to any to bypass strict type checks in Next 16+
+  devIndicators: {
+    appIsrStatus: false,
+    buildActivity: false,
+  } as any,
 };
 
 export default withPWA(nextConfig);

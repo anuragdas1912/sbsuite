@@ -14,11 +14,16 @@ const inter = Inter({
   weight: ["300", "400", "500", "600", "700"],
 });
 
+import { Viewport } from "next";
+
+export const viewport: Viewport = {
+  themeColor: "#060608",
+};
+
 export const metadata: Metadata = {
   title: "SB Suite | Shree Balaji Properties",
   description: "High-end luxury property management gateway for Shree Balaji Properties.",
   manifest: "/manifest.json",
-  themeColor: "#060608",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -35,6 +40,21 @@ export default function RootLayout({
     <html lang="en" className={`${playfair.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[#020617] text-slate-200">
         {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                  }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
