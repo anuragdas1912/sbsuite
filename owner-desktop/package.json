@@ -1,0 +1,28 @@
+{
+  "name": "sb-suite-owner",
+  "version": "1.0.0",
+  "description": "Shree Balaji Properties - Owner Desktop Portal",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "keywords": [],
+  "author": "Anurag Das",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.sbsuite.owner",
+    "productName": "SB Suite Owner",
+    "win": {
+      "target": "portable",
+      "icon": "assets/icon.png"
+    },
+    "directories": {
+      "output": "dist"
+    }
+  }
+}
