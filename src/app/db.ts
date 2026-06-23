@@ -104,6 +104,16 @@ export interface Manager {
   login_id?: string;
   password?: string;
   cash_wallet: number; // Virtual cash wallet balance
+  base_salary?: number;
+  created_at: string;
+}
+
+export interface SalaryAdjustment {
+  id: string;
+  manager_id: string;
+  amount: number;
+  description: string;
+  type: 'inside' | 'outside';
   created_at: string;
 }
 
@@ -507,20 +517,21 @@ export const db = {
   },
 
   // --- Owner Configurable Global Rates ---
-  async getRates(): Promise<{ rent: Record<string, number>; power: Record<string, number> }> {
+  async getRates(): Promise<{ rent: Record<string, number>; power: Record<string, number>; parking_cut: number }> {
     const defaultRates = {
       rent: { residential: 5000, commercial: 12000, parking: 1500 },
-      power: { residential: 10, commercial: 15, parking: 12 }
+      power: { residential: 10, commercial: 15, parking: 12 },
+      parking_cut: 100
     };
     const { data, error } = await supabase.from('global_rates').select('*').eq('id', 1).single();
     if (error || !data) {
       console.error('Error fetching rates:', error);
       return defaultRates;
     }
-    return { rent: data.rent, power: data.power };
+    return { rent: data.rent, power: data.power, parking_cut: data.parking_cut ?? 100 };
   },
 
-  async saveRates(rates: { rent: Record<string, number>; power: Record<string, number> }): Promise<void> {
+  async saveRates(rates: { rent: Record<string, number>; power: Record<string, number>; parking_cut: number }): Promise<void> {
     const { error } = await supabase.from('global_rates').upsert({ id: 1, ...rates });
     if (error) throw error;
   },
@@ -622,5 +633,36 @@ export const db = {
       return [];
     }
     return data || [];
+  },
+
+  async updateManager(updatedManager: Manager): Promise<void> {
+    const { error } = await supabase.from('managers').update(updatedManager).eq('id', updatedManager.id);
+    if (error) throw error;
+  },
+
+  async getSalaryAdjustments(): Promise<SalaryAdjustment[]> {
+    const { data, error } = await supabase.from('salary_adjustments').select('*').order('created_at', { ascending: false });
+    if (error) {
+      console.error('Error fetching adjustments:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async addSalaryAdjustment(adj: Omit<SalaryAdjustment, 'id' | 'created_at'>): Promise<SalaryAdjustment> {
+    const id = 'adj_' + Math.random().toString(36).substr(2, 9);
+    const newAdj = {
+      ...adj,
+      id,
+      created_at: new Date().toISOString()
+    };
+    const { error } = await supabase.from('salary_adjustments').insert(newAdj);
+    if (error) throw error;
+    return newAdj;
+  },
+
+  async removeSalaryAdjustment(id: string): Promise<void> {
+    const { error } = await supabase.from('salary_adjustments').delete().eq('id', id);
+    if (error) throw error;
   }
 };

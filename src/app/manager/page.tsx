@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, Tenant, Transaction, Complaint, Manager, Message, VisitorPass, VisitorLog, Notification, Expense, Unit, supabase } from '../db';
+import { db, Tenant, Transaction, Complaint, Manager, Message, VisitorPass, VisitorLog, Notification, Expense, Unit, supabase, SalaryAdjustment } from '../db';
 import { subscribeToPushNotifications } from '../pushUtils';
 import { 
   ArrowLeft, 
@@ -40,7 +40,7 @@ import {
 } from 'lucide-react';
 
 type Lang = 'en' | 'hi';
-type Tab = 'roster' | 'tenants' | 'collect' | 'complaints' | 'transactions' | 'broadcasts' | 'messages' | 'security' | 'compliance';
+type Tab = 'roster' | 'tenants' | 'collect' | 'complaints' | 'transactions' | 'broadcasts' | 'messages' | 'security' | 'compliance' | 'salary';
 
 export default function ManagerPortal() {
   const router = useRouter();
@@ -58,6 +58,8 @@ export default function ManagerPortal() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [salaryAdjustments, setSalaryAdjustments] = useState<SalaryAdjustment[]>([]);
+  const [parkingCut, setParkingCut] = useState<number>(100);
 
   // Selected Tenant Profile Modal
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
@@ -183,6 +185,8 @@ export default function ManagerPortal() {
         const notifs = await db.getNotifications();
         const exps = await db.getExpenses();
         const us = await db.getUnits();
+        const adjs = await db.getSalaryAdjustments();
+        const rates = await db.getRates();
 
         let matchedMgr = ms.find(m => m.id === managerId);
         
@@ -224,6 +228,8 @@ export default function ManagerPortal() {
         setNotifications(notifs);
         setExpenses(exps);
         setUnits(us);
+        setSalaryAdjustments(adjs.filter(a => a.manager_id === managerId));
+        setParkingCut(rates.parking_cut ?? 100);
 
         // Setup Supabase Realtime for Messages, Visitor Logs, and Complaints
         channel = supabase
@@ -2379,6 +2385,149 @@ export default function ManagerPortal() {
           </div>
         )}
 
+        {/* My Salary Tab (सैलरी) */}
+        {activeTab === 'salary' && (
+          <div className="space-y-6 animate-luxury-card pb-10">
+            {/* Header info */}
+            <header className="mb-4">
+              <h1 className="text-xl sm:text-2xl font-serif font-bold text-slate-200 tracking-wide flex items-center gap-2">
+                <DollarSign className="w-6 h-6 text-gold" />
+                {lang === 'en' ? 'My Salary Breakdown' : 'मेरी सैलरी विवरण'}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-400 font-light mt-1">
+                {lang === 'en' ? 'Calculated salary based on active leases, parking cuts, and adjustments.' : 'सैलरी का पूरा हिसाब: मूल वेतन, वाहन कमीशन और अतिरिक्त भत्ते/कटौती।'}
+              </p>
+            </header>
+
+            {/* Calculations Card */}
+            {(() => {
+              const activeVehicles = tenants.filter(t => t.role === 'parking').length;
+              const parkingCutTotal = activeVehicles * parkingCut;
+              const baseSalary = manager?.base_salary ?? 10000;
+              
+              const insideAdj = salaryAdjustments.filter(a => a.type === 'inside').reduce((sum, a) => sum + a.amount, 0);
+              const outsideAdj = salaryAdjustments.filter(a => a.type === 'outside').reduce((sum, a) => sum + a.amount, 0);
+              
+              const netSalary = baseSalary + parkingCutTotal + insideAdj + outsideAdj;
+
+              return (
+                <div className="space-y-6">
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-[#0E0F12] border border-[#1B1C21] p-4.5 rounded-xl text-center">
+                      <span className="text-[8px] uppercase text-slate-500 block font-bold tracking-wider">Base Salary (मूल वेतन)</span>
+                      <span className="text-lg font-mono font-bold text-slate-200 mt-1 block">₹{baseSalary.toLocaleString('en-IN')}</span>
+                    </div>
+                    
+                    <div className="bg-[#0E0F12] border border-[#1B1C21] p-4.5 rounded-xl text-center">
+                      <span className="text-[8px] uppercase text-slate-500 block font-bold tracking-wider">Parking Cut ({activeVehicles} Vehicles)</span>
+                      <span className="text-lg font-mono font-bold text-slate-200 mt-1 block">₹{parkingCutTotal.toLocaleString('en-IN')}</span>
+                      <span className="text-[7px] text-slate-500 font-mono">({parkingCut} ₹ / vehicle)</span>
+                    </div>
+
+                    <div className="bg-[#0E0F12] border border-[#1B1C21] p-4.5 rounded-xl text-center">
+                      <span className="text-[8px] uppercase text-slate-500 block font-bold tracking-wider">Adjustments (अतिरिक्त भत्ते)</span>
+                      <span className={`text-lg font-mono font-bold mt-1 block ${(insideAdj + outsideAdj) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {((insideAdj + outsideAdj) >= 0 ? '+' : '')}₹{(insideAdj + outsideAdj).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+
+                    <div className="bg-[#0E0F12] border border-gold/20 bg-gold/5 p-4.5 rounded-xl text-center">
+                      <span className="text-[8px] uppercase text-gold block font-bold tracking-wider">Net Salary (कुल सैलरी)</span>
+                      <span className="text-xl font-mono font-bold text-gold mt-1 block">₹{netSalary.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+
+                  {/* Calculations Details Card */}
+                  <div className="bg-[#0E0F12] border border-[#1B1C21] p-5 sm:p-6 rounded-xl space-y-4">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-[#1B1C21]/60 pb-3 flex items-center gap-2">
+                      <ClipboardList className="w-4 h-4 text-gold" />
+                      {lang === 'en' ? 'Salary Statement Details' : 'सैलरी स्टेटमेंट विवरण'}
+                    </h2>
+
+                    <div className="divide-y divide-[#1B1C21]/60 text-xs font-light text-slate-350 space-y-3 pt-1">
+                      <div className="flex justify-between items-center py-2">
+                        <span>Base salary (प्रॉपर्टी मैनेजमेंट मूल वेतन)</span>
+                        <strong className="font-mono text-slate-200">₹{baseSalary.toLocaleString('en-IN')}</strong>
+                      </div>
+
+                      <div className="flex justify-between items-center py-2">
+                        <div>
+                          <span>Parking commission cut (वाहन पार्किंग कमीशन)</span>
+                          <span className="text-[8px] block text-slate-500 font-sans">₹{parkingCut} per vehicle count × {activeVehicles} active parking tenants</span>
+                        </div>
+                        <strong className="font-mono text-slate-200">₹{parkingCutTotal.toLocaleString('en-IN')}</strong>
+                      </div>
+
+                      <div className="flex justify-between items-center py-2">
+                        <div>
+                          <span>Inside Adjustments (सैलरी/अंदर से भत्ते)</span>
+                          <span className="text-[8px] block text-slate-500 font-sans">Direct bonuses or adjustments added to pay</span>
+                        </div>
+                        <strong className={`font-mono ${insideAdj >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {insideAdj >= 0 ? '+' : ''}₹{insideAdj.toLocaleString('en-IN')}
+                        </strong>
+                      </div>
+
+                      <div className="flex justify-between items-center py-2">
+                        <div>
+                          <span>Outside Adjustments (बाहरी भत्ते)</span>
+                          <span className="text-[8px] block text-slate-500 font-sans">External commission, external earnings or expenses</span>
+                        </div>
+                        <strong className={`font-mono ${outsideAdj >= 0 ? 'text-blue-400' : 'text-rose-455'}`}>
+                          {outsideAdj >= 0 ? '+' : ''}₹{outsideAdj.toLocaleString('en-IN')}
+                        </strong>
+                      </div>
+
+                      <div className="flex justify-between items-center py-3 border-t border-[#1B1C21] text-sm text-gold font-bold">
+                        <span>Total Net Salary payable (कुल प्राप्त सैलरी)</span>
+                        <strong className="font-mono text-base">₹{netSalary.toLocaleString('en-IN')}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ledger of Adjustments */}
+                  <div className="bg-[#0E0F12] border border-[#1B1C21] p-5 rounded-xl space-y-4">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Adjustment Ledger (एडजस्टमेंट रिकॉर्ड)</h3>
+                    {salaryAdjustments.length === 0 ? (
+                      <p className="text-xs text-slate-500 italic">No adjustments recorded for your profile.</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs text-left text-slate-350">
+                          <thead>
+                            <tr className="border-b border-[#1B1C21]/80 text-slate-500 font-bold uppercase tracking-wider text-[9px]">
+                              <th className="py-2">Type</th>
+                              <th className="py-2 text-right">Amount</th>
+                              <th className="py-2">Description</th>
+                              <th className="py-2">Date</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[#1B1C21]/40">
+                            {salaryAdjustments.map(adj => (
+                              <tr key={adj.id} className="hover:bg-[#060608]/20 transition-colors">
+                                <td className="py-2.5 font-semibold">
+                                  <span className={`text-[8px] uppercase px-1.5 py-0.5 rounded border ${adj.type === 'inside' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+                                    {adj.type === 'inside' ? 'Inside' : 'Outside'}
+                                  </span>
+                                </td>
+                                <td className={`py-2.5 text-right font-mono font-bold ${adj.amount >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                  {adj.amount >= 0 ? '+' : ''}₹{adj.amount.toLocaleString('en-IN')}
+                                </td>
+                                <td className="py-2.5 max-w-[200px] truncate" title={adj.description}>{adj.description}</td>
+                                <td className="py-2.5 font-mono text-[10px] text-slate-500">{new Date(adj.created_at).toLocaleDateString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
       {/* Bottom Sticky Tabs Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0E0F12]/90 backdrop-blur-md border-t border-[#1B1C21] shadow-xl flex items-center" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {[
@@ -2388,6 +2537,7 @@ export default function ManagerPortal() {
           { id: 'complaints', icon: Wrench, label: lang === 'en' ? 'Tickets' : 'शिकायतें' },
           { id: 'security', icon: ShieldCheck, label: lang === 'en' ? 'Gate' : 'गेट' },
           { id: 'compliance', icon: ClipboardList, label: lang === 'en' ? 'Docs' : 'डॉक्स' },
+          { id: 'salary', icon: Wallet, label: lang === 'en' ? 'Salary' : 'सैलरी' },
           { id: 'messages', icon: MessageSquare, label: lang === 'en' ? 'Chat' : 'चैट' },
           { id: 'transactions', icon: Activity, label: lang === 'en' ? 'Log' : 'लॉग' }
         ].map(tab => {

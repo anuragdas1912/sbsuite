@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, Tenant, Transaction, Complaint, Manager, Message, Notification, Expense, Unit, supabase } from '../db';
+import { db, Tenant, Transaction, Complaint, Manager, Message, Notification, Expense, Unit, supabase, SalaryAdjustment } from '../db';
 import { subscribeToPushNotifications } from '../pushUtils';
 import { 
   ArrowLeft, 
@@ -58,7 +58,8 @@ export default function OwnerPortal() {
   const [managers, setManagers] = useState<Manager[]>([]);
   const [globalRates, setGlobalRates] = useState<Awaited<ReturnType<typeof db.getRates>>>({
     rent: { residential: 5000, commercial: 12000, parking: 1500 },
-    power: { residential: 10, commercial: 15, parking: 12 }
+    power: { residential: 10, commercial: 15, parking: 12 },
+    parking_cut: 100
   });
 
   // Edit Transaction Modal States
@@ -74,6 +75,34 @@ export default function OwnerPortal() {
   const [newMgrPhone, setNewMgrPhone] = useState('');
   const [newMgrLoginId, setNewMgrLoginId] = useState('');
   const [newMgrPassword, setNewMgrPassword] = useState('');
+  const [newMgrBaseSalary, setNewMgrBaseSalary] = useState('10000');
+
+  // Salary Adjustments State
+  const [salaryAdjustments, setSalaryAdjustments] = useState<SalaryAdjustment[]>([]);
+  const [newAdjMgrId, setNewAdjMgrId] = useState('');
+  const [newAdjAmount, setNewAdjAmount] = useState('');
+  const [newAdjDesc, setNewAdjDesc] = useState('');
+  const [newAdjType, setNewAdjType] = useState<'inside' | 'outside'>('inside');
+
+  // Edit Tenant Modal States
+  const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
+  const [editTenName, setEditTenName] = useState('');
+  const [editTenPhone, setEditTenPhone] = useState('');
+  const [editTenAadhaar, setEditTenAadhaar] = useState('');
+  const [editTenRc, setEditTenRc] = useState('');
+  const [editTenRent, setEditTenRent] = useState('');
+  const [editTenPower, setEditTenPower] = useState('');
+  const [editTenEv, setEditTenEv] = useState(false);
+  const [editTenPass, setEditTenPass] = useState('');
+  const [editTenUnit, setEditTenUnit] = useState('');
+
+  // Edit Manager Modal States
+  const [editingManager, setEditingManager] = useState<Manager | null>(null);
+  const [editMgrName, setEditMgrName] = useState('');
+  const [editMgrPhone, setEditMgrPhone] = useState('');
+  const [editMgrLoginId, setEditMgrLoginId] = useState('');
+  const [editMgrPass, setEditMgrPass] = useState('');
+  const [editMgrBaseSalary, setEditMgrBaseSalary] = useState('');
 
   // Add Tenant Form States
   const [newTenName, setNewTenName] = useState('');
@@ -238,6 +267,7 @@ export default function OwnerPortal() {
         const notifs = await db.getNotifications();
         const exps = await db.getExpenses();
         const us = await db.getUnits();
+        const adjs = await db.getSalaryAdjustments();
 
         setTenants(ts);
         setTransactions(txs);
@@ -248,6 +278,7 @@ export default function OwnerPortal() {
         setNotifications(notifs);
         setExpenses(exps);
         setUnits(us);
+        setSalaryAdjustments(adjs);
 
         // Setup Supabase Realtime for Messages and Complaints
         channel = supabase
@@ -360,12 +391,14 @@ export default function OwnerPortal() {
         name: newMgrName,
         phone: newMgrPhone,
         login_id: newMgrLoginId,
-        password: newMgrPassword
+        password: newMgrPassword,
+        base_salary: Number(newMgrBaseSalary)
       });
       setNewMgrName('');
       setNewMgrPhone('');
       setNewMgrLoginId('');
       setNewMgrPassword('');
+      setNewMgrBaseSalary('10000');
       setRefreshKey(prev => prev + 1);
       alert(lang === 'en' ? 'Manager registered.' : 'मैनेजर पंजीकृत कर दिया गया है।');
     } catch (err: any) {
@@ -388,6 +421,110 @@ export default function OwnerPortal() {
       } catch (err) {
         console.error(err);
         alert('Failed to remove manager.');
+      }
+    }
+  };
+
+  // Save Tenant edits
+  const handleSaveTenant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTenant) return;
+
+    try {
+      await db.updateTenant({
+        ...editingTenant,
+        name: editTenName,
+        phone: editTenPhone,
+        aadhaar: editTenAadhaar,
+        vehicle_rc: editTenRc || undefined,
+        base_rent: Number(editTenRent),
+        electricity_rate: Number(editTenPower),
+        ev_charger: editTenEv,
+        password: editTenPass
+      });
+
+      // Update unit reference if tenant's unit name changed
+      if (editingTenant.unit_name !== editTenUnit) {
+        // Free old unit
+        const oldUnit = units.find(u => u.name === editingTenant.unit_name);
+        if (oldUnit) {
+          await db.updateUnitStatus(oldUnit.id, 'vacant', null);
+        }
+        // Assign new unit
+        const newUnit = units.find(u => u.name === editTenUnit);
+        if (newUnit) {
+          await db.updateUnitStatus(newUnit.id, 'occupied', editingTenant.id);
+        }
+      }
+
+      setEditingTenant(null);
+      setRefreshKey(prev => prev + 1);
+      alert(lang === 'en' ? 'Tenant updated successfully!' : 'किरायेदार प्रोफाइल अपडेट हो गई है!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update tenant.');
+    }
+  };
+
+  // Save Manager edits
+  const handleSaveManager = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingManager) return;
+
+    try {
+      await db.updateManager({
+        ...editingManager,
+        name: editMgrName,
+        phone: editMgrPhone,
+        login_id: editMgrLoginId,
+        password: editMgrPass,
+        base_salary: Number(editMgrBaseSalary)
+      });
+
+      setEditingManager(null);
+      setRefreshKey(prev => prev + 1);
+      alert(lang === 'en' ? 'Manager updated successfully!' : 'मैनेजर प्रोफाइल अपडेट हो गई है!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update manager.');
+    }
+  };
+
+  // Add Salary Adjustment
+  const handleAddSalaryAdjustment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAdjMgrId || !newAdjAmount || !newAdjDesc) return;
+
+    try {
+      await db.addSalaryAdjustment({
+        manager_id: newAdjMgrId,
+        amount: Number(newAdjAmount),
+        description: newAdjDesc,
+        type: newAdjType
+      });
+
+      setNewAdjMgrId('');
+      setNewAdjAmount('');
+      setNewAdjDesc('');
+      setNewAdjType('inside');
+      setRefreshKey(prev => prev + 1);
+      alert(lang === 'en' ? 'Salary adjustment added!' : 'सैलरी एडजस्टमेंट जोड़ दिया गया है!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to add salary adjustment.');
+    }
+  };
+
+  // Remove Salary Adjustment
+  const handleRemoveSalaryAdjustment = async (id: string) => {
+    const confirmRemove = window.confirm(lang === 'en' ? 'Remove this salary adjustment?' : 'क्या आप इस सैलरी एडजस्टमेंट को हटाना चाहते हैं?');
+    if (confirmRemove) {
+      try {
+        await db.removeSalaryAdjustment(id);
+        setRefreshKey(prev => prev + 1);
+      } catch (err) {
+        console.error(err);
+        alert('Failed to remove adjustment.');
       }
     }
   };
@@ -1758,12 +1895,33 @@ export default function OwnerPortal() {
                               <td data-label="Dues" className="py-3 font-mono font-bold text-rose-400">₹{dues.toLocaleString('en-IN')}</td>
                               <td data-label="Phone" className="py-3 font-mono">{ten.phone}</td>
                               <td data-label="Action" className="py-3 text-right">
-                                <button
-                                  onClick={() => handleRemoveTenant(ten.id, ten.name)}
-                                  className="p-1.5 bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 rounded transition cursor-pointer md:ml-auto"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
+                                <div className="flex items-center justify-end gap-2 md:ml-auto w-fit">
+                                  <button
+                                    onClick={() => {
+                                      setEditingTenant(ten);
+                                      setEditTenName(ten.name);
+                                      setEditTenPhone(ten.phone);
+                                      setEditTenAadhaar(ten.aadhaar);
+                                      setEditTenRc(ten.vehicle_rc || '');
+                                      setEditTenRent(String(ten.base_rent));
+                                      setEditTenPower(String(ten.electricity_rate));
+                                      setEditTenEv(ten.ev_charger);
+                                      setEditTenPass(ten.password || '');
+                                      setEditTenUnit(ten.unit_name);
+                                    }}
+                                    className="p-1.5 bg-[#C5A880]/15 hover:bg-[#C5A880]/30 border border-[#C5A880]/30 text-gold rounded transition cursor-pointer"
+                                    title="Edit Tenant"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleRemoveTenant(ten.id, ten.name)}
+                                    className="p-1.5 bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 rounded transition cursor-pointer"
+                                    title="Remove Tenant"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           );
@@ -1819,7 +1977,8 @@ export default function OwnerPortal() {
 
         {/* Tab 3: Managers Administration */}
         {activeTab === 'managers' && (
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             
             {/* Form */}
             <div className="md:col-span-5 bg-[#0E0F12] border border-[#1B1C21] p-5 rounded-xl space-y-4 h-fit">
@@ -1877,6 +2036,18 @@ export default function OwnerPortal() {
                   />
                 </div>
 
+                <div className="space-y-1.5">
+                  <label className="text-slate-500 font-bold uppercase">{lang === 'en' ? 'Base Salary (₹) *' : 'बेस सैलरी (₹) *'}</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="e.g. 10000"
+                    value={newMgrBaseSalary}
+                    onChange={(e) => setNewMgrBaseSalary(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none focus:border-gold/50"
+                  />
+                </div>
+
                 <button
                   type="submit"
                   className="w-full bg-[#C5A880] hover:bg-[#DFD3C3] text-[#060608] text-[9px] font-bold uppercase tracking-wider py-3 rounded-lg transition"
@@ -1898,15 +2069,32 @@ export default function OwnerPortal() {
                   <div key={mgr.id} className="py-3.5 flex justify-between items-center">
                     <div>
                       <strong className="text-slate-200 block text-sm">{mgr.name.split(' (')[0]}</strong>
-                      <span className="text-[9px] text-slate-500 font-mono">Phone: {mgr.phone} • Registered: {new Date(mgr.created_at).toLocaleDateString()}</span>
+                      <span className="text-[9px] text-slate-500 font-mono">
+                        Phone: {mgr.phone} • Base Salary: ₹{(mgr.base_salary ?? 10000).toLocaleString('en-IN')} • Registered: {new Date(mgr.created_at).toLocaleDateString()}
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
                       {/* Virtual Cash Wallet Balances audit */}
-                      <div className="text-right">
+                      <div className="text-right mr-2">
                         <span className="text-[8px] text-slate-500 block uppercase font-bold tracking-wider">{t.cashHeld}</span>
                         <strong className="font-mono text-emerald-400 font-bold text-sm">₹{mgr.cash_wallet.toLocaleString('en-IN')}</strong>
                       </div>
+
+                      <button
+                        onClick={() => {
+                          setEditingManager(mgr);
+                          setEditMgrName(mgr.name);
+                          setEditMgrPhone(mgr.phone);
+                          setEditMgrLoginId(mgr.login_id || '');
+                          setEditMgrPass(mgr.password || '');
+                          setEditMgrBaseSalary(String(mgr.base_salary || 10000));
+                        }}
+                        className="p-1.5 bg-[#C5A880]/15 hover:bg-[#C5A880]/30 border border-[#C5A880]/30 text-gold rounded transition cursor-pointer"
+                        title="Edit Manager"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
 
                       <button
                         onClick={() => handleRemoveManager(mgr.id, mgr.name)}
@@ -1918,6 +2106,185 @@ export default function OwnerPortal() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            </div>
+
+            {/* Manager Salaries & Adjustments Section */}
+            <div className="bg-[#0E0F12] border border-[#1B1C21] p-5 sm:p-6 rounded-xl space-y-6 animate-luxury-card">
+              <h2 className="text-sm font-serif font-semibold text-slate-200 border-b border-[#1B1C21]/60 pb-3 flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-gold" />
+                {lang === 'en' ? 'Manager Salary & Adjustments Board' : 'मैनेजर सैलरी और एडजस्टमेंट बोर्ड'}
+              </h2>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Ledger & Table */}
+                <div className="lg:col-span-8 space-y-6">
+                  {/* Calculations Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left text-slate-300">
+                      <thead>
+                        <tr className="border-b border-[#1B1C21]/80 text-slate-500 font-bold uppercase tracking-wider text-[9px]">
+                          <th className="py-2">Manager</th>
+                          <th className="py-2 text-right">Base Salary</th>
+                          <th className="py-2 text-right">Parking Cut</th>
+                          <th className="py-2 text-right">Inside Adj.</th>
+                          <th className="py-2 text-right">Outside Adj.</th>
+                          <th className="py-2 text-right text-gold">Net Salary</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#1B1C21]/40 font-mono">
+                        {managers.map(mgr => {
+                          const activeVehicles = tenants.filter(t => t.role === 'parking').length;
+                          const parkingCutTotal = activeVehicles * (globalRates.parking_cut ?? 100);
+                          
+                          const mgrAdjustments = salaryAdjustments.filter(a => a.manager_id === mgr.id);
+                          const insideAdj = mgrAdjustments.filter(a => a.type === 'inside').reduce((sum, a) => sum + a.amount, 0);
+                          const outsideAdj = mgrAdjustments.filter(a => a.type === 'outside').reduce((sum, a) => sum + a.amount, 0);
+                          const netSalary = (mgr.base_salary ?? 10000) + parkingCutTotal + insideAdj + outsideAdj;
+
+                          return (
+                            <tr key={mgr.id} className="hover:bg-[#060608]/20 transition-colors">
+                              <td className="py-3 font-sans font-semibold text-slate-200">{mgr.name.split(' (')[0]}</td>
+                              <td className="py-3 text-right">₹{(mgr.base_salary ?? 10000).toLocaleString('en-IN')}</td>
+                              <td className="py-3 text-right text-slate-400">
+                                ₹{parkingCutTotal.toLocaleString('en-IN')}
+                                <span className="text-[8px] block text-slate-500 font-sans uppercase">({activeVehicles} veh. × ₹{globalRates.parking_cut})</span>
+                              </td>
+                              <td className={`py-3 text-right ${insideAdj >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                {insideAdj >= 0 ? '+' : ''}₹{insideAdj.toLocaleString('en-IN')}
+                              </td>
+                              <td className={`py-3 text-right ${outsideAdj >= 0 ? 'text-blue-400' : 'text-rose-455'}`}>
+                                {outsideAdj >= 0 ? '+' : ''}₹{outsideAdj.toLocaleString('en-IN')}
+                              </td>
+                              <td className="py-3 text-right font-bold text-gold text-sm">₹{netSalary.toLocaleString('en-IN')}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Adjustments Ledger */}
+                  <div className="space-y-3 pt-4 border-t border-[#1B1C21]/60">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Adjustment Ledger (एडजस्टमेंट रिकॉर्ड)</h3>
+                    {salaryAdjustments.length === 0 ? (
+                      <p className="text-xs text-slate-500 italic">No salary adjustments recorded.</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs text-left text-slate-350">
+                          <thead>
+                            <tr className="border-b border-[#1B1C21]/80 text-slate-500 font-bold uppercase tracking-wider text-[9px]">
+                              <th className="py-2">Manager</th>
+                              <th className="py-2">Type</th>
+                              <th className="py-2 text-right">Amount</th>
+                              <th className="py-2">Description</th>
+                              <th className="py-2">Date</th>
+                              <th className="py-2 text-right">Remove</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[#1B1C21]/40">
+                            {salaryAdjustments.map(adj => {
+                              const mgr = managers.find(m => m.id === adj.manager_id);
+                              return (
+                                <tr key={adj.id} className="hover:bg-[#060608]/20 transition-colors">
+                                  <td className="py-2.5 text-slate-200 font-semibold">{mgr ? mgr.name.split(' (')[0] : 'Unknown'}</td>
+                                  <td className="py-2.5 font-semibold">
+                                    <span className={`text-[8px] uppercase px-1.5 py-0.5 rounded border ${adj.type === 'inside' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+                                      {adj.type === 'inside' ? 'Inside' : 'Outside'}
+                                    </span>
+                                  </td>
+                                  <td className={`py-2.5 text-right font-mono font-bold ${adj.amount >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                    {adj.amount >= 0 ? '+' : ''}₹{adj.amount.toLocaleString('en-IN')}
+                                  </td>
+                                  <td className="py-2.5 max-w-[120px] truncate" title={adj.description}>{adj.description}</td>
+                                  <td className="py-2.5 font-mono text-[10px] text-slate-500">{new Date(adj.created_at).toLocaleDateString()}</td>
+                                  <td className="py-2.5 text-right">
+                                    <button
+                                      onClick={() => handleRemoveSalaryAdjustment(adj.id)}
+                                      className="p-1 text-rose-400 hover:text-rose-300 transition hover:bg-rose-500/10 rounded cursor-pointer ml-auto block"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Form to Add Adjustment */}
+                <div className="lg:col-span-4 bg-[#060608] border border-[#1B1C21] p-4.5 rounded-xl space-y-4 h-fit">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Plus className="w-3.5 h-3.5 text-gold" />
+                    {lang === 'en' ? 'Add Adjustment' : 'एडजस्टमेंट जोड़ें'}
+                  </h3>
+
+                  <form onSubmit={handleAddSalaryAdjustment} className="space-y-4 text-xs">
+                    <div className="space-y-1.5">
+                      <label className="text-slate-500 font-bold uppercase">Select Manager *</label>
+                      <select
+                        required
+                        value={newAdjMgrId}
+                        onChange={(e) => setNewAdjMgrId(e.target.value)}
+                        className="w-full rounded bg-[#0E0F12] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                      >
+                        <option value="">Choose Manager</option>
+                        {managers.map(mgr => (
+                          <option key={mgr.id} value={mgr.id}>{mgr.name.split(' (')[0]}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-slate-500 font-bold uppercase">Adjustment Source *</label>
+                      <select
+                        value={newAdjType}
+                        onChange={(e) => setNewAdjType(e.target.value as 'inside' | 'outside')}
+                        className="w-full rounded bg-[#0E0F12] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                      >
+                        <option value="inside">{lang === 'en' ? 'Inside (अंदर से)' : 'Inside (अंदर से)'}</option>
+                        <option value="outside">{lang === 'en' ? 'Outside (बाहर से)' : 'Outside (बाहर से)'}</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-slate-500 font-bold uppercase">Amount (₹) *</label>
+                      <input
+                        type="number"
+                        required
+                        placeholder="e.g. 1500 or -500"
+                        value={newAdjAmount}
+                        onChange={(e) => setNewAdjAmount(e.target.value)}
+                        className="w-full rounded bg-[#0E0F12] border border-[#1B1C21] p-2.5 text-slate-200 outline-none font-mono"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-slate-500 font-bold uppercase">Reason / Description *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Festival Bonus"
+                        value={newAdjDesc}
+                        onChange={(e) => setNewAdjDesc(e.target.value)}
+                        className="w-full rounded bg-[#0E0F12] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full bg-[#C5A880] hover:bg-[#DFD3C3] text-[#060608] text-[9px] font-bold uppercase tracking-wider py-3.5 rounded-lg transition shadow-lg mt-2 cursor-pointer"
+                    >
+                      Post Salary Adjustment
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
 
@@ -2008,6 +2375,19 @@ export default function OwnerPortal() {
                     onChange={(e) => setGlobalRates({
                       ...globalRates,
                       power: { ...globalRates.power, parking: Number(e.target.value) }
+                    })}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1.5 col-span-2 animate-luxury-card">
+                  <label className="text-slate-500 font-bold uppercase">{lang === 'en' ? 'Manager Parking Commission Cut (₹ / Vehicle)' : 'मैनेजर पार्किंग कमीशन कट (₹ / वाहन)'}</label>
+                  <input
+                    type="number"
+                    value={globalRates.parking_cut}
+                    onChange={(e) => setGlobalRates({
+                      ...globalRates,
+                      parking_cut: Number(e.target.value)
                     })}
                     className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 focus:outline-none"
                   />
@@ -2597,6 +2977,241 @@ export default function OwnerPortal() {
               </button>
             </form>
 
+          </div>
+        </div>
+      )}
+
+      {/* Edit Tenant Modal */}
+      {editingTenant && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#0E0F12] border border-[#1B1C21] rounded-2xl p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start border-b border-[#1B1C21]/60 pb-3">
+              <div>
+                <h3 className="text-base font-serif font-bold text-slate-200">Edit Tenant Profile</h3>
+                <span className="text-[9px] text-slate-500">Modify information & reset password</span>
+              </div>
+              <button 
+                onClick={() => setEditingTenant(null)}
+                className="text-slate-400 hover:text-slate-200 text-xs px-2 py-1 bg-[#060608] border border-[#1B1C21] rounded-lg cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveTenant} className="space-y-4 text-xs font-light">
+              <div className="space-y-1.5">
+                <label className="text-slate-500 uppercase font-bold text-[9px]">Tenant Name</label>
+                <input 
+                  type="text"
+                  required
+                  value={editTenName}
+                  onChange={(e) => setEditTenName(e.target.value)}
+                  className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-slate-500 uppercase font-bold text-[9px]">Phone Number</label>
+                <input 
+                  type="tel"
+                  required
+                  value={editTenPhone}
+                  onChange={(e) => setEditTenPhone(e.target.value)}
+                  className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-slate-500 uppercase font-bold text-[9px]">Aadhaar Card (12 digits)</label>
+                <input 
+                  type="text"
+                  required
+                  value={editTenAadhaar}
+                  onChange={(e) => setEditTenAadhaar(e.target.value)}
+                  className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-slate-500 uppercase font-bold text-[9px]">Unit / Room No</label>
+                {editingTenant.role === 'parking' ? (
+                  <input 
+                    type="text"
+                    required
+                    value={editTenUnit}
+                    onChange={(e) => setEditTenUnit(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                  />
+                ) : (
+                  <select
+                    value={editTenUnit}
+                    onChange={(e) => setEditTenUnit(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                  >
+                    <option value={editingTenant.unit_name}>{editingTenant.unit_name} (Current)</option>
+                    {units
+                      .filter(u => u.type === editingTenant.role && u.status === 'vacant' && u.name !== editingTenant.unit_name)
+                      .map(u => (
+                        <option key={u.id} value={u.name}>{u.name}</option>
+                      ))
+                    }
+                  </select>
+                )}
+              </div>
+
+              {editingTenant.role === 'parking' && (
+                <div className="space-y-1.5">
+                  <label className="text-slate-500 uppercase font-bold text-[9px]">Vehicle RC Number</label>
+                  <input 
+                    type="text"
+                    required
+                    value={editTenRc}
+                    onChange={(e) => setEditTenRc(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-slate-500 uppercase font-bold text-[9px]">Base Rent (₹)</label>
+                  <input 
+                    type="number"
+                    required
+                    value={editTenRent}
+                    onChange={(e) => setEditTenRent(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-slate-500 uppercase font-bold text-[9px]">Electricity Rate (₹/kWh)</label>
+                  <input 
+                    type="number"
+                    required
+                    value={editTenPower}
+                    onChange={(e) => setEditTenPower(e.target.value)}
+                    className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                  />
+                </div>
+              </div>
+
+              {editingTenant.role === 'parking' && (
+                <div className="flex items-center gap-2 pt-1">
+                  <input 
+                    type="checkbox"
+                    id="editTenEv"
+                    checked={editTenEv}
+                    onChange={(e) => setEditTenEv(e.target.checked)}
+                    className="w-4 h-4 rounded border-[#1B1C21] bg-transparent text-gold focus:ring-0 accent-gold cursor-pointer"
+                  />
+                  <label htmlFor="editTenEv" className="text-[10px] text-slate-450 hover:text-slate-350 cursor-pointer">
+                    Enable EV Power Charging (ईवी पावर चार्जिंग चालू करें)
+                  </label>
+                </div>
+              )}
+
+              <div className="space-y-1.5 border-t border-[#1B1C21]/60 pt-3">
+                <label className="text-slate-500 uppercase font-bold text-[9px]">Reset Login Password</label>
+                <input 
+                  type="text"
+                  placeholder="Enter new password to reset"
+                  value={editTenPass}
+                  onChange={(e) => setEditTenPass(e.target.value)}
+                  className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-[#C5A880] hover:bg-[#DFD3C3] text-[#060608] text-[9px] font-bold uppercase tracking-wider py-3.5 rounded-lg transition mt-2 shadow-lg cursor-pointer"
+              >
+                Save Tenant Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Manager Modal */}
+      {editingManager && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#0E0F12] border border-[#1B1C21] rounded-2xl p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start border-b border-[#1B1C21]/60 pb-3">
+              <div>
+                <h3 className="text-base font-serif font-bold text-slate-200">Edit Manager Profile</h3>
+                <span className="text-[9px] text-slate-500">Modify information & reset password</span>
+              </div>
+              <button 
+                onClick={() => setEditingManager(null)}
+                className="text-slate-400 hover:text-slate-200 text-xs px-2 py-1 bg-[#060608] border border-[#1B1C21] rounded-lg cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveManager} className="space-y-4 text-xs font-light">
+              <div className="space-y-1.5">
+                <label className="text-slate-500 uppercase font-bold text-[9px]">Manager Name</label>
+                <input 
+                  type="text"
+                  required
+                  value={editMgrName}
+                  onChange={(e) => setEditMgrName(e.target.value)}
+                  className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-slate-500 uppercase font-bold text-[9px]">Phone Number</label>
+                <input 
+                  type="tel"
+                  required
+                  value={editMgrPhone}
+                  onChange={(e) => setEditMgrPhone(e.target.value)}
+                  className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-slate-500 uppercase font-bold text-[9px]">Login ID</label>
+                <input 
+                  type="text"
+                  required
+                  value={editMgrLoginId}
+                  onChange={(e) => setEditMgrLoginId(e.target.value)}
+                  className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-slate-500 uppercase font-bold text-[9px]">Base Salary (₹)</label>
+                <input 
+                  type="number"
+                  required
+                  value={editMgrBaseSalary}
+                  onChange={(e) => setEditMgrBaseSalary(e.target.value)}
+                  className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                />
+              </div>
+
+              <div className="space-y-1.5 border-t border-[#1B1C21]/60 pt-3">
+                <label className="text-slate-500 uppercase font-bold text-[9px]">Reset Login Password</label>
+                <input 
+                  type="text"
+                  placeholder="Enter new password to reset"
+                  value={editMgrPass}
+                  onChange={(e) => setEditMgrPass(e.target.value)}
+                  className="w-full rounded bg-[#060608] border border-[#1B1C21] p-2.5 text-slate-200 outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-[#C5A880] hover:bg-[#DFD3C3] text-[#060608] text-[9px] font-bold uppercase tracking-wider py-3.5 rounded-lg transition mt-2 shadow-lg cursor-pointer"
+              >
+                Save Manager Changes
+              </button>
+            </form>
           </div>
         </div>
       )}
