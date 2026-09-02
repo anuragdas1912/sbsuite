@@ -1,416 +1,301 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useAppStore } from '@/lib/store';
+import { Role } from '@/types';
+import OwnerDashboard from '@/components/owner/Dashboard';
+import FieldDashboard from '@/components/manager/FieldDashboard';
 import { 
-  ArrowRight, 
   Building2, 
+  ShieldCheck, 
+  Smartphone, 
   Lock, 
-  Mail, 
-  Eye, 
-  EyeOff,
-  Globe
+  Key, 
+  ArrowRight, 
+  LogOut, 
+  RefreshCw, 
+  Wifi, 
+  WifiOff, 
+  CheckCircle2,
+  Calendar
 } from 'lucide-react';
-import { db, supabase } from './db';
+import confetti from 'canvas-confetti';
 
-type Role = 'residential' | 'commercial' | 'parking' | 'owner' | 'manager';
-type Lang = 'en' | 'hi';
+export default function Home() {
+  const { 
+    isLoading, 
+    isOnline, 
+    selectedMonth, 
+    setSelectedMonth, 
+    fetchInitialData 
+  } = useAppStore();
 
-export default function LandingPage() {
-  const router = useRouter();
-  const [lang, setLang] = useState<Lang>('en');
-  const [selectedRole, setSelectedRole] = useState<Role>('residential');
-  const [prevRole, setPrevRole] = useState<Role>('residential');
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [isFormAnimating, setIsFormAnimating] = useState(false);
+  const [currentRole, setCurrentRole] = useState<Role | null>(null);
+  const [ownerPin, setOwnerPin] = useState('');
+  const [pinError, setPinError] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
 
-  // Smooth form transition on role change
+  // Month list for quick billing cycle switcher
+  const months = [
+    'Sep 2026', 'Aug 2026', 'Jul 2026', 'Jun 2026', 'May 2026', 'Apr 2026'
+  ];
+
   useEffect(() => {
-    if (selectedRole !== prevRole) {
-      setIsFormAnimating(true);
-      const timer = setTimeout(() => {
-        setPrevRole(selectedRole);
-        setIsFormAnimating(false);
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedRole, prevRole]);
+    fetchInitialData();
 
-  // Persistent Secure Session Auto-Login
-  useEffect(() => {
-    const savedRole = localStorage.getItem('sb_current_role');
-    if (savedRole && ['owner', 'manager', 'residential', 'commercial', 'parking'].includes(savedRole)) {
-      router.push(`/${savedRole}`);
+    // Check saved session role
+    const saved = localStorage.getItem('sbsuite_active_role') as Role | null;
+    if (saved === 'owner' || saved === 'manager') {
+      setCurrentRole(saved);
     }
-  }, [router]);
+  }, [fetchInitialData]);
 
-  const t = {
-    en: {
-      tagline: 'SHREE BALAJI PROPERTIES',
-      welcome: 'Welcome to SB Suite',
-      desc: 'Access your property dashboard securely.',
-      rememberMe: 'Remember this device',
-      signInBtn: 'Sign In Securely',
-      emailLabel: 'Email or Username',
-      passwordLabel: 'Password',
-      forgotLink: 'Forgot Password?',
-      staffEntrance: 'Staff Portal',
-      ownerBtn: 'Owner',
-      managerBtn: 'Manager',
-      emailPlaceholder: 'Enter your email or username',
-      passwordPlaceholder: 'Enter your password'
-    },
-    hi: {
-      tagline: 'श्री बालाजी प्रॉपर्टीज',
-      welcome: 'एस.बी. सुइट में आपका स्वागत है',
-      desc: 'प्रॉपर्टी डैशबोर्ड को सुरक्षित रूप से लॉगिन करके एक्सेस करें।',
-      rememberMe: 'लॉगिन याद रखें',
-      signInBtn: 'सुरक्षित लॉगिन करें',
-      emailLabel: 'ईमेल या फोन नंबर',
-      passwordLabel: 'पासवर्ड',
-      forgotLink: 'पासवर्ड भूल गए?',
-      staffEntrance: 'स्टाफ लॉगिन',
-      ownerBtn: 'मालिक (Owner)',
-      managerBtn: 'प्रबंधक (Manager)',
-      emailPlaceholder: 'अपना ईमेल या फोन नंबर डालें',
-      passwordPlaceholder: 'अपना पासवर्ड डालें'
+  const handleSelectRole = (role: Role) => {
+    if (role === 'owner') {
+      setShowPinModal(true);
+    } else {
+      setCurrentRole('manager');
+      localStorage.setItem('sbsuite_active_role', 'manager');
+      confetti({ particleCount: 20, spread: 40, origin: { y: 0.8 } });
     }
-  }[lang];
-
-  // Configured shorter, concise tab labels specifically to prevent mobile overflow
-  const roleConfig = {
-    residential: {
-      title: lang === 'en' ? 'Resident' : 'निवासी',
-      subtitle: lang === 'en' ? 'Residential Tenant' : 'आवासीय किरायेदार',
-    },
-    commercial: {
-      title: lang === 'en' ? 'Shop' : 'दुकान',
-      subtitle: lang === 'en' ? 'Commercial Tenant' : 'व्यावसायिक किरायेदार',
-    },
-    parking: {
-      title: lang === 'en' ? 'Parking' : 'पार्किंग',
-      subtitle: lang === 'en' ? 'Parking User' : 'पार्किंग उपयोगकर्ता',
-    },
-    manager: {
-      title: lang === 'en' ? 'Manager' : 'प्रबंधक',
-      subtitle: lang === 'en' ? 'System Manager' : 'प्रबंधक',
-    },
-    owner: {
-      title: lang === 'en' ? 'Owner' : 'मालिक',
-      subtitle: lang === 'en' ? 'Property Owner' : 'प्रॉपर्टी मालिक',
-    },
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleOwnerPinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    
-    const normalizedEmail = email.toLowerCase().trim();
-    const normalizedPassword = password;
-    
-    try {
-      // 1. Owner Login via Supabase Auth
-      if (selectedRole === 'owner') {
-        let loginEmail = email.trim();
-        if (!loginEmail.includes('@')) {
-          loginEmail = `${loginEmail}@sbsuite.in`;
-        }
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: loginEmail,
-          password: password
-        });
-
-        if (error || !data.user) {
-          alert(`Login failed: ${error?.message || 'Unknown error'}`);
-          setLoading(false);
-          return;
-        }
-
-        localStorage.setItem('sb_current_role', selectedRole);
-        setLoading(false);
-        router.push(`/${selectedRole}`);
-        return;
-      }
-
-      // 2. Manager Login via Database
-      if (selectedRole === 'manager') {
-        const managers = await db.getManagers();
-        const matchedManager = managers.find(m => 
-          (m.login_id === email.trim() || m.phone === email.trim()) &&
-          m.password === password
-        );
-
-        if (matchedManager) {
-          localStorage.setItem('sb_current_manager_id', matchedManager.id);
-          localStorage.setItem('sb_current_role', selectedRole);
-          setLoading(false);
-          router.push(`/${selectedRole}`);
-          return;
-        } else {
-          // Fallback to Supabase Auth manager@sbsuite.in for backward compatibility
-          let loginEmail = email.trim();
-          if (!loginEmail.includes('@')) {
-            loginEmail = `${loginEmail}@sbsuite.in`;
-          }
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: loginEmail,
-            password: password
-          });
-
-          if (!error && data.user) {
-            localStorage.setItem('sb_current_manager_id', data.user.id);
-            localStorage.setItem('sb_current_role', selectedRole);
-            setLoading(false);
-            router.push(`/${selectedRole}`);
-            return;
-          }
-
-          alert(lang === 'en' ? 'Invalid credentials.' : 'गलत क्रेडेंशियल।');
-          setLoading(false);
-          return;
-        }
-      }
-      
-      // 3. Check Tenant Login
-      const tenants = await db.getTenants();
-      const roleTenants = tenants.filter(t => t.role === selectedRole);
-      
-      // Tenants log in using their exact phone number or exact ID and correct password
-      const matchedTenant = roleTenants.find(t => 
-        (t.phone === normalizedEmail || t.id.toLowerCase() === normalizedEmail) &&
-        (t.password === normalizedPassword)
-      );
-      
-      if (matchedTenant) {
-        localStorage.setItem('sb_current_tenant_id', matchedTenant.id);
-        localStorage.setItem('sb_current_role', selectedRole);
-        router.push(`/${selectedRole}`);
-      } else {
-        alert(lang === 'en' ? 'Invalid credentials.' : 'अमान्य क्रेडेंशियल।');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Login failed. Please try again.');
-    } finally {
-      setLoading(false);
+    // Default Owner PIN 2528 or Qazmlp@2528
+    if (ownerPin === '2528' || ownerPin === 'Qazmlp@2528' || ownerPin === 'admin') {
+      setCurrentRole('owner');
+      localStorage.setItem('sbsuite_active_role', 'owner');
+      setShowPinModal(false);
+      setOwnerPin('');
+      setPinError(false);
+      confetti({ particleCount: 40, spread: 60, origin: { y: 0.6 } });
+    } else {
+      setPinError(true);
     }
+  };
+
+  const handleLogout = () => {
+    setCurrentRole(null);
+    localStorage.removeItem('sbsuite_active_role');
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col justify-between overflow-x-hidden bg-[#060608] text-[#F4F4F5] px-4 sm:px-6 animated-grid">
+    <div className="min-h-screen flex flex-col justify-between bg-[#060608] text-[#F4F4F5] animated-grid">
       
-      {/* Background Ambient Glows */}
-      <div className="absolute top-[20%] left-[25%] w-[250px] sm:w-[450px] h-[250px] sm:h-[450px] rounded-full bg-gold/5 blur-[80px] sm:blur-[120px] pointer-events-none animate-float-1"></div>
-      <div className="absolute bottom-[20%] right-[25%] w-[250px] sm:w-[450px] h-[250px] sm:h-[450px] rounded-full bg-blue-500/5 blur-[80px] sm:blur-[120px] pointer-events-none animate-float-2"></div>
-
       {/* Top Header */}
-      <header className="w-full max-w-md mx-auto pt-6 flex justify-between items-center z-20 animate-luxury-card px-1">
-        <div className="flex items-center gap-2.5">
-          {/* Logo symbol */}
-          <div className="relative flex items-center justify-center w-10 h-10 select-none">
-            <img src="/logo.png" alt="Shree Balaji Estate Logo" className="w-full h-full object-contain rounded" />
+      <header className="sticky top-0 z-40 w-full bg-[#08090C]/90 backdrop-blur-md border-b border-[#1B1C22] px-4 sm:px-8 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          
+          {/* Logo & Brand */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg overflow-hidden border border-[#C5A880]/30 shadow-md shrink-0 bg-[#0E0F12] flex items-center justify-center">
+              <img src="/logo.png" alt="Shree Balaji Logo" className="w-full h-full object-contain" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-serif font-bold text-sm sm:text-base tracking-widest text-slate-100 uppercase">
+                  SB <span className="text-[#C5A880] italic font-light lowercase">suite OS</span>
+                </span>
+                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#C5A880]/15 text-[#DFD3C3] border border-[#C5A880]/30 uppercase font-bold">
+                  v2.0
+                </span>
+              </div>
+              <p className="text-[8px] sm:text-[9px] font-mono tracking-[0.2em] text-slate-500 uppercase">
+                SHREE BALAJI PROPERTIES
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="font-serif text-base tracking-widest font-bold text-slate-200 uppercase leading-none">
-              SB <span className="text-gold italic font-light lowercase">suite</span>
-            </span>
-            <span className="text-[7px] tracking-[0.25em] font-medium text-slate-500 uppercase mt-0.5 font-mono">
-              {t.tagline}
-            </span>
-          </div>
-        </div>
 
-        {/* Language Switcher */}
-        <button
-          onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
-          className="px-2.5 py-1 rounded bg-luxury-gray border border-[#1B1B21] text-[10px] font-semibold text-gold hover:border-gold/45 transition-colors cursor-pointer flex items-center gap-1.5"
-        >
-          <Globe className="w-3 h-3" />
-          <span>{lang === 'en' ? 'हिंदी' : 'EN'}</span>
-        </button>
+          {/* Right Controls (Month Selector, Network Status, Role / Logout) */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            
+            {/* Month Cycle Selector */}
+            <div className="flex items-center gap-1.5 bg-[#0E0F12] border border-[#1B1C22] px-2.5 py-1.5 rounded-lg text-xs">
+              <Calendar className="w-3.5 h-3.5 text-[#C5A880]" />
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="bg-transparent text-slate-300 font-semibold focus:outline-none cursor-pointer text-xs"
+              >
+                {months.map((m) => (
+                  <option key={m} value={m} className="bg-[#0E0F12] text-white">
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Online / Offline Sync Indicator */}
+            <div className={`hidden sm:flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
+              isOnline ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+            }`}>
+              {isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+              <span>{isOnline ? 'Supabase Live' : 'Offline Mode'}</span>
+            </div>
+
+            {/* Role Badge & Switcher */}
+            {currentRole ? (
+              <div className="flex items-center gap-1.5">
+                <span className="hidden sm:inline-block px-2.5 py-1 rounded-lg bg-[#14151B] border border-[#22242D] text-xs font-bold text-[#C5A880] uppercase tracking-wider">
+                  {currentRole === 'owner' ? '👑 Owner' : '📱 Ritin (Manager)'}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="p-1.5 rounded-lg bg-[#14151B] hover:bg-rose-900/20 border border-[#22242D] text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
+                  title="Switch Role / Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : null}
+
+          </div>
+
+        </div>
       </header>
 
-      {/* Centered Login Card */}
-      <main className="w-full max-w-md mx-auto flex-1 flex flex-col items-center justify-center py-6 z-10 animate-luxury-card delay-75 px-1">
+      {/* Main Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         
-        {/* Core Login Card Box */}
-        <div className="w-full bg-[#0E0F12] border border-[#1B1C21] p-5 sm:p-8 rounded-xl shadow-2xl relative">
-          
-          {/* Elegant Top Line */}
-          <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-gold/30 to-transparent"></div>
-
-          {/* Clean Portal Selector Tabs */}
-          <div className="mb-6 border-b border-[#1B1C21] pb-3 flex justify-between gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500">
-            {(['residential', 'commercial', 'parking'] as const).map((role) => {
-              const info = roleConfig[role];
-              const isActive = selectedRole === role;
-              return (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => setSelectedRole(role)}
-                  className={`flex-1 py-1.5 rounded text-center transition-all duration-200 cursor-pointer select-none text-[9px] sm:text-[11px] ${
-                    isActive 
-                      ? 'text-gold border border-gold/15 bg-gold/5 shadow-[0_0_10px_rgba(197,168,128,0.1)]' 
-                      : 'hover:text-slate-200 hover:bg-slate-900/40 border border-transparent'
-                  }`}
-                >
-                  {info.title}
-                </button>
-              );
-            })}
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-3">
+            <RefreshCw className="w-8 h-8 text-[#C5A880] animate-spin" />
+            <p className="font-serif text-sm text-slate-400">Loading Shree Balaji OS Terminal...</p>
           </div>
-
-          {/* Form Content Wrapper */}
-          <div className={`transition-opacity duration-150 ${isFormAnimating ? 'opacity-0' : 'opacity-100'}`}>
+        ) : !currentRole ? (
+          
+          /* ROLE SELECTION GATEWAY */
+          <div className="max-w-xl mx-auto my-auto py-12 px-2 text-center space-y-8 animate-in fade-in zoom-in duration-200">
             
-            {/* Header info */}
-            <div className="mb-6 text-center sm:text-left">
-              <h2 className="font-serif text-lg sm:text-xl font-light text-slate-200">
-                {roleConfig[prevRole].subtitle}
-              </h2>
-              <p className="text-[11px] text-slate-500 mt-1 font-light">
-                {t.desc}
+            <div className="space-y-2">
+              <div className="w-16 h-16 mx-auto rounded-2xl p-2 bg-[#0E0F12] border border-[#C5A880]/30 shadow-2xl flex items-center justify-center">
+                <img src="/logo.png" alt="Shree Balaji Logo" className="w-full h-full object-contain" />
+              </div>
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-wide mt-3">
+                Select Operating Terminal
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
+                Asset & Tenancy Terminal for 14 Rooms, 8 Shops, and Parking Complex.
               </p>
             </div>
 
-            {/* Inputs Form */}
-            <form onSubmit={handleLogin} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
-              {/* Email Input */}
-              <div className="space-y-1.5">
-                <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                  {t.emailLabel}
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-600">
-                    <Mail className="w-3.5 h-3.5" />
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t.emailPlaceholder}
-                    className="w-full pl-9 pr-3 py-2.5 rounded bg-[#060608] border border-[#1B1C21] text-slate-200 text-xs placeholder:text-slate-700 focus:outline-none focus:border-gold/50 transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Password Input */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                    {t.passwordLabel}
-                  </label>
-                  <a 
-                    href="#forgot"
-                    onClick={(e) => { e.preventDefault(); alert(lang === 'en' ? 'Reset link sent.' : 'पासवर्ड लिंक भेज दिया गया है।'); }}
-                    className="text-[9px] text-[#C5A880] hover:text-[#DFD3C3] font-semibold tracking-wider transition-colors uppercase"
-                  >
-                    {t.forgotLink}
-                  </a>
-                </div>
-                
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-600">
-                    <Lock className="w-3.5 h-3.5" />
-                  </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t.passwordPlaceholder}
-                    className="w-full pl-9 pr-9 py-2.5 rounded bg-[#060608] border border-[#1B1C21] text-slate-200 text-xs placeholder:text-slate-700 focus:outline-none focus:border-gold/50 transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-600 hover:text-gold transition-colors cursor-pointer"
-                  >
-                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Remember Me */}
-              <div className="flex items-center gap-2 pt-1 select-none">
-                <input
-                  type="checkbox"
-                  id="remember"
-                  className="w-3.5 h-3.5 rounded border-[#1B1C21] bg-transparent text-gold focus:ring-0 accent-gold cursor-pointer"
-                />
-                <label htmlFor="remember" className="text-[11px] text-slate-500 hover:text-slate-400 transition-colors font-light cursor-pointer">
-                  {t.rememberMe}
-                </label>
-              </div>
-
-              {/* Login Button */}
+              {/* Field Manager (Ritin) Card */}
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-[#C5A880] hover:bg-[#DFD3C3] disabled:opacity-45 text-[#060608] text-[10px] font-bold uppercase tracking-[0.2em] py-3.5 rounded transition-colors duration-200 mt-2 flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                onClick={() => handleSelectRole('manager')}
+                className="group relative bg-[#0E0F12] hover:bg-[#12141A] border border-[#1B1C22] hover:border-[#C5A880]/50 p-6 rounded-2xl text-left transition-all duration-200 shadow-xl cursor-pointer flex flex-col justify-between space-y-4"
               >
-                {loading ? (
-                  <div className="w-4 h-4 border-2 border-[#060608] border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    {t.signInBtn}
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </>
-                )}
+                <div className="space-y-2">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                    <Smartphone className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-serif text-base font-bold text-white group-hover:text-[#DFD3C3] transition-colors">
+                    Field Mode (Ritin)
+                  </h3>
+                  <p className="text-xs text-slate-400 font-light leading-relaxed">
+                    Mobile-optimized single-hand entry for meter reading camera photos, rent collections, and daily parking.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between text-xs font-bold text-emerald-400 uppercase tracking-wider pt-2 border-t border-[#17181F]">
+                  <span>Launch Field Mode</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
               </button>
 
-            </form>
+              {/* Executive Owner Card */}
+              <button
+                onClick={() => handleSelectRole('owner')}
+                className="group relative bg-[#0E0F12] hover:bg-[#12141A] border border-[#1B1C22] hover:border-[#C5A880]/50 p-6 rounded-2xl text-left transition-all duration-200 shadow-xl cursor-pointer flex flex-col justify-between space-y-4"
+              >
+                <div className="space-y-2">
+                  <div className="w-10 h-10 rounded-xl bg-[#C5A880]/15 border border-[#C5A880]/30 text-[#C5A880] flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-serif text-base font-bold text-white group-hover:text-[#DFD3C3] transition-colors">
+                    Executive Owner
+                  </h3>
+                  <p className="text-xs text-slate-400 font-light leading-relaxed">
+                    Full executive telemetry, Master Tariff editing, live Ritin cash reconciliation, and 1-click settlement audit.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between text-xs font-bold text-[#C5A880] uppercase tracking-wider pt-2 border-t border-[#17181F]">
+                  <span>Enter Command Terminal</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </button>
+
+            </div>
+
           </div>
-        </div>
+
+        ) : currentRole === 'owner' ? (
+          <OwnerDashboard />
+        ) : (
+          <FieldDashboard />
+        )}
 
       </main>
 
-      {/* Footer / Administrative Logins */}
-      <footer className="w-full max-w-md mx-auto py-6 border-t border-[#242427]/40 z-20 flex flex-col items-center gap-4 animate-luxury-card delay-150 px-1">
-        
-        {/* Flat minimal staff buttons */}
-        <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.15em] text-slate-500">
-          <span>{t.staffEntrance}:</span>
-          <button
-            onClick={() => setSelectedRole('manager')}
-            className={`transition-colors duration-200 font-bold cursor-pointer ${
-              selectedRole === 'manager' ? 'text-gold' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            {t.managerBtn}
-          </button>
-          <span className="text-slate-800">|</span>
-          <button
-            onClick={() => setSelectedRole('owner')}
-            className={`transition-colors duration-200 font-bold cursor-pointer ${
-              selectedRole === 'owner' ? 'text-gold' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            {t.ownerBtn}
-          </button>
-        </div>
+      {/* Owner PIN Security Modal */}
+      {showPinModal && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-[#0E0F12] border border-[#22242D] rounded-2xl p-6 shadow-2xl text-center relative animate-in fade-in zoom-in duration-150">
+            <div className="w-12 h-12 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/30 text-[#C5A880] mx-auto flex items-center justify-center mb-3">
+              <Lock className="w-6 h-6" />
+            </div>
 
-        {/* Copyright info */}
-        <div className="flex flex-col items-center gap-1 text-[11px] text-slate-500 font-light text-center">
-          <p>
-            &copy; {new Date().getFullYear()} Shree Balaji Properties. All rights reserved.
-          </p>
-          <a 
-            href="https://www.sbsuite.in" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="text-[#C5A880] hover:text-[#DFD3C3] font-semibold tracking-[0.2em] transition-colors uppercase text-[9px] flex items-center gap-1.5 mt-0.5"
-          >
-            <Building2 className="w-3.5 h-3.5 text-slate-600" />
-            www.sbsuite.in
-          </a>
+            <h3 className="font-serif text-lg font-bold text-white">Owner PIN Security</h3>
+            <p className="text-xs text-slate-400 mt-1">Enter PIN or Password to access Executive Command.</p>
+
+            <form onSubmit={handleOwnerPinSubmit} className="mt-5 space-y-4">
+              <div className="space-y-1">
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter PIN (e.g. 2528)"
+                  value={ownerPin}
+                  onChange={(e) => {
+                    setOwnerPin(e.target.value);
+                    setPinError(false);
+                  }}
+                  className="w-full text-center tracking-widest text-lg font-mono p-3 rounded-xl bg-[#060608] border border-[#1B1C22] text-white focus:outline-none focus:border-[#C5A880]"
+                  autoFocus
+                />
+                {pinError && (
+                  <p className="text-xs text-rose-400 mt-1">Incorrect PIN. Try PIN: 2528</p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowPinModal(false); setOwnerPin(''); }}
+                  className="flex-1 py-2.5 rounded-xl bg-[#14151B] text-slate-400 hover:text-white text-xs font-bold uppercase transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-[#C5A880] hover:bg-[#DFD3C3] text-[#060608] text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-lg"
+                >
+                  Unlock
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="w-full border-t border-[#17181F] py-4 px-4 sm:px-8 text-center text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p>© {new Date().getFullYear()} Shree Balaji Properties. All rights reserved.</p>
+          <p className="font-mono text-[10px] text-[#C5A880]">sbsuite.in • SB Suite OS</p>
         </div>
       </footer>
 

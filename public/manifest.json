@@ -1,11 +1,11 @@
 {
-  "name": "SB Suite",
+  "name": "SB Suite OS",
   "short_name": "SB Suite",
-  "description": "Property Management System for Shree Balaji Properties",
+  "description": "Shree Balaji Properties Asset & Tenancy Terminal",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#060608",
-  "theme_color": "#0E0F12",
+  "theme_color": "#060608",
   "icons": [
     {
       "src": "/logo.png",

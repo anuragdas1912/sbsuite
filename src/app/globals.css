@@ -1,206 +1,60 @@
 @import "tailwindcss";
 
-@theme {
-  --font-serif: var(--font-playfair-display), serif;
-  --font-sans: var(--font-inter), sans-serif;
+@layer base {
+  :root {
+    --bg-main: #060608;
+    --card-bg: #0E0F12;
+    --card-border: #1B1C22;
+    --gold: #C5A880;
+    --gold-light: #DFD3C3;
+    --gold-dark: #8E7550;
+  }
 
-  --color-gold: #C5A880; /* Soft champagne luxury gold */
-  --color-gold-hover: #DFD3C3;
-  --color-gold-dark: #9A805E;
-  
-  --color-luxury-black: #060608;
-  --color-luxury-gray: #0E0F12;
-  --color-luxury-border: #1B1C21;
-}
+  body {
+    background-color: #060608;
+    color: #F4F4F5;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
 
-:root {
-  --background: #060608;
-  --foreground: #F4F4F5;
-}
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  input, textarea, select {
+    user-select: text;
+  }
 }
 
-/* Custom Luxury Scrollbars */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: #060608;
-}
-::-webkit-scrollbar-thumb {
-  background: #1B1C21;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #C5A880;
+/* Custom Luxury Gradients & Glows */
+.gold-gradient-text {
+  background: linear-gradient(135deg, #FFFFFF 0%, #DFD3C3 40%, #C5A880 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* 2026 Cyber Grid Background Drift Animation */
-@keyframes grid-drift {
-  0% { background-position: 0 0; }
-  100% { background-position: 60px 60px; }
+.gold-border-glow {
+  box-shadow: 0 0 15px rgba(197, 168, 128, 0.12);
+}
+
+.emerald-glow {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
 }
 
 .animated-grid {
+  background-size: 32px 32px;
   background-image: 
-    linear-gradient(to right, rgba(197, 168, 128, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(197, 168, 128, 0.02) 1px, transparent 1px);
-  background-size: 60px 60px;
-  animation: grid-drift 30s linear infinite;
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
 }
 
-/* Rotating holographic ring for logo */
-@keyframes rotate-ring {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* Mobile Safe Area Bottom Padding */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
 }
 
-.animate-rotate-ring {
-  animation: rotate-ring 12s linear infinite;
+/* Hide scrollbar for tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-
-/* Floating background mesh keyframes */
-@keyframes float-slow {
-  0%, 100% {
-    transform: translateY(0px) scale(1) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-25px) scale(1.08) rotate(5deg);
-  }
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-
-@keyframes float-reverse {
-  0%, 100% {
-    transform: translateY(0px) scale(1.08) rotate(0deg);
-  }
-  50% {
-    transform: translateY(25px) scale(1) rotate(-5deg);
-  }
-}
-
-.animate-float-1 {
-  animation: float-slow 14s ease-in-out infinite;
-}
-
-.animate-float-2 {
-  animation: float-reverse 16s ease-in-out infinite;
-}
-
-/* Luxury slide-up with ambient gold shadows */
-@keyframes slide-up-glow {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-luxury-card {
-  animation: slide-up-glow 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.delay-75 { animation-delay: 75ms; }
-.delay-150 { animation-delay: 150ms; }
-.delay-300 { animation-delay: 300ms; }
-
-/* 2026 Glassmorphic Panels with Interactive Border Shines */
-.glass-panel-2026 {
-  background: rgba(14, 15, 18, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(197, 168, 128, 0.08);
-}
-
-.glass-card-interactive-2026 {
-  background: rgba(14, 15, 18, 0.3);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.glass-card-interactive-2026:hover {
-  background: rgba(14, 15, 18, 0.7);
-  border-color: rgba(197, 168, 128, 0.3);
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(197, 168, 128, 0.05);
-}
-
-.glass-card-active-2026 {
-  background: rgba(14, 15, 18, 0.85);
-  border-color: rgba(197, 168, 128, 0.7);
-  transform: translateY(-5px);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7), 0 0 40px rgba(197, 168, 128, 0.15);
-}
-
-/* Floating labels for sleek inputs */
-.luxury-input-wrapper {
-  position: relative;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: border-color 0.3s ease;
-}
-
-.luxury-input-wrapper:focus-within {
-  border-color: #C5A880;
-}
-
-.luxury-input-field {
-  width: 150%;
-  background: transparent;
-  outline: none;
-  padding: 8px 0;
-  font-size: 14px;
-}
-
-/* Mobile responsive tables */
-@media (max-width: 768px) {
-  .mobile-table, .mobile-table tbody, .mobile-table tr, .mobile-table td {
-    display: block;
-    width: 100%;
-  }
-  
-  .mobile-table thead {
-    display: none;
-  }
-  
-  .mobile-table tr {
-    margin-bottom: 1rem;
-    background: rgba(14, 15, 18, 0.4);
-    border: 1px solid rgba(197, 168, 128, 0.1);
-    border-radius: 0.5rem;
-    padding: 0.75rem;
-  }
-  
-  .mobile-table td {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    text-align: right;
-  }
-  
-  .mobile-table td:last-child {
-    border-bottom: none;
-  }
-  
-  .mobile-table td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.65rem;
-    letter-spacing: 0.05em;
-    color: #9CA3AF;
-    text-align: left;
-    margin-right: 1rem;
-  }
-}
-
