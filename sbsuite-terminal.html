@@ -652,6 +652,102 @@
           <!-- Dynamically populated via renderUnitsDeck() -->
         </div>
       </main>
+    <!-- ================= SUB-METER READING TWIN-GAUGE DRAWER ================= -->
+    <div id="drawer-backdrop" onclick="closeMeterDrawer()" class="absolute inset-0 bg-black/70 backdrop-blur-md z-40 transition-opacity duration-300 pointer-events-none opacity-0" style="display: none;"></div>
+
+    <div id="drawer-sheet" class="absolute bottom-0 inset-x-0 bg-[#0A0D14] border-t border-white/[0.12] rounded-t-[32px] p-5 pb-[max(24px,env(safe-area-inset-bottom,24px))] shadow-[0_-20px_50px_rgba(0,0,0,0.9)] z-50 gpu-accel flex flex-col select-none transition-transform duration-300 ease-out max-h-[85vh] overflow-y-auto deck-scrollbar translate-y-full" style="display: none;">
+      <!-- Top handle -->
+      <div class="w-10 h-1 rounded-full bg-white/20 mb-4 mx-auto shrink-0"></div>
+
+      <!-- Top Bar inside Sheet -->
+      <div class="flex items-center justify-between pb-3.5 border-b border-white/[0.07]">
+        <div class="flex items-center gap-2.5">
+          <span id="drawer-unit-badge" class="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-white/[0.1] font-mono font-bold text-sm text-[#EDEDED]">
+            R-101
+          </span>
+          <div>
+            <h3 id="drawer-tenant-name" class="text-sm font-semibold text-[#EDEDED] leading-tight">
+              Tenant Name
+            </h3>
+            <span id="drawer-rate-label" class="text-[10px] font-mono text-[#94A3B8]">
+              Sub-Meter Reading // Room Rate ₹9/u
+            </span>
+          </div>
+        </div>
+
+        <button type="button" onclick="closeMeterDrawer()" aria-label="Close drawer" class="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white transition-colors cursor-pointer border border-white/[0.08]">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- THE TWIN-GAUGE READING HUD -->
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <!-- Left Gauge (Previous Reading - Locked) -->
+        <div class="bg-[#06080C] border border-white/[0.06] rounded-2xl p-3.5 flex flex-col justify-between">
+          <span class="text-[9px] font-mono text-[#64748B] uppercase tracking-wider font-semibold">
+            PREVIOUS (LOCKED)
+          </span>
+          <div class="mt-2 flex items-baseline gap-1">
+            <span id="drawer-prev-reading" class="text-2xl font-mono font-bold text-[#CBD5E1]">
+              1380
+            </span>
+            <span class="text-xs font-mono text-[#64748B]">kWh</span>
+          </div>
+        </div>
+
+        <!-- Right Gauge (Current Reading - Active Input) -->
+        <div id="drawer-input-container" class="bg-white/[0.04] border border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)] rounded-2xl p-3.5 flex flex-col justify-between transition-colors duration-150">
+          <span class="text-[9px] font-mono text-[#D4AF37] uppercase tracking-wider font-semibold">
+            CURRENT READING
+          </span>
+          <div class="mt-2 flex items-baseline gap-1">
+            <input
+              id="drawer-current-input"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              oninput="handleDrawerInput(this.value)"
+              placeholder="1390"
+              class="w-full bg-transparent text-2xl font-mono font-bold text-[#EDEDED] focus:outline-none placeholder:text-white/20"
+            />
+            <span class="text-xs font-mono text-[#D4AF37]/80">kWh</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- REAL-TIME LIVE MATH ENGINE -->
+      <div id="drawer-math-hud" class="mt-3.5">
+        <div class="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center text-xs font-mono text-[#64748B]">
+          Enter current meter numbers above to calculate dues
+        </div>
+      </div>
+
+      <!-- EVIDENCE CAPTURE & SAVE ACTION -->
+      <div class="mt-4 flex items-center justify-between gap-3">
+        <input id="drawer-photo-input" type="file" accept="image/*" capture="environment" onchange="handleDrawerPhoto(event)" class="hidden" />
+
+        <button type="button" onclick="document.getElementById('drawer-photo-input').click()" class="flex-1 py-2.5 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.08] text-xs font-mono text-[#CBD5E1] flex items-center justify-center gap-2 cursor-pointer transition-colors active:scale-98">
+          <svg class="w-4 h-4 text-[#D4AF37]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          <span id="drawer-photo-label">Capture Meter Photo</span>
+        </button>
+
+        <div id="drawer-photo-preview-wrap" class="relative group shrink-0" style="display: none;">
+          <img id="drawer-photo-preview" src="" alt="Meter proof" class="w-10 h-10 rounded-xl object-cover border border-[#D4AF37]/50 shadow-md" />
+          <button type="button" onclick="clearDrawerPhoto()" class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] font-bold">✕</button>
+        </div>
+      </div>
+
+      <!-- Action Buttons (Bottom) -->
+      <div class="grid grid-cols-2 gap-3 mt-4 pt-1">
+        <button type="button" onclick="closeMeterDrawer()" class="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#94A3B8] hover:text-white text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center">
+          Cancel
+        </button>
+
+        <button id="drawer-confirm-btn" type="button" disabled onclick="confirmAndLogReading()" class="py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-not-allowed opacity-50 bg-white/[0.04] text-[#64748B] border border-white/[0.06]">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Confirm & Log</span>
+        </button>
+      </div>
     </div>
 
   </div>
@@ -966,7 +1062,7 @@
             </span>`;
 
         return `
-          <div class="group relative p-3 rounded-2xl bg-[#0D1117] border border-white/[0.08] hover:border-[#D4AF37]/40 active:scale-[0.97] transition-all duration-150 cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[126px]">
+          <div onclick="openMeterDrawer('${unit.id}')" class="group relative p-3 rounded-2xl bg-[#0D1117] border border-white/[0.08] hover:border-[#D4AF37]/40 active:scale-[0.97] transition-all duration-150 cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[126px]">
             <div class="absolute inset-x-3 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent pointer-events-none"></div>
             <div>
               <div class="flex items-center justify-between">
@@ -982,6 +1078,148 @@
           </div>
         `;
       }).join('');
+    }
+
+    // 6. SUB-METER READING DRAWER & LIVE MATH
+    let activeDrawerUnit = null;
+    let currentReadingValue = '';
+    let attachedPhotoUrl = null;
+
+    function openMeterDrawer(unitId) {
+      const unit = STATIC_UNITS.find(u => u.id === unitId);
+      if (!unit || !unit.isOccupied) return;
+
+      activeDrawerUnit = unit;
+      currentReadingValue = '';
+      attachedPhotoUrl = null;
+
+      document.getElementById('drawer-unit-badge').textContent = unit.name;
+      document.getElementById('drawer-tenant-name').textContent = unit.tenantName;
+      document.getElementById('drawer-rate-label').textContent = `Sub-Meter Reading // ${unit.type === 'room' ? 'Room Rate ₹9/u' : 'Shop Rate ₹11/u'}`;
+      document.getElementById('drawer-prev-reading').textContent = unit.lastReading;
+      const input = document.getElementById('drawer-current-input');
+      input.value = '';
+      input.placeholder = `${unit.lastReading + 10}`;
+
+      clearDrawerPhoto();
+      updateDrawerMathHUD();
+
+      const backdrop = document.getElementById('drawer-backdrop');
+      const sheet = document.getElementById('drawer-sheet');
+      backdrop.style.display = 'block';
+      sheet.style.display = 'flex';
+
+      requestAnimationFrame(() => {
+        backdrop.style.opacity = '1';
+        backdrop.style.pointerEvents = 'auto';
+        sheet.classList.remove('translate-y-full');
+        sheet.classList.add('translate-y-0');
+        input.focus();
+      });
+    }
+
+    function closeMeterDrawer() {
+      const backdrop = document.getElementById('drawer-backdrop');
+      const sheet = document.getElementById('drawer-sheet');
+
+      backdrop.style.opacity = '0';
+      backdrop.style.pointerEvents = 'none';
+      sheet.classList.remove('translate-y-0');
+      sheet.classList.add('translate-y-full');
+
+      setTimeout(() => {
+        backdrop.style.display = 'none';
+        sheet.style.display = 'none';
+        activeDrawerUnit = null;
+      }, 300);
+    }
+
+    function handleDrawerInput(val) {
+      currentReadingValue = val.replace(/[^0-9]/g, '');
+      document.getElementById('drawer-current-input').value = currentReadingValue;
+      updateDrawerMathHUD();
+    }
+
+    function updateDrawerMathHUD() {
+      if (!activeDrawerUnit) return;
+      const tariffRate = activeDrawerUnit.type === 'room' ? 9.0 : 11.0;
+      const hud = document.getElementById('drawer-math-hud');
+      const inputContainer = document.getElementById('drawer-input-container');
+      const confirmBtn = document.getElementById('drawer-confirm-btn');
+
+      if (currentReadingValue.trim() === '') {
+        inputContainer.className = "bg-white/[0.04] border border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)] rounded-2xl p-3.5 flex flex-col justify-between transition-colors duration-150";
+        hud.innerHTML = `<div class="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center text-xs font-mono text-[#64748B]">Enter current meter numbers above to calculate dues</div>`;
+        confirmBtn.disabled = true;
+        confirmBtn.className = "py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-not-allowed opacity-50 bg-white/[0.04] text-[#64748B] border border-white/[0.06]";
+        return;
+      }
+
+      const currentNum = parseInt(currentReadingValue, 10);
+      if (isNaN(currentNum)) return;
+
+      if (currentNum < activeDrawerUnit.lastReading) {
+        // Lower than previous error
+        inputContainer.className = "bg-white/[0.04] border border-rose-500/80 shadow-[0_0_15px_rgba(244,63,94,0.25)] rounded-2xl p-3.5 flex flex-col justify-between transition-colors duration-150";
+        hud.innerHTML = `
+          <div class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-rose-950/40 border border-rose-500/50 text-rose-300 text-xs font-mono animate-shake">
+            <svg class="w-4 h-4 shrink-0 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span>⚠️ Reading cannot be lower than previous</span>
+          </div>
+        `;
+        confirmBtn.disabled = true;
+        confirmBtn.className = "py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-not-allowed opacity-50 bg-white/[0.04] text-[#64748B] border border-white/[0.06]";
+      } else {
+        // Valid calculation
+        const unitsConsumed = currentNum - activeDrawerUnit.lastReading;
+        const electricityDue = unitsConsumed * tariffRate;
+
+        inputContainer.className = "bg-white/[0.04] border border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)] rounded-2xl p-3.5 flex flex-col justify-between transition-colors duration-150";
+        hud.innerHTML = `
+          <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 text-xs font-mono shadow-[0_0_15px_rgba(34,211,238,0.12)]">
+            <div class="flex items-center gap-1.5 text-cyan-300">
+              <svg class="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" viewBox="0 0 24 24" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              <span>Δ Consumed: <strong class="text-white font-bold">${unitsConsumed}</strong> kWh</span>
+            </div>
+            <div class="text-right text-[#EDEDED]">
+              <span class="text-[#94A3B8]">× ₹${tariffRate} = </span>
+              <strong class="text-[#D4AF37] text-sm font-bold">₹${electricityDue.toLocaleString('en-IN')}</strong>
+            </div>
+          </div>
+        `;
+        confirmBtn.disabled = false;
+        confirmBtn.className = "py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] border border-[#FFF4C2]/40 shadow-[0_0_20px_rgba(212,175,55,0.3)]";
+      }
+    }
+
+    function handleDrawerPhoto(event) {
+      const file = event.target.files?.[0];
+      if (file) {
+        attachedPhotoUrl = URL.createObjectURL(file);
+        document.getElementById('drawer-photo-preview').src = attachedPhotoUrl;
+        document.getElementById('drawer-photo-preview-wrap').style.display = 'block';
+        document.getElementById('drawer-photo-label').textContent = 'Photo Attached (Replace)';
+      }
+    }
+
+    function clearDrawerPhoto() {
+      attachedPhotoUrl = null;
+      document.getElementById('drawer-photo-preview-wrap').style.display = 'none';
+      document.getElementById('drawer-photo-label').textContent = 'Capture Meter Photo';
+      document.getElementById('drawer-photo-input').value = '';
+    }
+
+    function confirmAndLogReading() {
+      if (!activeDrawerUnit || currentReadingValue.trim() === '') return;
+      const currentNum = parseInt(currentReadingValue, 10);
+      if (isNaN(currentNum) || currentNum < activeDrawerUnit.lastReading) return;
+
+      activeDrawerUnit.lastReading = currentNum;
+      activeDrawerUnit.isReadingPending = false;
+
+      if (navigator.vibrate) navigator.vibrate([24, 30, 24]);
+      closeMeterDrawer();
+      renderUnitsDeck(currentDeckTab);
     }
   </script>
 </body>

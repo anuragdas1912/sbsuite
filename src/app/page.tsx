@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Delete, ShieldCheck, Lock, Sparkles, Check, ChevronRight, AlertOctagon, Zap, Plus, Store } from 'lucide-react';
+import { Delete, ShieldCheck, Lock, Sparkles, Check, ChevronRight, AlertOctagon, Zap, Plus, Store, X, Camera, AlertTriangle } from 'lucide-react';
 
 type ScreenState = 'splash' | 'pin' | 'units_deck' | 'owner_console' | 'manager_console';
 type UserRole = 'owner' | 'manager';
@@ -236,13 +236,67 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
+  // Dynamic units state
+  const [units, setUnits] = useState<UnitItem[]>(STATIC_UNITS);
+
+  // Sub-Meter Reading Drawer state
+  const [selectedUnit, setSelectedUnit] = useState<UnitItem | null>(null);
+  const [currentReadingInput, setCurrentReadingInput] = useState<string>('');
+  const [meterPhotoUrl, setMeterPhotoUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Live Math Engine Calculations
+  const tariffRate = selectedUnit ? (selectedUnit.type === 'room' ? 9.0 : 11.0) : 9.0;
+  const currentReadingNum = currentReadingInput.trim() !== '' ? parseInt(currentReadingInput, 10) : null;
+  const isInputValid = currentReadingNum !== null && !isNaN(currentReadingNum);
+  const isLowerThanPrev = isInputValid && selectedUnit ? currentReadingNum < selectedUnit.lastReading : false;
+  const unitsConsumed = isInputValid && selectedUnit && !isLowerThanPrev ? currentReadingNum - selectedUnit.lastReading : 0;
+  const electricityDue = unitsConsumed * tariffRate;
+  const canSave = isInputValid && selectedUnit && !isLowerThanPrev;
+
+  const handleUnitClick = (unit: UnitItem) => {
+    if (!unit.isOccupied) return;
+    setSelectedUnit(unit);
+    setCurrentReadingInput('');
+    setMeterPhotoUrl(null);
+  };
+
+  const handleCloseDrawer = () => {
+    setSelectedUnit(null);
+    setCurrentReadingInput('');
+    setMeterPhotoUrl(null);
+  };
+
+  const handleSaveReading = () => {
+    if (!canSave || !selectedUnit || currentReadingNum === null) return;
+    setUnits((prev) =>
+      prev.map((u) =>
+        u.id === selectedUnit.id
+          ? { ...u, lastReading: currentReadingNum, isReadingPending: false }
+          : u
+      )
+    );
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([24, 30, 24]);
+    }
+    handleCloseDrawer();
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setMeterPhotoUrl(url);
+    }
+  };
+
   // Glanceable stats and filtered units
-  const roomsCount = useMemo(() => STATIC_UNITS.filter((u) => u.type === 'room').length, []);
-  const shopsCount = useMemo(() => STATIC_UNITS.filter((u) => u.type === 'shop').length, []);
+  const roomsCount = useMemo(() => units.filter((u) => u.type === 'room').length, [units]);
+  const shopsCount = useMemo(() => units.filter((u) => u.type === 'shop').length, [units]);
 
   const displayedUnits = useMemo(() => {
-    return STATIC_UNITS.filter((u) => (activeTab === 'rooms' ? u.type === 'room' : u.type === 'shop'));
-  }, [activeTab]);
+    return units.filter((u) => (activeTab === 'rooms' ? u.type === 'room' : u.type === 'shop'));
+  }, [units, activeTab]);
 
   const currentStats = useMemo(() => {
     const total = displayedUnits.length;
@@ -822,6 +876,7 @@ export default function Home() {
                     return (
                       <div
                         key={unit.id}
+                        onClick={() => handleUnitClick(unit)}
                         className="group relative p-3 rounded-2xl bg-[#0D1117] border border-white/[0.08] hover:border-[#D4AF37]/40 active:scale-[0.97] transition-all duration-150 cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[126px]"
                       >
                         {/* Top specular highlight edge */}
@@ -879,6 +934,196 @@ export default function Home() {
                 </div>
               </main>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ================= SUB-METER READING TWIN-GAUGE DRAWER ================= */}
+        <AnimatePresence>
+          {selectedUnit && (
+            <>
+              {/* Backdrop: bg-black/70 backdrop-blur-md with tap-to-dismiss */}
+              <motion.div
+                key="drawer-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={handleCloseDrawer}
+                className="absolute inset-0 bg-black/70 backdrop-blur-md z-40 cursor-pointer"
+              />
+
+              {/* Sheet Container: Slide-up bottom sheet */}
+              <motion.div
+                key="drawer-sheet"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+                className="absolute bottom-0 inset-x-0 bg-[#0A0D14] border-t border-white/[0.12] rounded-t-[32px] p-5 pb-[max(24px,env(safe-area-inset-bottom,24px))] shadow-[0_-20px_50px_rgba(0,0,0,0.9)] z-50 gpu-layer flex flex-col select-none max-h-[85vh] overflow-y-auto deck-scrollbar"
+              >
+                {/* Top handle */}
+                <div className="w-10 h-1 rounded-full bg-white/20 mb-4 mx-auto shrink-0" />
+
+                {/* Top Bar inside Sheet */}
+                <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.07]">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-white/[0.1] font-mono font-bold text-sm text-[#EDEDED]">
+                      {selectedUnit.name}
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-semibold text-[#EDEDED] leading-tight">
+                        {selectedUnit.tenantName}
+                      </h3>
+                      <span className="text-[10px] font-mono text-[#94A3B8]">
+                        Sub-Meter Reading // {selectedUnit.type === 'room' ? 'Room Rate ₹9/u' : 'Shop Rate ₹11/u'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleCloseDrawer}
+                    aria-label="Close drawer"
+                    className="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white transition-colors cursor-pointer border border-white/[0.08]"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* THE TWIN-GAUGE READING HUD */}
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  {/* Left Gauge (Previous Reading - Locked) */}
+                  <div className="bg-[#06080C] border border-white/[0.06] rounded-2xl p-3.5 flex flex-col justify-between">
+                    <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider font-semibold">
+                      PREVIOUS (LOCKED)
+                    </span>
+                    <div className="mt-2 flex items-baseline gap-1">
+                      <span className="text-2xl font-mono font-bold text-[#CBD5E1]">
+                        {selectedUnit.lastReading}
+                      </span>
+                      <span className="text-xs font-mono text-[#64748B]">kWh</span>
+                    </div>
+                  </div>
+
+                  {/* Right Gauge (Current Reading - Active Input) */}
+                  <div
+                    className={`bg-white/[0.04] border rounded-2xl p-3.5 flex flex-col justify-between transition-colors duration-150 ${
+                      isLowerThanPrev
+                        ? 'border-rose-500/80 shadow-[0_0_15px_rgba(244,63,94,0.25)]'
+                        : 'border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)]'
+                    }`}
+                  >
+                    <span className="text-[9px] font-mono text-[#D4AF37] uppercase tracking-wider font-semibold">
+                      CURRENT READING
+                    </span>
+                    <div className="mt-2 flex items-baseline gap-1">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        autoFocus
+                        value={currentReadingInput}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9]/g, '');
+                          setCurrentReadingInput(val);
+                        }}
+                        placeholder={`${selectedUnit.lastReading + 10}`}
+                        className="w-full bg-transparent text-2xl font-mono font-bold text-[#EDEDED] focus:outline-none placeholder:text-white/20"
+                      />
+                      <span className="text-xs font-mono text-[#D4AF37]/80">kWh</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* REAL-TIME LIVE MATH ENGINE */}
+                <div className="mt-3.5">
+                  {isLowerThanPrev ? (
+                    <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-rose-950/40 border border-rose-500/50 text-rose-300 text-xs font-mono animate-shake">
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
+                      <span>⚠️ Reading cannot be lower than previous</span>
+                    </div>
+                  ) : isInputValid && currentReadingNum !== null ? (
+                    <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 text-xs font-mono shadow-[0_0_15px_rgba(34,211,238,0.12)]">
+                      <div className="flex items-center gap-1.5 text-cyan-300">
+                        <Zap className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+                        <span>Δ Consumed: <strong className="text-white font-bold">{unitsConsumed}</strong> kWh</span>
+                      </div>
+                      <div className="text-right text-[#EDEDED]">
+                        <span className="text-[#94A3B8]">× ₹{tariffRate} = </span>
+                        <strong className="text-[#D4AF37] text-sm font-bold">₹{electricityDue.toLocaleString('en-IN')}</strong>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center text-xs font-mono text-[#64748B]">
+                      Enter current meter numbers above to calculate dues
+                    </div>
+                  )}
+                </div>
+
+                {/* EVIDENCE CAPTURE & SAVE ACTION */}
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-1 py-2.5 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.08] text-xs font-mono text-[#CBD5E1] flex items-center justify-center gap-2 cursor-pointer transition-colors active:scale-98"
+                  >
+                    <Camera className="w-4 h-4 text-[#D4AF37]" />
+                    <span>{meterPhotoUrl ? 'Photo Attached (Replace)' : 'Capture Meter Photo'}</span>
+                  </button>
+
+                  {meterPhotoUrl && (
+                    <div className="relative group shrink-0">
+                      <img
+                        src={meterPhotoUrl}
+                        alt="Meter proof"
+                        className="w-10 h-10 rounded-xl object-cover border border-[#D4AF37]/50 shadow-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setMeterPhotoUrl(null)}
+                        className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] font-bold"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons (Bottom) */}
+                <div className="grid grid-cols-2 gap-3 mt-4 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleCloseDrawer}
+                    className="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#94A3B8] hover:text-white text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!canSave}
+                    onClick={handleSaveReading}
+                    className={`py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 ${
+                      canSave
+                        ? 'bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] border border-[#FFF4C2]/40 shadow-[0_0_20px_rgba(212,175,55,0.3)]'
+                        : 'bg-white/[0.04] text-[#64748B] border border-white/[0.06] cursor-not-allowed opacity-50'
+                    }`}
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Confirm & Log</span>
+                  </button>
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </div>
