@@ -1,12 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair-display",
-  weight: ["400", "500", "600", "700"],
-});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,7 +9,7 @@ const inter = Inter({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#060608",
+  themeColor: "#06080C",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -24,13 +18,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "SB Suite OS | Shree Balaji Properties",
-  description: "Asset & Tenancy Terminal for Residential Rooms, Commercial Shops, and Parking Complex.",
-  manifest: "/manifest.json",
-  icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
-  },
+  title: "sbsuite.in | Shree Balaji Estate Terminal",
+  description: "Precision Industrial Luxury Gateway for Shree Balaji Estate.",
 };
 
 export default function RootLayout({
@@ -39,9 +28,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#060608] text-[#F4F4F5] selection:bg-[#C5A880]/30 selection:text-white">
+    <html lang="en" className={`${inter.variable} h-full antialiased bg-[#06080C]`}>
+      <body className="min-h-full flex flex-col bg-[#06080C] text-[#F8FAFC] selection:bg-[#D4AF37]/30 selection:text-white">
         {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for (let registration of registrations) {
+                    registration.unregister();
+                  }
+                });
+              }
+              if ('caches' in window) {
+                caches.keys().then(function(names) {
+                  for (let name of names) {
+                    caches.delete(name);
+                  }
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
