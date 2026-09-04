@@ -364,10 +364,11 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-[#06080C] text-[#F8FAFC] flex flex-col items-center justify-center p-0 sm:p-4 overflow-hidden relative selection:bg-[#D4AF37]/30 selection:text-white">
-      {/* Mobile-first touch viewport strictly max-w-md mx-auto min-h-screen */}
+    <main className="h-[100dvh] w-full bg-[#06080C] text-[#F8FAFC] flex flex-col items-center justify-center p-0 sm:p-4 overflow-hidden fixed inset-0 selection:bg-[#D4AF37]/30 selection:text-white">
+      {/* Mobile-first touch viewport strictly max-w-md mx-auto h-[100dvh] sm:h-[860px] */}
       <div
-        className={`w-full max-w-md min-h-screen sm:min-h-[820px] sm:h-[844px] relative flex flex-col justify-between overflow-hidden bg-[#06080C] shadow-[0_30px_90px_rgba(0,0,0,0.95)] sm:rounded-[44px] sm:border sm:border-white/[0.08] transition-shadow duration-300 ${
+        id="terminal-viewport"
+        className={`w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[92vh] relative flex flex-col justify-between overflow-hidden bg-[#06080C] shadow-[0_30px_90px_rgba(0,0,0,0.95)] sm:rounded-[44px] sm:border sm:border-white/[0.08] transition-shadow duration-300 ${
           isError ? 'animate-warning-strobe border-rose-500/50' : ''
         }`}
       >
@@ -406,7 +407,11 @@ export default function Home() {
               onPointerLeave={handlePointerLeave}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
-              className="absolute inset-0 flex flex-col justify-between items-center px-6 py-12 cursor-pointer select-none z-20 gpu-layer"
+              style={{
+                paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
+                paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))',
+              }}
+              className="absolute inset-0 flex flex-col justify-between items-center px-6 cursor-pointer select-none z-20 gpu-layer"
             >
               {/* Top Cockpit Status Line */}
               <div className="w-full flex items-center justify-between opacity-80 pt-2 pointer-events-none">
@@ -477,7 +482,11 @@ export default function Home() {
                   : { opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }
               }
               exit={{ opacity: 0, scale: 1.05, filter: 'blur(8px)' }}
-              className="relative w-full h-full flex flex-col justify-between px-6 py-6 z-10 gpu-layer"
+              style={{
+                paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
+                paddingBottom: 'max(20px, env(safe-area-inset-bottom, 20px))',
+              }}
+              className="relative w-full h-full flex flex-col justify-between px-6 z-10 gpu-layer"
             >
               {/* Clean Balanced Header without Back Button */}
               <div className="w-full flex items-center justify-between pt-2 pb-1">
@@ -700,10 +709,14 @@ export default function Home() {
               animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full h-full min-h-screen flex flex-col justify-between p-6 z-10 gpu-layer"
+              style={{
+                paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
+                paddingBottom: 'max(20px, env(safe-area-inset-bottom, 20px))',
+              }}
+              className="relative w-full h-full flex flex-col justify-between px-6 z-10 gpu-layer"
             >
               {/* Top Cockpit Header */}
-              <div className="relative -mx-6 -mt-6 p-6 overflow-hidden bg-white/[0.02] backdrop-blur-2xl border-b border-white/[0.08] shadow-lg">
+              <div className="relative -mx-6 -mt-4 p-6 overflow-hidden bg-white/[0.02] backdrop-blur-2xl border-b border-white/[0.08] shadow-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-[#0D1117] border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] font-bold text-sm shadow-[0_2px_12px_rgba(212,175,55,0.2)]">
@@ -783,7 +796,11 @@ export default function Home() {
               animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full h-full min-h-screen flex flex-col justify-between p-6 z-10 gpu-layer"
+              style={{
+                paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
+                paddingBottom: 'max(20px, env(safe-area-inset-bottom, 20px))',
+              }}
+              className="relative w-full h-full flex flex-col justify-between px-6 z-10 gpu-layer"
             >
               {/* Top Cockpit Header */}
               <div className="relative -mx-6 -mt-6 p-6 overflow-hidden bg-white/[0.02] backdrop-blur-2xl border-b border-white/[0.08] shadow-lg">

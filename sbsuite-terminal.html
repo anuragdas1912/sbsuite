@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#06080C">
   <title>sbsuite.in | Shree Balaji Estate Terminal</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -11,14 +15,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    html, body {
+      height: 100dvh;
+      width: 100vw;
+      overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-overscroll-behavior: none;
+      position: fixed;
+      touch-action: pan-x pan-y;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: #06080C;
       color: #F8FAFC;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      -webkit-user-select: none;
-      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
     }
 
     .gpu-accel {
@@ -193,10 +208,10 @@
     }
   </style>
 </head>
-<body class="min-h-full flex flex-col items-center justify-center p-0 sm:p-4 bg-[#06080C]">
+<body class="h-[100dvh] w-full flex flex-col items-center justify-center p-0 sm:p-4 bg-[#06080C] overflow-hidden fixed">
 
-  <!-- Mobile-first touch viewport strictly max-w-md mx-auto min-h-screen -->
-  <div id="terminal-viewport" class="w-full max-w-md min-h-screen sm:min-h-[820px] sm:h-[844px] relative flex flex-col justify-between overflow-hidden bg-[#06080C] shadow-[0_30px_90px_rgba(0,0,0,0.95)] sm:rounded-[44px] sm:border sm:border-white/[0.08] transition-all duration-300">
+  <!-- Mobile-first touch viewport strictly max-w-md mx-auto h-[100dvh] sm:h-[860px] -->
+  <div id="terminal-viewport" class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[92vh] relative flex flex-col justify-between overflow-hidden bg-[#06080C] shadow-[0_30px_90px_rgba(0,0,0,0.95)] sm:rounded-[44px] sm:border sm:border-white/[0.08] transition-all duration-300">
 
     <!-- Top Gold Laser Sweep on Iris Unlock -->
     <div id="top-laser-container" class="absolute top-0 left-0 right-0 h-[2px] z-50 overflow-hidden pointer-events-none" style="display: none;">
@@ -213,7 +228,7 @@
     </div>
 
     <!-- ================= SCREEN 1: TOUCH / SWIPE-UP TO ENTER WELCOME SPLASH ================= -->
-    <div id="screen-splash" class="screen-fade absolute inset-0 flex flex-col justify-between items-center px-6 py-12 cursor-pointer select-none z-20 gpu-accel opacity-100">
+    <div id="screen-splash" style="padding-top: max(16px, env(safe-area-inset-top, 16px)); padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));" class="screen-fade absolute inset-0 flex flex-col justify-between items-center px-6 cursor-pointer select-none z-20 gpu-accel opacity-100">
       <!-- Top Cockpit Status Line -->
       <div class="w-full flex items-center justify-between opacity-80 pt-2 pointer-events-none">
         <div class="flex items-center gap-2">
@@ -333,7 +348,7 @@
     </div>
 
     <!-- ================= SCREEN 2: VOLUMETRIC GLASS PEBBLE PIN GATEWAY ================= -->
-    <div id="screen-pin" class="screen-fade relative w-full h-full flex flex-col justify-between px-6 py-6 z-10 gpu-accel opacity-0" style="display: none;">
+    <div id="screen-pin" style="display: none; padding-top: max(16px, env(safe-area-inset-top, 16px)); padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));" class="screen-fade relative w-full h-full flex flex-col justify-between px-6 z-10 gpu-accel opacity-0">
       
       <!-- Balanced Clean Header without Back Button -->
       <div class="w-full flex items-center justify-between pt-2 pb-1">
@@ -453,9 +468,9 @@
     </div>
 
     <!-- ================= SCREEN 3: OWNER CONSOLE READY ================= -->
-    <div id="screen-owner" class="screen-fade relative w-full h-full min-h-screen flex flex-col justify-between p-6 z-10 gpu-accel opacity-0" style="display: none;">
+    <div id="screen-owner" style="display: none; padding-top: max(16px, env(safe-area-inset-top, 16px)); padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));" class="screen-fade relative w-full h-full flex flex-col justify-between px-6 z-10 gpu-accel opacity-0">
       <!-- Top Header -->
-      <div class="relative -mx-6 -mt-6 p-6 overflow-hidden bg-white/[0.02] backdrop-blur-2xl border-b border-white/[0.08] shadow-lg">
+      <div class="relative -mx-6 -mt-4 p-6 overflow-hidden bg-white/[0.02] backdrop-blur-2xl border-b border-white/[0.08] shadow-lg">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-[#0D1117] border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] font-bold text-sm shadow-[0_2px_12px_rgba(212,175,55,0.2)]">
@@ -531,7 +546,7 @@
     </div>
 
     <!-- ================= SCREEN 4: MANAGER TERMINAL READY ================= -->
-    <div id="screen-manager" class="screen-fade relative w-full h-full min-h-screen flex flex-col justify-between p-6 z-10 gpu-accel opacity-0" style="display: none;">
+    <div id="screen-manager" style="display: none; padding-top: max(16px, env(safe-area-inset-top, 16px)); padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));" class="screen-fade relative w-full h-full flex flex-col justify-between px-6 z-10 gpu-accel opacity-0">
       <!-- Top Header -->
       <div class="relative -mx-6 -mt-6 p-6 overflow-hidden bg-white/[0.02] backdrop-blur-2xl border-b border-white/[0.08] shadow-lg">
         <div class="flex items-center justify-between">

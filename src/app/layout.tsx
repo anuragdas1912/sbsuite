@@ -20,6 +20,16 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "sbsuite.in | Shree Balaji Estate Terminal",
   description: "Precision Industrial Luxury Gateway for Shree Balaji Estate.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "SB Suite",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+  },
 };
 
 export default function RootLayout({
@@ -29,7 +39,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased bg-[#06080C]`}>
-      <body className="min-h-full flex flex-col bg-[#06080C] text-[#F8FAFC] selection:bg-[#D4AF37]/30 selection:text-white">
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
+      <body className="h-[100dvh] w-full flex flex-col bg-[#06080C] text-[#F8FAFC] selection:bg-[#D4AF37]/30 selection:text-white overflow-hidden fixed">
         {children}
         <script
           dangerouslySetInnerHTML={{
