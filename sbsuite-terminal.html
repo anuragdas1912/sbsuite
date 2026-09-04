@@ -224,12 +224,25 @@
     .screen-fade {
       transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
     }
+
+    /* Smooth internal deck scroll without scrollbars (Native App Feel) */
+    .deck-scrollbar {
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      touch-action: pan-y;
+    }
+    .deck-scrollbar::-webkit-scrollbar {
+      display: none;
+      width: 0px;
+      height: 0px;
+    }
   </style>
 </head>
 <body class="h-[100dvh] w-full flex flex-col items-center justify-center p-0 sm:p-4 bg-[#06080C] overflow-hidden fixed">
 
   <!-- Mobile-first touch viewport strictly max-w-md mx-auto h-[100dvh] sm:h-[860px] -->
-  <div id="terminal-viewport" class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[92vh] relative flex flex-col justify-between overflow-hidden bg-[#06080C] shadow-[0_30px_90px_rgba(0,0,0,0.95)] sm:rounded-[44px] sm:border sm:border-white/[0.08] transition-all duration-300">
+  <div id="terminal-viewport" class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[92vh] relative flex flex-col justify-start overflow-hidden bg-[#06080C] shadow-[0_30px_90px_rgba(0,0,0,0.95)] sm:rounded-[44px] sm:border sm:border-white/[0.08] transition-all duration-300">
 
     <!-- Top Gold Laser Sweep on Iris Unlock -->
     <div id="top-laser-container" class="absolute top-0 left-0 right-0 h-[2px] z-50 overflow-hidden pointer-events-none" style="display: none;">
@@ -564,9 +577,9 @@
     </div>
 
     <!-- ================= SCREEN 3: UNITS GRID DECK (AUTHENTICATED) ================= -->
-    <div id="screen-units-deck" style="display: none; padding-top: max(14px, env(safe-area-inset-top, 14px)); padding-bottom: max(14px, env(safe-area-inset-bottom, 14px));" class="screen-fade relative w-full h-full flex flex-col overflow-hidden z-10 gpu-accel opacity-0 select-none">
+    <div id="screen-units-deck" style="display: none; padding-top: max(14px, env(safe-area-inset-top, 14px));" class="screen-fade relative w-full h-full flex-1 flex flex-col justify-start overflow-hidden z-10 gpu-accel opacity-0 select-none min-h-0">
       <!-- TOP STICKY HEADER -->
-      <div class="px-5 pb-3 border-b border-white/[0.06] bg-[#06080C]/80 backdrop-blur-xl shrink-0">
+      <div class="shrink-0 z-20 w-full px-5 pb-3 border-b border-white/[0.06] bg-[#06080C]/90 backdrop-blur-xl">
         <div class="flex items-center justify-between">
           <!-- Left: Minimalist Titanium SB Monogram & Title -->
           <div class="flex items-center gap-3">
@@ -634,7 +647,7 @@
       </div>
 
       <!-- 2-COLUMN ARCHITECTURAL UNITS GRID (SCROLLABLE DECK) -->
-      <div class="flex-1 overflow-y-auto overscroll-none deck-scrollbar px-4 pt-3 pb-6">
+      <div class="flex-1 w-full min-h-0 overflow-y-auto overscroll-contain px-4 pt-2.5 pb-28 touch-pan-y deck-scrollbar" style="-webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: max(7rem, env(safe-area-inset-bottom, 28px));">
         <div id="units-grid-container" class="grid grid-cols-2 gap-2.5">
           <!-- Dynamically populated via renderUnitsDeck() -->
         </div>

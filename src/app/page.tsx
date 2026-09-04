@@ -413,7 +413,7 @@ export default function Home() {
       {/* Mobile-first touch viewport strictly max-w-md mx-auto h-[100dvh] sm:h-[860px] */}
       <div
         id="terminal-viewport"
-        className={`w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[92vh] relative flex flex-col justify-between overflow-hidden bg-[#06080C] shadow-[0_30px_90px_rgba(0,0,0,0.95)] sm:rounded-[44px] sm:border sm:border-white/[0.08] transition-shadow duration-300 ${
+        className={`w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[92vh] relative flex flex-col justify-start overflow-hidden bg-[#06080C] shadow-[0_30px_90px_rgba(0,0,0,0.95)] sm:rounded-[44px] sm:border sm:border-white/[0.08] transition-shadow duration-300 ${
           isError ? 'animate-warning-strobe border-rose-500/50' : ''
         }`}
       >
@@ -708,12 +708,11 @@ export default function Home() {
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 paddingTop: 'max(14px, env(safe-area-inset-top, 14px))',
-                paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))',
               }}
-              className="relative w-full h-full flex flex-col overflow-hidden z-10 gpu-layer select-none"
+              className="relative w-full h-full flex-1 flex flex-col justify-start overflow-hidden z-10 gpu-layer select-none min-h-0"
             >
               {/* TOP STICKY HEADER */}
-              <div className="px-5 pb-3 border-b border-white/[0.06] bg-[#06080C]/80 backdrop-blur-xl shrink-0">
+              <div className="shrink-0 z-20 w-full px-5 pb-3 border-b border-white/[0.06] bg-[#06080C]/90 backdrop-blur-xl">
                 <div className="flex items-center justify-between">
                   {/* Left: Minimalist Titanium SB Monogram & Title */}
                   <div className="flex items-center gap-3">
@@ -799,7 +798,14 @@ export default function Home() {
               </div>
 
               {/* 2-COLUMN ARCHITECTURAL UNITS GRID (SCROLLABLE DECK) */}
-              <div className="flex-1 overflow-y-auto overscroll-none deck-scrollbar px-4 pt-3 pb-6">
+              <div
+                className="flex-1 w-full min-h-0 overflow-y-auto overscroll-contain px-4 pt-2.5 pb-28 touch-pan-y deck-scrollbar"
+                style={{
+                  WebkitOverflowScrolling: 'touch',
+                  scrollbarWidth: 'none',
+                  paddingBottom: 'max(7rem, env(safe-area-inset-bottom, 28px))',
+                }}
+              >
                 <div className="grid grid-cols-2 gap-2.5">
                   {displayedUnits.map((unit) => {
                     if (!unit.isOccupied) {

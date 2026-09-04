@@ -201,19 +201,17 @@ html, body {
   animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
-/* Subtle deck scrollbar */
+/* Smooth internal deck scroll without scrollbars (Native App Feel) */
+.deck-scrollbar {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  touch-action: pan-y;
+}
 .deck-scrollbar::-webkit-scrollbar {
-  width: 3px;
-}
-.deck-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.deck-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 9999px;
-}
-.deck-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(212, 175, 55, 0.4);
+  display: none;
+  width: 0px;
+  height: 0px;
 }
 
 
