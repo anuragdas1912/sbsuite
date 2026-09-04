@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Delete, ShieldCheck, Lock, Sparkles, Check, ChevronRight, AlertOctagon } from 'lucide-react';
+import { Delete, ShieldCheck, Lock, Sparkles, Check, ChevronRight, AlertOctagon, Zap, Plus, Store } from 'lucide-react';
 
-type ScreenState = 'splash' | 'pin' | 'owner_console' | 'manager_console';
+type ScreenState = 'splash' | 'pin' | 'units_deck' | 'owner_console' | 'manager_console';
+type UserRole = 'owner' | 'manager';
 
 interface KeypadKey {
   num: string;
@@ -21,6 +22,46 @@ const KEYPAD_KEYS: KeypadKey[] = [
   { num: '7', sub: 'PQRS' },
   { num: '8', sub: 'TUV' },
   { num: '9', sub: 'WXYZ' },
+];
+
+export interface UnitItem {
+  id: string;
+  name: string;
+  type: 'room' | 'shop';
+  isOccupied: boolean;
+  tenantName?: string;
+  rentAmount: number;
+  rentDueAmount: number;
+  lastReading: number;
+  isReadingPending: boolean;
+}
+
+const STATIC_UNITS: UnitItem[] = [
+  // 14 ROOMS (Occupancy: 12/14, Due: ₹4,000, Unread Meters: 3)
+  { id: 'r-101', name: 'R-101', type: 'room', isOccupied: true, tenantName: 'Sunil Verma', rentAmount: 6500, rentDueAmount: 0, lastReading: 1420, isReadingPending: false },
+  { id: 'r-102', name: 'R-102', type: 'room', isOccupied: true, tenantName: 'Amit Sharma', rentAmount: 6500, rentDueAmount: 4000, lastReading: 1380, isReadingPending: true },
+  { id: 'r-103', name: 'R-103', type: 'room', isOccupied: true, tenantName: 'Rajesh Patel', rentAmount: 7000, rentDueAmount: 0, lastReading: 1890, isReadingPending: false },
+  { id: 'r-104', name: 'R-104', type: 'room', isOccupied: true, tenantName: 'Priya Nair', rentAmount: 6500, rentDueAmount: 0, lastReading: 1120, isReadingPending: false },
+  { id: 'r-105', name: 'R-105', type: 'room', isOccupied: true, tenantName: 'Vikas Gupta', rentAmount: 6000, rentDueAmount: 0, lastReading: 980, isReadingPending: false },
+  { id: 'r-106', name: 'R-106', type: 'room', isOccupied: true, tenantName: 'Deepak Yadav', rentAmount: 6500, rentDueAmount: 0, lastReading: 2150, isReadingPending: false },
+  { id: 'r-107', name: 'R-107', type: 'room', isOccupied: true, tenantName: 'Sneha Kulkarni', rentAmount: 7000, rentDueAmount: 0, lastReading: 1460, isReadingPending: true },
+  { id: 'r-108', name: 'R-108', type: 'room', isOccupied: false, rentAmount: 6500, rentDueAmount: 0, lastReading: 1200, isReadingPending: false },
+  { id: 'r-109', name: 'R-109', type: 'room', isOccupied: true, tenantName: 'Manish Tiwari', rentAmount: 6500, rentDueAmount: 0, lastReading: 1340, isReadingPending: false },
+  { id: 'r-110', name: 'R-110', type: 'room', isOccupied: true, tenantName: 'Ananya Roy', rentAmount: 7500, rentDueAmount: 0, lastReading: 1760, isReadingPending: false },
+  { id: 'r-111', name: 'R-111', type: 'room', isOccupied: true, tenantName: 'Rohit Chauhan', rentAmount: 6500, rentDueAmount: 0, lastReading: 1510, isReadingPending: false },
+  { id: 'r-112', name: 'R-112', type: 'room', isOccupied: false, rentAmount: 7000, rentDueAmount: 0, lastReading: 940, isReadingPending: false },
+  { id: 'r-113', name: 'R-113', type: 'room', isOccupied: true, tenantName: 'Karan Malhotra', rentAmount: 7000, rentDueAmount: 0, lastReading: 1680, isReadingPending: true },
+  { id: 'r-114', name: 'R-114', type: 'room', isOccupied: true, tenantName: 'Pooja Mehra', rentAmount: 7500, rentDueAmount: 0, lastReading: 1930, isReadingPending: false },
+
+  // 8 SHOPS (Occupancy: 7/8, Due: ₹8,500, Unread Meters: 1)
+  { id: 's-01', name: 'S-01', type: 'shop', isOccupied: true, tenantName: 'Balaji Medicals', rentAmount: 18000, rentDueAmount: 0, lastReading: 4210, isReadingPending: false },
+  { id: 's-02', name: 'S-02', type: 'shop', isOccupied: true, tenantName: 'Shree Ganesh Grocery', rentAmount: 16500, rentDueAmount: 0, lastReading: 3890, isReadingPending: false },
+  { id: 's-03', name: 'S-03', type: 'shop', isOccupied: true, tenantName: 'Modern Dry Cleaners', rentAmount: 14000, rentDueAmount: 8500, lastReading: 2890, isReadingPending: true },
+  { id: 's-04', name: 'S-04', type: 'shop', isOccupied: true, tenantName: 'Metro Cyber & Print', rentAmount: 12500, rentDueAmount: 0, lastReading: 2450, isReadingPending: false },
+  { id: 's-05', name: 'S-05', type: 'shop', isOccupied: false, rentAmount: 15000, rentDueAmount: 0, lastReading: 1100, isReadingPending: false },
+  { id: 's-06', name: 'S-06', type: 'shop', isOccupied: true, tenantName: 'Royal Hair Salon', rentAmount: 15000, rentDueAmount: 0, lastReading: 3110, isReadingPending: false },
+  { id: 's-07', name: 'S-07', type: 'shop', isOccupied: true, tenantName: 'Shanti Stationery', rentAmount: 13000, rentDueAmount: 0, lastReading: 1840, isReadingPending: false },
+  { id: 's-08', name: 'S-08', type: 'shop', isOccupied: true, tenantName: 'Om Sweet & Snacks', rentAmount: 22000, rentDueAmount: 0, lastReading: 5620, isReadingPending: false },
 ];
 
 /**
@@ -185,6 +226,8 @@ function VolumetricMonolith({ className = 'w-36 h-36' }: { className?: string })
 
 export default function Home() {
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [activeTab, setActiveTab] = useState<'rooms' | 'shops'>('rooms');
   const [pin, setPin] = useState<string>('');
   const [isError, setIsError] = useState<boolean>(false);
   const [isSuccessOwner, setIsSuccessOwner] = useState<boolean>(false);
@@ -192,6 +235,27 @@ export default function Home() {
   const [isIrisUnlocking, setIsIrisUnlocking] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  // Glanceable stats and filtered units
+  const roomsCount = useMemo(() => STATIC_UNITS.filter((u) => u.type === 'room').length, []);
+  const shopsCount = useMemo(() => STATIC_UNITS.filter((u) => u.type === 'shop').length, []);
+
+  const displayedUnits = useMemo(() => {
+    return STATIC_UNITS.filter((u) => (activeTab === 'rooms' ? u.type === 'room' : u.type === 'shop'));
+  }, [activeTab]);
+
+  const currentStats = useMemo(() => {
+    const total = displayedUnits.length;
+    const occupied = displayedUnits.filter((u) => u.isOccupied).length;
+    const dueTotal = displayedUnits.reduce((acc, u) => acc + u.rentDueAmount, 0);
+    const unreadMeters = displayedUnits.filter((u) => u.isReadingPending).length;
+
+    return {
+      occupancy: `${occupied}/${total}`,
+      rentDue: dueTotal === 0 ? '₹0' : `₹${dueTotal.toLocaleString('en-IN')}`,
+      unreadMeters: `${unreadMeters}`,
+    };
+  }, [displayedUnits]);
 
   // 1. 3D GYRO & TOUCH-MOVE PARALLAX
   const [tilt, setTilt] = useState<{ rx: number; ry: number }>({ rx: 0, ry: 0 });
@@ -262,15 +326,16 @@ export default function Home() {
     setIsProcessing(true);
 
     if (completedPin === '1912') {
-      // Owner PIN Match
+      // Owner PIN Match -> Units Grid Deck
       setIsSuccessOwner(true);
       setIsIrisUnlocking(true);
+      setUserRole('owner');
       setStatusMessage('Access Granted // Owner');
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate([18, 30, 24]);
       }
       setTimeout(() => {
-        setCurrentScreen('owner_console');
+        setCurrentScreen('units_deck');
         setPin('');
         setIsSuccessOwner(false);
         setIsIrisUnlocking(false);
@@ -278,15 +343,16 @@ export default function Home() {
         setIsProcessing(false);
       }, 700);
     } else if (completedPin === '1289') {
-      // Manager PIN Match
+      // Manager PIN Match -> Units Grid Deck
       setIsSuccessManager(true);
       setIsIrisUnlocking(true);
+      setUserRole('manager');
       setStatusMessage('Access Granted // Manager');
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate([18, 30, 24]);
       }
       setTimeout(() => {
-        setCurrentScreen('manager_console');
+        setCurrentScreen('units_deck');
         setPin('');
         setIsSuccessManager(false);
         setIsIrisUnlocking(false);
@@ -338,6 +404,7 @@ export default function Home() {
     setIsIrisUnlocking(false);
     setStatusMessage(null);
     setIsProcessing(false);
+    setUserRole(null);
     setCurrentScreen('pin');
   };
 
@@ -631,176 +698,189 @@ export default function Home() {
             </motion.div>
           )}
 
-          {/* ================= SCREEN 3: OWNER CONSOLE READY ================= */}
-          {currentScreen === 'owner_console' && (
+          {/* ================= SCREEN 3: UNITS GRID DECK (AUTHENTICATED) ================= */}
+          {currentScreen === 'units_deck' && (
             <motion.div
-              key="owner-screen"
-              initial={{ opacity: 0, scale: 0.95, filter: 'blur(8px)' }}
+              key="units-deck-screen"
+              initial={{ opacity: 0, scale: 0.97, filter: 'blur(8px)' }}
               animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              exit={{ opacity: 0, scale: 0.97 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               style={{
-                paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
-                paddingBottom: 'max(20px, env(safe-area-inset-bottom, 20px))',
+                paddingTop: 'max(14px, env(safe-area-inset-top, 14px))',
+                paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))',
               }}
-              className="relative w-full h-full flex flex-col justify-between px-6 z-10 gpu-layer"
+              className="relative w-full h-full flex flex-col overflow-hidden z-10 gpu-layer select-none"
             >
-              {/* Top Cockpit Header */}
-              <div className="relative -mx-6 -mt-4 p-6 overflow-hidden bg-white/[0.02] backdrop-blur-2xl border-b border-white/[0.08] shadow-lg">
+              {/* TOP STICKY HEADER */}
+              <div className="px-5 pb-3 border-b border-white/[0.06] bg-[#06080C]/80 backdrop-blur-xl shrink-0">
                 <div className="flex items-center justify-between">
+                  {/* Left: Minimalist Titanium SB Monogram & Title */}
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#0D1117] border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] font-bold text-sm shadow-[0_2px_12px_rgba(212,175,55,0.2)]">
+                    <div className="w-9 h-9 rounded-xl bg-[#0D1117] border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] font-bold text-xs shadow-[0_2px_10px_rgba(212,175,55,0.18)]">
                       SB
                     </div>
                     <div>
-                      <h2 className="text-sm font-semibold text-[#EDEDED] tracking-wide">Shree Balaji Estate</h2>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-[#D4AF37] bg-[#D4AF37]/10 border border-[#D4AF37]/25 px-2 py-0.5 rounded-full">
-                        <Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" />
-                        OWNER CONSOLE
+                      <div className="flex items-center gap-1.5">
+                        <h2 className="text-sm font-semibold text-[#EDEDED] tracking-tight">Shree Balaji Estate</h2>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34D399] animate-pulse" />
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-[#D4AF37]/90 tracking-wide uppercase">
+                        {userRole === 'owner' ? 'Owner Telemetry' : 'Manager Shift'}
                       </span>
                     </div>
                   </div>
 
+                  {/* Right: Sleek tactile glass lock button */}
                   <button
                     onClick={handleLockTerminal}
-                    className="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] text-[#94A3B8] hover:text-white active:scale-95 transition-transform duration-75 cursor-pointer shadow-sm"
+                    aria-label="Lock terminal"
+                    className="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] text-[#94A3B8] hover:text-white active:scale-95 transition-all duration-100 cursor-pointer shadow-sm hover:border-[#D4AF37]/30"
                     title="Lock Terminal"
                   >
                     <Lock className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
 
-              {/* Center Cockpit Stage */}
-              <div className="my-auto flex flex-col items-center text-center px-4">
-                <div className="w-20 h-20 rounded-[28px] bg-[#0D1117] border border-[#D4AF37]/30 shadow-[0_0_35px_rgba(212,175,55,0.18)] flex items-center justify-center mb-5">
-                  <VolumetricMonolith className="w-14 h-14" />
-                </div>
-
-                <span className="px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-mono font-medium uppercase tracking-wider mb-2.5">
-                  Welcome, Owner
-                </span>
-
-                <h3 className="text-2xl font-semibold text-[#EDEDED] tracking-tight">
-                  [ OWNER CONSOLE READY ]
-                </h3>
-                <p className="text-xs text-[#64748B] mt-2 max-w-xs leading-relaxed">
-                  Authentication verified. Master telemetry and property administration primed.
-                </p>
-
-                {/* Smoked Dark Glass Card with 1px Titanium Edges */}
-                <div className="w-full mt-6 p-5 rounded-2xl bg-white/[0.02] backdrop-blur-2xl border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-left">
-                  <div className="flex items-center justify-between text-xs pb-3 border-b border-white/[0.06] font-mono font-medium text-[#94A3B8]">
-                    <span>SYSTEM STATUS</span>
-                    <span className="text-[#D4AF37] flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] shadow-[0_0_6px_#D4AF37]" />
-                      ACTIVE // STEP 1
-                    </span>
-                  </div>
-                  <div className="mt-3 text-xs font-mono text-[#64748B] space-y-1.5">
-                    <p>&bull; 3D Gyro Parallax Core Verified</p>
-                    <p>&bull; Cinematic Iris Sequence Engaged</p>
-                    <p>&bull; Ready for Units, Parking & Ledger Engine</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Quick Action */}
-              <div className="w-full pt-4">
-                <button
-                  onClick={handleLockTerminal}
-                  className="w-full py-3.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] font-semibold text-sm shadow-[0_0_25px_rgba(212,175,55,0.3)] active:scale-98 transition-all duration-75 flex items-center justify-center gap-2 cursor-pointer border border-[#FFF4C2]/40"
-                >
-                  <Lock className="w-4 h-4 text-[#06080C]" />
-                  <span>Lock & Switch User</span>
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ================= SCREEN 4: MANAGER TERMINAL READY ================= */}
-          {currentScreen === 'manager_console' && (
-            <motion.div
-              key="manager-screen"
-              initial={{ opacity: 0, scale: 0.95, filter: 'blur(8px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
-                paddingBottom: 'max(20px, env(safe-area-inset-bottom, 20px))',
-              }}
-              className="relative w-full h-full flex flex-col justify-between px-6 z-10 gpu-layer"
-            >
-              {/* Top Cockpit Header */}
-              <div className="relative -mx-6 -mt-6 p-6 overflow-hidden bg-white/[0.02] backdrop-blur-2xl border-b border-white/[0.08] shadow-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#0D1117] border border-white/[0.12] flex items-center justify-center text-[#E2E8F0] font-bold text-sm shadow-[0_2px_12px_rgba(255,255,255,0.08)]">
-                      SB
-                    </div>
-                    <div>
-                      <h2 className="text-sm font-semibold text-[#EDEDED] tracking-wide">Shree Balaji Estate</h2>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-[#CBD5E1] bg-white/[0.06] border border-white/[0.1] px-2 py-0.5 rounded-full">
-                        <ChevronRight className="w-2.5 h-2.5 text-[#CBD5E1]" />
-                        MANAGER SHIFT
-                      </span>
-                    </div>
-                  </div>
+                {/* SEGMENTED VAULT TABS (2 Chunky Glass Pills) */}
+                <div className="mt-3.5 grid grid-cols-2 gap-2 p-1 rounded-2xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-md">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('rooms')}
+                    className={`py-2 px-3 rounded-xl text-xs font-medium font-mono flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                      activeTab === 'rooms'
+                        ? 'bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/40 shadow-[0_2px_12px_rgba(212,175,55,0.18)]'
+                        : 'text-[#94A3B8] hover:text-white border border-transparent'
+                    }`}
+                  >
+                    <span>🛏️ Rooms</span>
+                    <span className="text-[11px] opacity-75">({roomsCount})</span>
+                  </button>
 
                   <button
-                    onClick={handleLockTerminal}
-                    className="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] text-[#94A3B8] hover:text-white active:scale-95 transition-transform duration-75 cursor-pointer shadow-sm"
-                    title="Lock Terminal"
+                    type="button"
+                    onClick={() => setActiveTab('shops')}
+                    className={`py-2 px-3 rounded-xl text-xs font-medium font-mono flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                      activeTab === 'shops'
+                        ? 'bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/40 shadow-[0_2px_12px_rgba(212,175,55,0.18)]'
+                        : 'text-[#94A3B8] hover:text-white border border-transparent'
+                    }`}
                   >
-                    <Lock className="w-4 h-4" />
+                    <span>🏪 Shops</span>
+                    <span className="text-[11px] opacity-75">({shopsCount})</span>
                   </button>
                 </div>
-              </div>
 
-              {/* Center Cockpit Stage */}
-              <div className="my-auto flex flex-col items-center text-center px-4">
-                <div className="w-20 h-20 rounded-[28px] bg-[#0D1117] border border-white/[0.1] shadow-[0_0_35px_rgba(255,255,255,0.06)] flex items-center justify-center mb-5">
-                  <VolumetricMonolith className="w-14 h-14" />
-                </div>
+                {/* OPERATIONAL QUICK STATS RIBBON */}
+                <div className="mt-3 grid grid-cols-3 gap-2 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center">
+                  <div className="flex flex-col items-center">
+                    <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">Occupancy</span>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      <span className="text-xs font-mono font-semibold text-[#EDEDED]">{currentStats.occupancy}</span>
+                    </div>
+                  </div>
 
-                <span className="px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[#E2E8F0] text-xs font-mono font-medium uppercase tracking-wider mb-2.5">
-                  Shift Started: Manager
-                </span>
-
-                <h3 className="text-2xl font-semibold text-[#EDEDED] tracking-tight">
-                  [ MANAGER TERMINAL READY ]
-                </h3>
-                <p className="text-xs text-[#64748B] mt-2 max-w-xs leading-relaxed">
-                  Shift active. Operational terminal primed for parking and tenant management.
-                </p>
-
-                {/* Smoked Dark Glass Card with 1px Titanium Edges */}
-                <div className="w-full mt-6 p-5 rounded-2xl bg-white/[0.02] backdrop-blur-2xl border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-left">
-                  <div className="flex items-center justify-between text-xs pb-3 border-b border-white/[0.06] font-mono font-medium text-[#94A3B8]">
-                    <span>TERMINAL MODE</span>
-                    <span className="text-[#CBD5E1] flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#CBD5E1] shadow-[0_0_6px_#CBD5E1]" />
-                      MANAGER SHIFT // STEP 1
+                  <div className="flex flex-col items-center border-x border-white/[0.06] px-1">
+                    <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">Rent Due</span>
+                    <span className={`text-xs font-mono font-semibold mt-0.5 ${currentStats.rentDue === '₹0' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {currentStats.rentDue}
                     </span>
                   </div>
-                  <div className="mt-3 text-xs font-mono text-[#64748B] space-y-1.5">
-                    <p>&bull; 3D Gyro Parallax Core Verified</p>
-                    <p>&bull; Cinematic Iris Sequence Engaged</p>
-                    <p>&bull; Ready for Parking Gate & Meter Logging</p>
+
+                  <div className="flex flex-col items-center">
+                    <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">Meters Due</span>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Zap className="w-2.5 h-2.5 text-cyan-400 fill-cyan-400" />
+                      <span className="text-xs font-mono font-semibold text-cyan-400">{currentStats.unreadMeters}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Bottom Quick Action */}
-              <div className="w-full pt-4">
-                <button
-                  onClick={handleLockTerminal}
-                  className="w-full py-3.5 px-4 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-[#EDEDED] font-semibold text-sm shadow-[0_4px_20px_rgba(0,0,0,0.4)] active:scale-98 transition-all duration-75 flex items-center justify-center gap-2 cursor-pointer border border-white/[0.15]"
-                >
-                  <Lock className="w-4 h-4 text-[#EDEDED]" />
-                  <span>Lock & Switch User</span>
-                </button>
+              {/* 2-COLUMN ARCHITECTURAL UNITS GRID (SCROLLABLE DECK) */}
+              <div className="flex-1 overflow-y-auto overscroll-none deck-scrollbar px-4 pt-3 pb-6">
+                <div className="grid grid-cols-2 gap-2.5">
+                  {displayedUnits.map((unit) => {
+                    if (!unit.isOccupied) {
+                      // Vacant Unit Card Design
+                      return (
+                        <div
+                          key={unit.id}
+                          className="relative p-3 rounded-2xl border border-dashed border-white/20 bg-white/[0.015] hover:bg-white/[0.03] hover:border-white/30 transition-all duration-150 flex flex-col items-center justify-center text-center min-h-[126px] cursor-pointer active:scale-[0.97]"
+                        >
+                          <span className="text-xs font-mono font-bold text-[#94A3B8] tracking-wide mb-1">
+                            {unit.name}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-[#64748B]">
+                            <Plus className="w-3.5 h-3.5" /> Vacant
+                          </span>
+                          <span className="mt-2 text-[10px] font-mono text-[#CBD5E1] bg-white/[0.05] border border-white/[0.08] px-2 py-1 rounded-lg">
+                            Assign Tenant
+                          </span>
+                        </div>
+                      );
+                    }
+
+                    // Occupied Unit Card Design (Flagship Luxury Aesthetic)
+                    return (
+                      <div
+                        key={unit.id}
+                        className="group relative p-3 rounded-2xl bg-[#0D1117] border border-white/[0.08] hover:border-[#D4AF37]/40 active:scale-[0.97] transition-all duration-150 cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[126px]"
+                      >
+                        {/* Top specular highlight edge */}
+                        <div className="absolute inset-x-3 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent pointer-events-none" />
+
+                        <div>
+                          {/* Top Row: Unit Tag + Occupied Indicator */}
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono font-bold text-[#EDEDED] text-sm tracking-tight">
+                              {unit.name}
+                            </span>
+                            <span className="flex items-center gap-1 text-[9px] font-mono text-emerald-400">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34D399] animate-pulse" />
+                            </span>
+                          </div>
+
+                          {/* Tenant Name */}
+                          <p className="text-xs font-medium text-[#D4AF37]/90 truncate mt-1 tracking-tight">
+                            {unit.tenantName}
+                          </p>
+                        </div>
+
+                        {/* Bottom Status Pills */}
+                        <div className="mt-2.5 flex flex-col gap-1.5">
+                          {/* Rent Status Pill */}
+                          <div className="flex items-center justify-between">
+                            {unit.rentDueAmount === 0 ? (
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+                                Paid
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30 font-semibold">
+                                Due: ₹{unit.rentDueAmount.toLocaleString('en-IN')}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Meter Reading Pill */}
+                          <div className="flex items-center">
+                            {unit.isReadingPending ? (
+                              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-medium flex items-center gap-1 w-full justify-center">
+                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22D3EE] animate-pulse" />
+                                ⚡ Needs Reading
+                              </span>
+                            ) : (
+                              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-white/[0.04] text-[#94A3B8] border border-white/[0.07] flex items-center gap-1 w-full justify-center">
+                                <span>⚡</span> {unit.lastReading} kWh
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </motion.div>
           )}

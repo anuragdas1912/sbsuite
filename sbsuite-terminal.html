@@ -563,81 +563,81 @@
       </div>
     </div>
 
-    <!-- ================= SCREEN 4: MANAGER TERMINAL READY ================= -->
-    <div id="screen-manager" style="display: none; padding-top: max(16px, env(safe-area-inset-top, 16px)); padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));" class="screen-fade relative w-full h-full flex flex-col justify-between px-6 z-10 gpu-accel opacity-0">
-      <!-- Top Header -->
-      <div class="relative -mx-6 -mt-6 p-6 overflow-hidden bg-white/[0.02] backdrop-blur-2xl border-b border-white/[0.08] shadow-lg">
+    <!-- ================= SCREEN 3: UNITS GRID DECK (AUTHENTICATED) ================= -->
+    <div id="screen-units-deck" style="display: none; padding-top: max(14px, env(safe-area-inset-top, 14px)); padding-bottom: max(14px, env(safe-area-inset-bottom, 14px));" class="screen-fade relative w-full h-full flex flex-col overflow-hidden z-10 gpu-accel opacity-0 select-none">
+      <!-- TOP STICKY HEADER -->
+      <div class="px-5 pb-3 border-b border-white/[0.06] bg-[#06080C]/80 backdrop-blur-xl shrink-0">
         <div class="flex items-center justify-between">
+          <!-- Left: Minimalist Titanium SB Monogram & Title -->
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-[#0D1117] border border-white/[0.12] flex items-center justify-center text-[#E2E8F0] font-bold text-sm shadow-[0_2px_12px_rgba(255,255,255,0.08)]">
+            <div class="w-9 h-9 rounded-xl bg-[#0D1117] border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] font-bold text-xs shadow-[0_2px_10px_rgba(212,175,55,0.18)]">
               SB
             </div>
             <div>
-              <h2 class="text-sm font-semibold text-[#EDEDED] tracking-wide">Shree Balaji Estate</h2>
-              <span class="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-[#CBD5E1] bg-white/[0.06] border border-white/[0.1] px-2 py-0.5 rounded-full">
-                MANAGER SHIFT
+              <div class="flex items-center gap-1.5">
+                <h2 class="text-sm font-semibold text-[#EDEDED] tracking-tight">Shree Balaji Estate</h2>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34D399] animate-pulse"></span>
+              </div>
+              <span id="deck-role-badge" class="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-[#D4AF37]/90 tracking-wide uppercase">
+                Owner Telemetry
               </span>
             </div>
           </div>
 
-          <button onclick="lockTerminal()" class="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] text-[#94A3B8] hover:text-white active:scale-95 transition-transform duration-75 cursor-pointer shadow-sm" title="Lock Terminal">
+          <!-- Right: Sleek tactile glass lock button -->
+          <button onclick="lockTerminal()" aria-label="Lock terminal" class="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] text-[#94A3B8] hover:text-white active:scale-95 transition-all duration-100 cursor-pointer shadow-sm hover:border-[#D4AF37]/30" title="Lock Terminal">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0110 0v4"></path>
             </svg>
           </button>
         </div>
-      </div>
 
-      <!-- Center Cockpit Stage -->
-      <div class="my-auto flex flex-col items-center text-center px-4">
-        <div class="w-16 h-16 rounded-2xl bg-[#0D1117] border border-white/[0.1] shadow-[0_0_35px_rgba(255,255,255,0.06)] flex items-center justify-center mb-5">
-          <svg viewBox="0 0 144 144" class="w-12 h-12" fill="none">
-            <rect x="2" y="2" width="140" height="140" rx="34" fill="#0A0D14" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" />
-            <path d="M 66 47 H 45 C 40.029 47 36 51.029 36 56 V 64 C 36 68.971 40.029 73 45 73 H 57 C 61.971 73 66 77.029 66 82 V 89 C 66 93.971 61.971 98 57 98 H 36" fill="none" stroke="#E2E8F0" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M 78 47 V 98" stroke="#E2E8F0" stroke-width="6.5" stroke-linecap="round" />
-            <path d="M 78 47 H 91 C 97.627 47 103 52.373 103 59 C 103 65.627 97.627 71 91 71 H 78" fill="none" stroke="#E2E8F0" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M 78 71 H 93 C 99.627 71 105 76.82 105 84.5 C 105 92.18 99.627 98 93 98 H 78" fill="none" stroke="#E2E8F0" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+        <!-- SEGMENTED VAULT TABS (2 Chunky Glass Pills) -->
+        <div class="mt-3.5 grid grid-cols-2 gap-2 p-1 rounded-2xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-md">
+          <button id="tab-rooms-btn" type="button" onclick="switchDeckTab('rooms')" class="py-2 px-3 rounded-xl text-xs font-medium font-mono flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/40 shadow-[0_2px_12px_rgba(212,175,55,0.18)]">
+            <span>🛏️ Rooms</span>
+            <span class="text-[11px] opacity-75">(14)</span>
+          </button>
+
+          <button id="tab-shops-btn" type="button" onclick="switchDeckTab('shops')" class="py-2 px-3 rounded-xl text-xs font-medium font-mono flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer text-[#94A3B8] hover:text-white border border-transparent">
+            <span>🏪 Shops</span>
+            <span class="text-[11px] opacity-75">(8)</span>
+          </button>
         </div>
 
-        <span class="px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[#E2E8F0] text-xs font-mono font-medium uppercase tracking-wider mb-2.5">
-          Shift Started: Manager
-        </span>
-
-        <h3 class="text-2xl font-semibold text-[#EDEDED] tracking-tight">
-          [ MANAGER TERMINAL READY ]
-        </h3>
-        <p class="text-xs text-[#64748B] mt-2 max-w-xs leading-relaxed">
-          Shift active. Operational terminal primed for parking and tenant management.
-        </p>
-
-        <!-- Smoked Dark Glass Card with 1px Titanium Edges -->
-        <div class="w-full mt-6 p-5 rounded-2xl bg-white/[0.02] backdrop-blur-2xl border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-left">
-          <div class="flex items-center justify-between text-xs pb-3 border-b border-white/[0.06] font-mono font-medium text-[#94A3B8]">
-            <span>TERMINAL MODE</span>
-            <span class="text-[#CBD5E1] flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#CBD5E1] shadow-[0_0_6px_#CBD5E1]"></span>
-              MANAGER SHIFT // STEP 1
-            </span>
+        <!-- OPERATIONAL QUICK STATS RIBBON -->
+        <div class="mt-3 grid grid-cols-3 gap-2 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center">
+          <div class="flex flex-col items-center">
+            <span class="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">Occupancy</span>
+            <div class="flex items-center gap-1 mt-0.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span id="stat-occupancy" class="text-xs font-mono font-semibold text-[#EDEDED]">12/14</span>
+            </div>
           </div>
-          <div class="mt-3 text-xs font-mono text-[#64748B] space-y-1.5">
-            <p>&bull; 3D Gyro Parallax Core Verified</p>
-            <p>&bull; Cinematic Iris Sequence Engaged</p>
-            <p>&bull; Ready for Parking Gate & Meter Logging</p>
+
+          <div class="flex flex-col items-center border-x border-white/[0.06] px-1">
+            <span class="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">Rent Due</span>
+            <span id="stat-rent-due" class="text-xs font-mono font-semibold mt-0.5 text-amber-400">₹4,000</span>
+          </div>
+
+          <div class="flex flex-col items-center">
+            <span class="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">Meters Due</span>
+            <div class="flex items-center gap-1 mt-0.5">
+              <svg class="w-2.5 h-2.5 text-cyan-400 fill-cyan-400" viewBox="0 0 24 24" stroke="none">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              <span id="stat-meters-due" class="text-xs font-mono font-semibold text-cyan-400">3</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Bottom Action -->
-      <div class="w-full pt-4">
-        <button onclick="lockTerminal()" class="w-full py-3.5 px-4 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-[#EDEDED] font-semibold text-sm shadow-[0_4px_20px_rgba(0,0,0,0.4)] active:scale-98 transition-all duration-75 flex items-center justify-center gap-2 cursor-pointer border border-white/[0.15]">
-          <svg class="w-4 h-4 text-[#EDEDED]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0110 0v4"></path>
-          </svg>
-          <span>Lock & Switch User</span>
-        </button>
+      <!-- 2-COLUMN ARCHITECTURAL UNITS GRID (SCROLLABLE DECK) -->
+      <div class="flex-1 overflow-y-auto overscroll-none deck-scrollbar px-4 pt-3 pb-6">
+        <div id="units-grid-container" class="grid grid-cols-2 gap-2.5">
+          <!-- Dynamically populated via renderUnitsDeck() -->
+        </div>
       </div>
     </div>
 
@@ -646,12 +646,41 @@
   <script>
     let currentPin = '';
     let isProcessing = false;
+    let currentUserRole = null;
+    let currentDeckTab = 'rooms';
+
+    const STATIC_UNITS = [
+      // 14 ROOMS (Occupancy: 12/14, Due: ₹4,000, Unread Meters: 3)
+      { id: 'r-101', name: 'R-101', type: 'room', isOccupied: true, tenantName: 'Sunil Verma', rentAmount: 6500, rentDueAmount: 0, lastReading: 1420, isReadingPending: false },
+      { id: 'r-102', name: 'R-102', type: 'room', isOccupied: true, tenantName: 'Amit Sharma', rentAmount: 6500, rentDueAmount: 4000, lastReading: 1380, isReadingPending: true },
+      { id: 'r-103', name: 'R-103', type: 'room', isOccupied: true, tenantName: 'Rajesh Patel', rentAmount: 7000, rentDueAmount: 0, lastReading: 1890, isReadingPending: false },
+      { id: 'r-104', name: 'R-104', type: 'room', isOccupied: true, tenantName: 'Priya Nair', rentAmount: 6500, rentDueAmount: 0, lastReading: 1120, isReadingPending: false },
+      { id: 'r-105', name: 'R-105', type: 'room', isOccupied: true, tenantName: 'Vikas Gupta', rentAmount: 6000, rentDueAmount: 0, lastReading: 980, isReadingPending: false },
+      { id: 'r-106', name: 'R-106', type: 'room', isOccupied: true, tenantName: 'Deepak Yadav', rentAmount: 6500, rentDueAmount: 0, lastReading: 2150, isReadingPending: false },
+      { id: 'r-107', name: 'R-107', type: 'room', isOccupied: true, tenantName: 'Sneha Kulkarni', rentAmount: 7000, rentDueAmount: 0, lastReading: 1460, isReadingPending: true },
+      { id: 'r-108', name: 'R-108', type: 'room', isOccupied: false, rentAmount: 6500, rentDueAmount: 0, lastReading: 1200, isReadingPending: false },
+      { id: 'r-109', name: 'R-109', type: 'room', isOccupied: true, tenantName: 'Manish Tiwari', rentAmount: 6500, rentDueAmount: 0, lastReading: 1340, isReadingPending: false },
+      { id: 'r-110', name: 'R-110', type: 'room', isOccupied: true, tenantName: 'Ananya Roy', rentAmount: 7500, rentDueAmount: 0, lastReading: 1760, isReadingPending: false },
+      { id: 'r-111', name: 'R-111', type: 'room', isOccupied: true, tenantName: 'Rohit Chauhan', rentAmount: 6500, rentDueAmount: 0, lastReading: 1510, isReadingPending: false },
+      { id: 'r-112', name: 'R-112', type: 'room', isOccupied: false, rentAmount: 7000, rentDueAmount: 0, lastReading: 940, isReadingPending: false },
+      { id: 'r-113', name: 'R-113', type: 'room', isOccupied: true, tenantName: 'Karan Malhotra', rentAmount: 7000, rentDueAmount: 0, lastReading: 1680, isReadingPending: true },
+      { id: 'r-114', name: 'R-114', type: 'room', isOccupied: true, tenantName: 'Pooja Mehra', rentAmount: 7500, rentDueAmount: 0, lastReading: 1930, isReadingPending: false },
+
+      // 8 SHOPS (Occupancy: 7/8, Due: ₹8,500, Unread Meters: 1)
+      { id: 's-01', name: 'S-01', type: 'shop', isOccupied: true, tenantName: 'Balaji Medicals', rentAmount: 18000, rentDueAmount: 0, lastReading: 4210, isReadingPending: false },
+      { id: 's-02', name: 'S-02', type: 'shop', isOccupied: true, tenantName: 'Shree Ganesh Grocery', rentAmount: 16500, rentDueAmount: 0, lastReading: 3890, isReadingPending: false },
+      { id: 's-03', name: 'S-03', type: 'shop', isOccupied: true, tenantName: 'Modern Dry Cleaners', rentAmount: 14000, rentDueAmount: 8500, lastReading: 2890, isReadingPending: true },
+      { id: 's-04', name: 'S-04', type: 'shop', isOccupied: true, tenantName: 'Metro Cyber & Print', rentAmount: 12500, rentDueAmount: 0, lastReading: 2450, isReadingPending: false },
+      { id: 's-05', name: 'S-05', type: 'shop', isOccupied: false, rentAmount: 15000, rentDueAmount: 0, lastReading: 1100, isReadingPending: false },
+      { id: 's-06', name: 'S-06', type: 'shop', isOccupied: true, tenantName: 'Royal Hair Salon', rentAmount: 15000, rentDueAmount: 0, lastReading: 3110, isReadingPending: false },
+      { id: 's-07', name: 'S-07', type: 'shop', isOccupied: true, tenantName: 'Shanti Stationery', rentAmount: 13000, rentDueAmount: 0, lastReading: 1840, isReadingPending: false },
+      { id: 's-08', name: 'S-08', type: 'shop', isOccupied: true, tenantName: 'Om Sweet & Snacks', rentAmount: 22000, rentDueAmount: 0, lastReading: 5620, isReadingPending: false }
+    ];
 
     const viewportEl = document.getElementById('terminal-viewport');
     const splashEl = document.getElementById('screen-splash');
     const pinEl = document.getElementById('screen-pin');
-    const ownerEl = document.getElementById('screen-owner');
-    const managerEl = document.getElementById('screen-manager');
+    const deckEl = document.getElementById('screen-units-deck');
     const feedbackEl = document.getElementById('pin-feedback');
     const dotsContainer = document.getElementById('pin-dots-container');
     const monolithEl = document.getElementById('monolith-hero');
@@ -768,6 +797,7 @@
 
       if (currentPin === '1912') {
         // Owner PIN Match
+        currentUserRole = 'owner';
         feedbackEl.innerHTML = '<span class="text-[#FFF4C2] font-semibold">Access Granted // Owner</span>';
         for (let i = 0; i < 4; i++) {
           const dot = document.getElementById(`dot-${i}`);
@@ -775,10 +805,11 @@
         }
         if (navigator.vibrate) navigator.vibrate([18, 30, 24]);
 
-        triggerIrisUnlock(ownerEl);
+        triggerIrisUnlock();
 
       } else if (currentPin === '1289') {
         // Manager PIN Match
+        currentUserRole = 'manager';
         feedbackEl.innerHTML = '<span class="text-[#CBD5E1] font-semibold">Access Granted // Manager</span>';
         for (let i = 0; i < 4; i++) {
           const dot = document.getElementById(`dot-${i}`);
@@ -786,7 +817,7 @@
         }
         if (navigator.vibrate) navigator.vibrate([18, 30, 24]);
 
-        triggerIrisUnlock(managerEl);
+        triggerIrisUnlock();
 
       } else {
         // Incorrect PIN: Stiff violent shake, crimson pulse, warning strobe
@@ -806,7 +837,7 @@
       }
     }
 
-    function triggerIrisUnlock(targetConsoleEl) {
+    function triggerIrisUnlock() {
       // 1. Halo shockwave pulse around wells
       haloShockwave.style.display = 'flex';
       haloShockwave.style.opacity = '1';
@@ -826,11 +857,16 @@
         topLaserContainer.style.display = 'none';
         pinEl.style.display = 'none';
         pinEl.style.filter = 'blur(0px)';
-        targetConsoleEl.style.display = 'flex';
-        targetConsoleEl.style.pointerEvents = 'auto';
-        targetConsoleEl.style.opacity = '1';
-        targetConsoleEl.style.transform = 'scale(1)';
-        targetConsoleEl.style.filter = 'blur(0px)';
+
+        // Prepare Deck view
+        document.getElementById('deck-role-badge').textContent = currentUserRole === 'owner' ? 'Owner Telemetry' : 'Manager Shift';
+        renderUnitsDeck(currentDeckTab);
+
+        deckEl.style.display = 'flex';
+        deckEl.style.pointerEvents = 'auto';
+        deckEl.style.opacity = '1';
+        deckEl.style.transform = 'scale(1)';
+        deckEl.style.filter = 'blur(0px)';
         resetPinState();
       }, 700);
     }
@@ -844,16 +880,95 @@
 
     function lockTerminal() {
       resetPinState();
-      ownerEl.style.display = 'none';
-      ownerEl.style.opacity = '0';
-      managerEl.style.display = 'none';
-      managerEl.style.opacity = '0';
+      currentUserRole = null;
+      deckEl.style.display = 'none';
+      deckEl.style.opacity = '0';
 
       pinEl.style.display = 'flex';
       pinEl.style.pointerEvents = 'auto';
       pinEl.style.opacity = '1';
       pinEl.style.transform = 'scale(1)';
       pinEl.style.filter = 'blur(0px)';
+    }
+
+    // 5. UNITS DECK TABS & RENDERING
+    function switchDeckTab(tab) {
+      currentDeckTab = tab;
+      const roomsBtn = document.getElementById('tab-rooms-btn');
+      const shopsBtn = document.getElementById('tab-shops-btn');
+
+      if (tab === 'rooms') {
+        roomsBtn.className = "py-2 px-3 rounded-xl text-xs font-medium font-mono flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/40 shadow-[0_2px_12px_rgba(212,175,55,0.18)]";
+        shopsBtn.className = "py-2 px-3 rounded-xl text-xs font-medium font-mono flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer text-[#94A3B8] hover:text-white border border-transparent";
+      } else {
+        shopsBtn.className = "py-2 px-3 rounded-xl text-xs font-medium font-mono flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/40 shadow-[0_2px_12px_rgba(212,175,55,0.18)]";
+        roomsBtn.className = "py-2 px-3 rounded-xl text-xs font-medium font-mono flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer text-[#94A3B8] hover:text-white border border-transparent";
+      }
+      renderUnitsDeck(tab);
+    }
+
+    function renderUnitsDeck(tab) {
+      const filtered = STATIC_UNITS.filter(u => tab === 'rooms' ? u.type === 'room' : u.type === 'shop');
+      const total = filtered.length;
+      const occupied = filtered.filter(u => u.isOccupied).length;
+      const dueTotal = filtered.reduce((acc, u) => acc + u.rentDueAmount, 0);
+      const unreadCount = filtered.filter(u => u.isReadingPending).length;
+
+      // Update Quick Stats
+      document.getElementById('stat-occupancy').textContent = `${occupied}/${total}`;
+      const rentEl = document.getElementById('stat-rent-due');
+      rentEl.textContent = dueTotal === 0 ? '₹0' : `₹${dueTotal.toLocaleString('en-IN')}`;
+      rentEl.className = `text-xs font-mono font-semibold mt-0.5 ${dueTotal === 0 ? 'text-emerald-400' : 'text-amber-400'}`;
+      document.getElementById('stat-meters-due').textContent = `${unreadCount}`;
+
+      // Render Cards
+      const container = document.getElementById('units-grid-container');
+      container.innerHTML = filtered.map(unit => {
+        if (!unit.isOccupied) {
+          return `
+            <div class="relative p-3 rounded-2xl border border-dashed border-white/20 bg-white/[0.015] hover:bg-white/[0.03] hover:border-white/30 transition-all duration-150 flex flex-col items-center justify-center text-center min-h-[126px] cursor-pointer active:scale-[0.97]">
+              <span class="text-xs font-mono font-bold text-[#94A3B8] tracking-wide mb-1">${unit.name}</span>
+              <span class="inline-flex items-center gap-1 text-xs font-medium text-[#64748B]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Vacant
+              </span>
+              <span class="mt-2 text-[10px] font-mono text-[#CBD5E1] bg-white/[0.05] border border-white/[0.08] px-2 py-1 rounded-lg">
+                Assign Tenant
+              </span>
+            </div>
+          `;
+        }
+
+        const rentPill = unit.rentDueAmount === 0
+          ? `<span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Paid</span>`
+          : `<span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30 font-semibold">Due: ₹${unit.rentDueAmount.toLocaleString('en-IN')}</span>`;
+
+        const meterPill = unit.isReadingPending
+          ? `<span class="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-medium flex items-center gap-1 w-full justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22D3EE] animate-pulse"></span>
+              ⚡ Needs Reading
+            </span>`
+          : `<span class="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-white/[0.04] text-[#94A3B8] border border-white/[0.07] flex items-center gap-1 w-full justify-center">
+              <span>⚡</span> ${unit.lastReading} kWh
+            </span>`;
+
+        return `
+          <div class="group relative p-3 rounded-2xl bg-[#0D1117] border border-white/[0.08] hover:border-[#D4AF37]/40 active:scale-[0.97] transition-all duration-150 cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.5)] flex flex-col justify-between min-h-[126px]">
+            <div class="absolute inset-x-3 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent pointer-events-none"></div>
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="font-mono font-bold text-[#EDEDED] text-sm tracking-tight">${unit.name}</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34D399] animate-pulse"></span>
+              </div>
+              <p class="text-xs font-medium text-[#D4AF37]/90 truncate mt-1 tracking-tight">${unit.tenantName}</p>
+            </div>
+            <div class="mt-2.5 flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">${rentPill}</div>
+              <div class="flex items-center">${meterPill}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
   </script>
 </body>
