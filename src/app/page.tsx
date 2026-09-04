@@ -706,13 +706,10 @@ export default function Home() {
               animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
               exit={{ opacity: 0, scale: 0.97 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                paddingTop: 'max(14px, env(safe-area-inset-top, 14px))',
-              }}
-              className="relative w-full h-full flex-1 flex flex-col justify-start overflow-hidden z-10 gpu-layer select-none min-h-0"
+              className="absolute inset-0 w-full h-full flex flex-col overflow-hidden z-10 gpu-layer select-none"
             >
-              {/* TOP STICKY HEADER */}
-              <div className="shrink-0 z-20 w-full px-5 pb-3 border-b border-white/[0.06] bg-[#06080C]/90 backdrop-blur-xl">
+              {/* 1. Pinned Sticky Header (Zero Shrink) */}
+              <header className="shrink-0 w-full z-20 px-5 pt-[max(12px,env(safe-area-inset-top,12px))] pb-3 border-b border-white/[0.06] bg-[#06080C]/95 backdrop-blur-xl">
                 <div className="flex items-center justify-between">
                   {/* Left: Minimalist Titanium SB Monogram & Title */}
                   <div className="flex items-center gap-3">
@@ -795,18 +792,11 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </header>
 
-              {/* 2-COLUMN ARCHITECTURAL UNITS GRID (SCROLLABLE DECK) */}
-              <div
-                className="flex-1 w-full min-h-0 overflow-y-auto overscroll-contain px-4 pt-2.5 pb-28 touch-pan-y deck-scrollbar"
-                style={{
-                  WebkitOverflowScrolling: 'touch',
-                  scrollbarWidth: 'none',
-                  paddingBottom: 'max(7rem, env(safe-area-inset-bottom, 28px))',
-                }}
-              >
-                <div className="grid grid-cols-2 gap-2.5">
+              {/* 2. Full-Height Scrollable Grid Deck */}
+              <main className="flex-1 w-full min-h-0 overflow-y-auto overscroll-contain px-4 pt-3 pb-[max(24px,env(safe-area-inset-bottom,24px))] deck-scrollbar">
+                <div id="units-grid-container" className="grid grid-cols-2 gap-2.5 pb-6">
                   {displayedUnits.map((unit) => {
                     if (!unit.isOccupied) {
                       // Vacant Unit Card Design
@@ -887,7 +877,7 @@ export default function Home() {
                     );
                   })}
                 </div>
-              </div>
+              </main>
             </motion.div>
           )}
         </AnimatePresence>
