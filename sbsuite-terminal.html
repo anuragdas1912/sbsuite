@@ -7,6 +7,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#06080C">
+  <!-- Apple Touch Icon (For iOS Home Screen) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
   <title>sbsuite.in | Shree Balaji Estate Terminal</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -84,7 +89,7 @@
       animation: ambient-glow 4s ease-in-out infinite;
     }
 
-    /* Skeuomorphic Frosted Glass Pebble */
+    /* Skeuomorphic Frosted Glass Pebble - Zero-Latency GPU Active State */
     .glass-pebble {
       position: relative;
       overflow: hidden;
@@ -97,7 +102,10 @@
         inset -1px -1.5px 2px 0px rgba(0, 0, 0, 0.75),
         0 8px 24px -4px rgba(0, 0, 0, 0.65),
         0 2px 6px rgba(0, 0, 0, 0.4);
-      transition: transform 0.075s ease-out, background-color 0.075s ease-out, box-shadow 0.075s ease-out, border-color 0.075s ease-out;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      will-change: transform;
+      transition: transform 0.05s ease-out;
     }
 
     .glass-pebble:hover {
@@ -106,37 +114,47 @@
     }
 
     .glass-pebble:active {
-      transform: scale(0.92) translateY(2.5px);
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(212, 175, 55, 0.4);
-      box-shadow:
-        inset 0 0 20px rgba(212, 175, 55, 0.35),
-        inset 1px 1.5px 1px rgba(255, 245, 215, 0.5),
-        inset 0 2px 4px 0px rgba(0, 0, 0, 0.8),
-        0 2px 8px rgba(0, 0, 0, 0.4);
+      transform: scale(0.92) translate3d(0, 1px, 0);
+      background: rgba(255, 255, 255, 0.07);
     }
 
-    /* Key Touch Bloom Ripple */
-    .touch-bloom {
-      position: absolute;
-      border-radius: 50%;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-      width: 85px;
-      height: 85px;
-      background: radial-gradient(circle, rgba(255, 244, 194, 0.45) 0%, rgba(212, 175, 55, 0.2) 40%, transparent 75%);
-      animation: bloom-fade 0.3s ease-out forwards;
+    /* Fast hardware-accelerated PIN dot indicators */
+    .pin-dot-indicator {
+      width: 14px;
+      height: 14px;
+      border-radius: 9999px;
+      transform: scale(0);
+      opacity: 0;
+      will-change: transform, opacity;
+      transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.12s ease-out;
+      background: linear-gradient(to bottom, #FFF4C2, #E5C158, #D4AF37);
+      box-shadow: 0 0 14px rgba(212, 175, 55, 0.75), inset 0 1px 1px #FFF;
     }
 
-    @keyframes bloom-fade {
-      0% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(0.5);
-      }
-      100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(1.2);
-      }
+    .pin-dot-indicator.active-dot {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .pin-dot-indicator.error-dot {
+      transform: scale(1);
+      opacity: 1;
+      background: linear-gradient(to bottom, #FDA4AF, #E11D48);
+      box-shadow: 0 0 14px rgba(225, 29, 72, 0.9);
+    }
+
+    .pin-dot-indicator.owner-dot {
+      transform: scale(1);
+      opacity: 1;
+      background: linear-gradient(to bottom, #FFF4C2, #E5C158, #D4AF37);
+      box-shadow: 0 0 18px rgba(212, 175, 55, 1);
+    }
+
+    .pin-dot-indicator.manager-dot {
+      transform: scale(1);
+      opacity: 1;
+      background: linear-gradient(to bottom, #FFFFFF, #E2E8F0, #94A3B8);
+      box-shadow: 0 0 16px rgba(226, 232, 240, 0.9);
     }
 
     /* Horizontal Gold Laser Sweep */
@@ -396,69 +414,69 @@
 
           <div id="pin-dots-container" class="flex items-center justify-center gap-5">
             <div class="w-6 h-6 rounded-full bg-[#07090E] border border-white/[0.06] shadow-[inset_0_3px_6px_rgba(0,0,0,0.95),inset_0_1px_2px_rgba(0,0,0,0.8),0_1px_1px_rgba(255,255,255,0.06)] flex items-center justify-center relative overflow-hidden transition-colors duration-150">
-              <div id="dot-0" class="w-3.5 h-3.5 rounded-full scale-0 opacity-0 transition-all duration-150"></div>
+              <div id="dot-0" class="pin-dot-indicator"></div>
             </div>
             <div class="w-6 h-6 rounded-full bg-[#07090E] border border-white/[0.06] shadow-[inset_0_3px_6px_rgba(0,0,0,0.95),inset_0_1px_2px_rgba(0,0,0,0.8),0_1px_1px_rgba(255,255,255,0.06)] flex items-center justify-center relative overflow-hidden transition-colors duration-150">
-              <div id="dot-1" class="w-3.5 h-3.5 rounded-full scale-0 opacity-0 transition-all duration-150"></div>
+              <div id="dot-1" class="pin-dot-indicator"></div>
             </div>
             <div class="w-6 h-6 rounded-full bg-[#07090E] border border-white/[0.06] shadow-[inset_0_3px_6px_rgba(0,0,0,0.95),inset_0_1px_2px_rgba(0,0,0,0.8),0_1px_1px_rgba(255,255,255,0.06)] flex items-center justify-center relative overflow-hidden transition-colors duration-150">
-              <div id="dot-2" class="w-3.5 h-3.5 rounded-full scale-0 opacity-0 transition-all duration-150"></div>
+              <div id="dot-2" class="pin-dot-indicator"></div>
             </div>
             <div class="w-6 h-6 rounded-full bg-[#07090E] border border-white/[0.06] shadow-[inset_0_3px_6px_rgba(0,0,0,0.95),inset_0_1px_2px_rgba(0,0,0,0.8),0_1px_1px_rgba(255,255,255,0.06)] flex items-center justify-center relative overflow-hidden transition-colors duration-150">
-              <div id="dot-3" class="w-3.5 h-3.5 rounded-full scale-0 opacity-0 transition-all duration-150"></div>
+              <div id="dot-3" class="pin-dot-indicator"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- TACTILE 3D GLASS KEYS: Skeuomorphic Frosted Glass Pebbles with Touch Bloom -->
+      <!-- TACTILE 3D GLASS KEYS: Pure CSS GPU Active State (Zero-Latency) -->
       <div class="w-full max-w-[324px] mx-auto pb-4">
         <div class="grid grid-cols-3 gap-y-3 gap-x-4 justify-items-center">
-          <button onpointerdown="handleKeyBloom(this, event); pressDigit('1')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
+          <button onclick="pressDigit('1')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
             <span class="text-2xl font-light leading-none tracking-tight relative z-10">1</span>
           </button>
-          <button onpointerdown="handleKeyBloom(this, event); pressDigit('2')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
+          <button onclick="pressDigit('2')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
             <span class="text-2xl font-light leading-none tracking-tight relative z-10">2</span>
             <span class="text-[10px] font-mono text-[#64748B] tracking-widest mt-1 leading-none uppercase relative z-10">ABC</span>
           </button>
-          <button onpointerdown="handleKeyBloom(this, event); pressDigit('3')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
+          <button onclick="pressDigit('3')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
             <span class="text-2xl font-light leading-none tracking-tight relative z-10">3</span>
             <span class="text-[10px] font-mono text-[#64748B] tracking-widest mt-1 leading-none uppercase relative z-10">DEF</span>
           </button>
 
-          <button onpointerdown="handleKeyBloom(this, event); pressDigit('4')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
+          <button onclick="pressDigit('4')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
             <span class="text-2xl font-light leading-none tracking-tight relative z-10">4</span>
             <span class="text-[10px] font-mono text-[#64748B] tracking-widest mt-1 leading-none uppercase relative z-10">GHI</span>
           </button>
-          <button onpointerdown="handleKeyBloom(this, event); pressDigit('5')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
+          <button onclick="pressDigit('5')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
             <span class="text-2xl font-light leading-none tracking-tight relative z-10">5</span>
             <span class="text-[10px] font-mono text-[#64748B] tracking-widest mt-1 leading-none uppercase relative z-10">JKL</span>
           </button>
-          <button onpointerdown="handleKeyBloom(this, event); pressDigit('6')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
+          <button onclick="pressDigit('6')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
             <span class="text-2xl font-light leading-none tracking-tight relative z-10">6</span>
             <span class="text-[10px] font-mono text-[#64748B] tracking-widest mt-1 leading-none uppercase relative z-10">MNO</span>
           </button>
 
-          <button onpointerdown="handleKeyBloom(this, event); pressDigit('7')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
+          <button onclick="pressDigit('7')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
             <span class="text-2xl font-light leading-none tracking-tight relative z-10">7</span>
             <span class="text-[10px] font-mono text-[#64748B] tracking-widest mt-1 leading-none uppercase relative z-10">PQRS</span>
           </button>
-          <button onpointerdown="handleKeyBloom(this, event); pressDigit('8')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
+          <button onclick="pressDigit('8')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
             <span class="text-2xl font-light leading-none tracking-tight relative z-10">8</span>
             <span class="text-[10px] font-mono text-[#64748B] tracking-widest mt-1 leading-none uppercase relative z-10">TUV</span>
           </button>
-          <button onpointerdown="handleKeyBloom(this, event); pressDigit('9')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
+          <button onclick="pressDigit('9')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
             <span class="text-2xl font-light leading-none tracking-tight relative z-10">9</span>
             <span class="text-[10px] font-mono text-[#64748B] tracking-widest mt-1 leading-none uppercase relative z-10">WXYZ</span>
           </button>
 
           <div class="w-20 h-20"></div>
 
-          <button onpointerdown="handleKeyBloom(this, event); pressDigit('0')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
+          <button onclick="pressDigit('0')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
             <span class="text-2xl font-light leading-none tracking-tight relative z-10">0</span>
           </button>
 
-          <button onpointerdown="handleKeyBloom(this, event); backspace()" class="w-20 h-20 rounded-[26px] glass-pebble flex items-center justify-center text-[#64748B] hover:text-[#EDEDED] active:text-rose-400 cursor-pointer select-none gpu-accel touch-manipulation">
+          <button onclick="backspace()" aria-label="Delete digit" class="w-20 h-20 rounded-[26px] glass-pebble flex items-center justify-center text-[#64748B] hover:text-[#EDEDED] active:text-rose-400 cursor-pointer select-none gpu-accel touch-manipulation">
             <svg class="w-5 h-5 relative z-10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75L14.25 12m0 0l2.25 2.25M14.25 12l2.25-2.25M14.25 12L12 14.25m-2.58 4.92l-6.375-6.375a1.125 1.125 0 010-1.59L9.42 4.83c.211-.211.498-.33.796-.33H19.5a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25h-9.284c-.298 0-.585-.119-.796-.33z"></path>
             </svg>
@@ -712,32 +730,16 @@
       }, 380);
     }
 
-    // 3. TACTILE KEYPAD BLOOM
-    function handleKeyBloom(btn, event) {
-      const rect = btn.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-
-      const bloom = document.createElement('span');
-      bloom.className = 'touch-bloom';
-      bloom.style.left = `${x}px`;
-      bloom.style.top = `${y}px`;
-
-      btn.appendChild(bloom);
-      setTimeout(() => {
-        bloom.remove();
-      }, 300);
-    }
-
+    // 3. FAST PIN DOT UPDATES (ZERO-LATENCY TOGGLE)
     function updateDots(error = false) {
       for (let i = 0; i < 4; i++) {
         const dot = document.getElementById(`dot-${i}`);
+        if (!dot) continue;
         if (error) {
-          dot.className = 'w-3.5 h-3.5 rounded-full bg-gradient-to-b from-[#FDA4AF] to-[#E11D48] shadow-[0_0_14px_rgba(225,29,72,0.9)] scale-100 opacity-100 transition-all duration-150';
-        } else if (currentPin.length > i) {
-          dot.className = 'w-3.5 h-3.5 rounded-full bg-gradient-to-b from-[#FFF4C2] via-[#E5C158] to-[#D4AF37] shadow-[0_0_14px_rgba(212,175,55,0.75),inset_0_1px_1px_#FFF] scale-100 opacity-100 transition-all duration-150';
+          dot.className = 'pin-dot-indicator error-dot';
         } else {
-          dot.className = 'w-3.5 h-3.5 rounded-full scale-0 opacity-0 transition-all duration-150';
+          dot.className = 'pin-dot-indicator';
+          dot.classList.toggle('active-dot', currentPin.length > i);
         }
       }
     }
@@ -769,7 +771,7 @@
         feedbackEl.innerHTML = '<span class="text-[#FFF4C2] font-semibold">Access Granted // Owner</span>';
         for (let i = 0; i < 4; i++) {
           const dot = document.getElementById(`dot-${i}`);
-          dot.className = 'w-3.5 h-3.5 rounded-full bg-gradient-to-b from-[#FFF4C2] via-[#E5C158] to-[#D4AF37] shadow-[0_0_18px_rgba(212,175,55,1)] scale-100 opacity-100';
+          if (dot) dot.className = 'pin-dot-indicator owner-dot';
         }
         if (navigator.vibrate) navigator.vibrate([18, 30, 24]);
 
@@ -780,7 +782,7 @@
         feedbackEl.innerHTML = '<span class="text-[#CBD5E1] font-semibold">Access Granted // Manager</span>';
         for (let i = 0; i < 4; i++) {
           const dot = document.getElementById(`dot-${i}`);
-          dot.className = 'w-3.5 h-3.5 rounded-full bg-gradient-to-b from-white via-[#E2E8F0] to-[#94A3B8] shadow-[0_0_16px_rgba(226,232,240,0.9)] scale-100 opacity-100';
+          if (dot) dot.className = 'pin-dot-indicator manager-dot';
         }
         if (navigator.vibrate) navigator.vibrate([18, 30, 24]);
 

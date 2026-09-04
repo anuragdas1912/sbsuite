@@ -199,13 +199,10 @@ export default function Home() {
   const touchStartXRef = useRef<number | null>(null);
   const touchStartTimeRef = useRef<number>(0);
 
-  // Keypad touch ripple blooms
-  const [activeBlooms, setActiveBlooms] = useState<{ [key: string]: { x: number; y: number } }>({});
-
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2; // -1 to 1
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2; // -1 to 1
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
     setTilt({ rx: -y * 8, ry: x * 8 });
   };
 
@@ -217,7 +214,6 @@ export default function Home() {
   useEffect(() => {
     const handleDeviceOrientation = (event: DeviceOrientationEvent) => {
       if (event.gamma !== null && event.beta !== null) {
-        // Clamp gamma (-45 to 45 deg) and beta (-45 to 45 deg)
         const x = Math.max(-1, Math.min(1, event.gamma / 30));
         const y = Math.max(-1, Math.min(1, (event.beta - 45) / 30));
         setTilt({ rx: -y * 8, ry: x * 8 });
@@ -261,23 +257,7 @@ export default function Home() {
     }
   };
 
-  // 3. TACTILE KEYPAD BLOOM
-  const triggerKeyBloom = (key: string, e: React.PointerEvent<HTMLButtonElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setActiveBlooms((prev) => ({ ...prev, [key]: { x, y } }));
-
-    setTimeout(() => {
-      setActiveBlooms((prev) => {
-        const copy = { ...prev };
-        delete copy[key];
-        return copy;
-      });
-    }, 280);
-  };
-
-  // 4. CINEMATIC IRIS UNLOCK SEQUENCE & WRONG PIN HANDLING
+  // 3. CINEMATIC IRIS UNLOCK SEQUENCE & WRONG PIN HANDLING
   const handlePinComplete = useCallback((completedPin: string) => {
     setIsProcessing(true);
 
@@ -329,9 +309,8 @@ export default function Home() {
     }
   }, []);
 
-  const handleKeyPress = (num: string, e: React.PointerEvent<HTMLButtonElement>) => {
+  const handleKeyPress = (num: string) => {
     if (isProcessing || pin.length >= 4) return;
-    triggerKeyBloom(num, e);
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate([16]);
     }
@@ -343,9 +322,8 @@ export default function Home() {
     }
   };
 
-  const handleBackspace = (e: React.PointerEvent<HTMLButtonElement>) => {
+  const handleBackspace = () => {
     if (isProcessing || isError) return;
-    triggerKeyBloom('del', e);
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate([14]);
     }
@@ -575,6 +553,17 @@ export default function Home() {
                   >
                     {[0, 1, 2, 3].map((index) => {
                       const isFilled = pin.length > index;
+                      let dotStateClass = '';
+                      if (isError) {
+                        dotStateClass = 'error-dot';
+                      } else if (isSuccessOwner) {
+                        dotStateClass = 'owner-dot';
+                      } else if (isSuccessManager) {
+                        dotStateClass = 'manager-dot';
+                      } else if (isFilled) {
+                        dotStateClass = 'active-dot';
+                      }
+
                       return (
                         <div
                           key={index}
@@ -582,25 +571,7 @@ export default function Home() {
                             isError ? 'border-rose-500/80 shadow-[inset_0_0_8px_rgba(225,29,72,0.8)]' : 'border-white/[0.06]'
                           }`}
                         >
-                          <AnimatePresence>
-                            {isFilled && (
-                              <motion.div
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0, opacity: 0 }}
-                                transition={{ type: 'spring', stiffness: 500, damping: 24 }}
-                                className={`w-3.5 h-3.5 rounded-full transition-all duration-150 gpu-layer ${
-                                  isError
-                                    ? 'bg-gradient-to-b from-[#FDA4AF] to-[#E11D48] shadow-[0_0_14px_rgba(225,29,72,0.9)]'
-                                    : isSuccessOwner
-                                    ? 'bg-gradient-to-b from-[#FFF4C2] via-[#E5C158] to-[#D4AF37] shadow-[0_0_18px_rgba(212,175,55,1)]'
-                                    : isSuccessManager
-                                    ? 'bg-gradient-to-b from-white via-[#E2E8F0] to-[#94A3B8] shadow-[0_0_16px_rgba(226,232,240,0.9)]'
-                                    : 'bg-gradient-to-b from-[#FFF4C2] via-[#E5C158] to-[#D4AF37] shadow-[0_0_14px_rgba(212,175,55,0.75),inset_0_1px_1px_#FFF]'
-                                }`}
-                              />
-                            )}
-                          </AnimatePresence>
+                          <div className={`pin-dot-indicator ${dotStateClass}`} />
                         </div>
                       );
                     })}
@@ -608,7 +579,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* TACTILE 3D GLASS KEYS: Skeuomorphic Frosted Glass Pebbles with Touch Bloom */}
+              {/* TACTILE 3D GLASS KEYS: Pure CSS GPU Active State (Zero-Latency) */}
               <div className="w-full max-w-[324px] mx-auto pb-4">
                 <div className="grid grid-cols-3 gap-y-3 gap-x-4 justify-items-center">
                   {KEYPAD_KEYS.map(({ num, sub }) => (
@@ -616,24 +587,9 @@ export default function Home() {
                       key={num}
                       type="button"
                       disabled={isProcessing}
-                      onPointerDown={(e) => handleKeyPress(num, e)}
+                      onClick={() => handleKeyPress(num)}
                       className="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-layer touch-manipulation disabled:opacity-40"
                     >
-                      {/* Dynamic Soft Radial Bloom on Exact Touch Origin */}
-                      {activeBlooms[num] && (
-                        <span
-                          className="absolute pointer-events-none rounded-full"
-                          style={{
-                            left: `${activeBlooms[num].x}px`,
-                            top: `${activeBlooms[num].y}px`,
-                            transform: 'translate(-50%, -50%)',
-                            width: '85px',
-                            height: '85px',
-                            background: 'radial-gradient(circle, rgba(255, 244, 194, 0.45) 0%, rgba(212, 175, 55, 0.2) 40%, transparent 75%)',
-                            animation: 'fade-bloom 0.3s ease-out forwards',
-                          }}
-                        />
-                      )}
                       <span className="text-2xl font-light leading-none tracking-tight relative z-10">
                         {num}
                       </span>
@@ -652,22 +608,9 @@ export default function Home() {
                   <button
                     type="button"
                     disabled={isProcessing}
-                    onPointerDown={(e) => handleKeyPress('0', e)}
+                    onClick={() => handleKeyPress('0')}
                     className="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-layer touch-manipulation disabled:opacity-40"
                   >
-                    {activeBlooms['0'] && (
-                      <span
-                        className="absolute pointer-events-none rounded-full"
-                        style={{
-                          left: `${activeBlooms['0'].x}px`,
-                          top: `${activeBlooms['0'].y}px`,
-                          transform: 'translate(-50%, -50%)',
-                          width: '85px',
-                          height: '85px',
-                          background: 'radial-gradient(circle, rgba(255, 244, 194, 0.45) 0%, rgba(212, 175, 55, 0.2) 40%, transparent 75%)',
-                        }}
-                      />
-                    )}
                     <span className="text-2xl font-light leading-none tracking-tight relative z-10">
                       0
                     </span>
@@ -677,23 +620,10 @@ export default function Home() {
                   <button
                     type="button"
                     disabled={isProcessing || pin.length === 0}
-                    onPointerDown={handleBackspace}
+                    onClick={handleBackspace}
                     aria-label="Delete digit"
                     className="w-20 h-20 rounded-[26px] glass-pebble flex items-center justify-center text-[#64748B] hover:text-[#EDEDED] active:text-rose-400 cursor-pointer select-none gpu-layer touch-manipulation disabled:opacity-20"
                   >
-                    {activeBlooms['del'] && (
-                      <span
-                        className="absolute pointer-events-none rounded-full"
-                        style={{
-                          left: `${activeBlooms['del'].x}px`,
-                          top: `${activeBlooms['del'].y}px`,
-                          transform: 'translate(-50%, -50%)',
-                          width: '85px',
-                          height: '85px',
-                          background: 'radial-gradient(circle, rgba(255, 244, 194, 0.35) 0%, transparent 70%)',
-                        }}
-                      />
-                    )}
                     <Delete className="w-5 h-5 relative z-10" strokeWidth={2} />
                   </button>
                 </div>

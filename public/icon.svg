@@ -1,0 +1,95 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#141923" />
+      <stop offset="60%" stop-color="#06080C" />
+      <stop offset="100%" stop-color="#020305" />
+    </radialGradient>
+
+    <!-- Razor-sharp Champagne Gold Chamfer Bevel -->
+    <linearGradient id="goldChamferBevel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF9DF" stop-opacity="0.95" />
+      <stop offset="26%" stop-color="#D4AF37" stop-opacity="0.9" />
+      <stop offset="52%" stop-color="#6E530F" stop-opacity="0.4" />
+      <stop offset="78%" stop-color="#F5D77F" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#FFF9DF" stop-opacity="0.95" />
+    </linearGradient>
+
+    <!-- Liquid Metallic Champagne Typography -->
+    <linearGradient id="liquidGold" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.98" />
+      <stop offset="20%" stop-color="#FFF4C2" />
+      <stop offset="50%" stop-color="#E5C158" />
+      <stop offset="80%" stop-color="#B88E22" />
+      <stop offset="100%" stop-color="#7E5D0C" />
+    </linearGradient>
+
+    <!-- Specular Diagonal Sheen -->
+    <linearGradient id="glassSheen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.14" />
+      <stop offset="35%" stop-color="#FFFFFF" stop-opacity="0.03" />
+      <stop offset="70%" stop-color="transparent" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Inner Shadow / Glow -->
+    <radialGradient id="centerAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#D4AF37" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Base Solid Background -->
+  <rect width="1024" height="1024" fill="#06080C" />
+  <rect width="1024" height="1024" fill="url(#bgGlow)" />
+
+  <!-- Ambient Golden Center Glow -->
+  <circle cx="512" cy="512" r="380" fill="url(#centerAura)" />
+
+  <!-- Obsidian Monolith Squircle -->
+  <!-- 800x800 squircle centered at 112, 112, rx=196 -->
+  <rect x="112" y="112" width="800" height="800" rx="196" fill="#0A0D14" stroke="url(#goldChamferBevel)" stroke-width="8" />
+
+  <!-- Top-Left Specular Highlight Rim -->
+  <path d="M 308 116 H 716 C 824 116 908 200 908 308" fill="none" stroke="rgba(255, 255, 255, 0.25)" stroke-width="6" />
+
+  <!-- Inner Glass Sheen -->
+  <rect x="120" y="120" width="784" height="784" rx="188" fill="url(#glassSheen)" stroke="rgba(255, 255, 255, 0.04)" stroke-width="3" />
+
+  <!-- Precision SB Monogram -->
+  <g transform="translate(112, 112) scale(5.5555)">
+    <!-- Letter 'S' -->
+    <path
+      d="M 66 47 H 45 C 40.029 47 36 51.029 36 56 V 64 C 36 68.971 40.029 73 45 73 H 57 C 61.971 73 66 77.029 66 82 V 89 C 66 93.971 61.971 98 57 98 H 36"
+      fill="none"
+      stroke="url(#liquidGold)"
+      stroke-width="7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Letter 'B' -->
+    <path
+      d="M 78 47 V 98"
+      stroke="url(#liquidGold)"
+      stroke-width="7"
+      stroke-linecap="round"
+    />
+    <path
+      d="M 78 47 H 91 C 97.627 47 103 52.373 103 59 C 103 65.627 97.627 71 91 71 H 78"
+      fill="none"
+      stroke="url(#liquidGold)"
+      stroke-width="7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M 78 71 H 93 C 99.627 71 105 76.82 105 84.5 C 105 92.18 99.627 98 93 98 H 78"
+      fill="none"
+      stroke="url(#liquidGold)"
+      stroke-width="7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+</svg>
