@@ -330,8 +330,12 @@ export default function Home() {
   const handleRecordPayment = () => {
     if (!selectedUnit || totalCashCollected <= 0) return;
 
+    const prevReading = selectedUnit.lastReading;
+    const currentNum = canSaveReading && currentReadingNum !== null ? currentReadingNum : null;
+    const hasValidReading = currentNum !== null && currentNum >= prevReading;
+
     // 1. Immediately update unit state
-    const newLastReading = canSaveReading && currentReadingNum !== null ? currentReadingNum : selectedUnit.lastReading;
+    const newLastReading = hasValidReading && currentNum !== null ? currentNum : prevReading;
     setUnits((prev) =>
       prev.map((u) => {
         if (u.id !== selectedUnit.id) return u;
@@ -339,18 +343,19 @@ export default function Home() {
           ...u,
           rentDueAmount: remainingRentDue,
           lastReading: newLastReading,
-          isReadingPending: elecPaidNum > 0 || (canSaveReading && currentReadingNum !== null) ? false : u.isReadingPending,
+          isReadingPending: elecPaidNum > 0 || hasValidReading ? false : u.isReadingPending,
         };
       })
     );
 
-    // 2. Prepare receipt details
+    // 2. Prepare receipt details with correct delta
     const today = new Date();
     const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
 
     let elecLine = '';
-    if (unitsConsumed > 0 && currentReadingNum !== null) {
-      elecLine = `बिजली बिल जमा: ₹${elecPaidNum.toLocaleString('en-IN')} (रीडिंग: ${selectedUnit.lastReading} से ${currentReadingNum} | ${unitsConsumed} यूनिट)`;
+    if (hasValidReading && currentNum !== null) {
+      const unitsDiff = currentNum - prevReading;
+      elecLine = `बिजली बिल जमा: ₹${elecPaidNum.toLocaleString('en-IN')} (रीडिंग: ${prevReading} से ${currentNum} | ${unitsDiff} यूनिट)`;
     } else {
       elecLine = `बिजली बिल जमा: ₹${elecPaidNum.toLocaleString('en-IN')}`;
     }
