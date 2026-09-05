@@ -387,17 +387,7 @@
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
-              <button id="btn-master-override-units" onclick="openMasterOverrideModal()" style="display: none;" class="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                <span id="label-control-btn-units">⚙️ Control</span>
-              </button>
-
-              <button id="btn-add-expense-units" onclick="openMaintenanceExpenseDrawer()" class="px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-400 font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(245,158,11,0.2)]">
-                <span>🛠️</span>
-                <span id="label-expense-btn-units">Expense</span>
-              </button>
-
+            <div class="flex items-center gap-2 shrink-0">
               <button id="btn-lang-toggle-units" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.12] text-[#EDEDED] font-mono font-bold text-[11px] flex items-center gap-1 cursor-pointer active:scale-95 transition-all" title="Toggle Language">
                 <span class="lang-label-en text-amber-300 font-extrabold">EN</span>
                 <span class="text-[#64748B]">/</span>
@@ -486,17 +476,7 @@
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
-              <button id="btn-master-override-parking" onclick="openMasterOverrideModal()" style="display: none;" class="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                <span id="label-control-btn-parking">⚙️ Control</span>
-              </button>
-
-              <button id="btn-add-expense-parking" onclick="openMaintenanceExpenseDrawer()" class="px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-400 font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(245,158,11,0.2)]">
-                <span>🛠️</span>
-                <span id="label-expense-btn-parking">Expense</span>
-              </button>
-
+            <div class="flex items-center gap-2 shrink-0">
               <button id="btn-lang-toggle-parking" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.12] text-[#EDEDED] font-mono font-bold text-[11px] flex items-center gap-1 cursor-pointer active:scale-95 transition-all" title="Toggle Language">
                 <span class="lang-label-en text-amber-300 font-extrabold">EN</span>
                 <span class="text-[#64748B]">/</span>
@@ -715,27 +695,50 @@
       </div>
 
       <!-- Bottom Dock Navigation -->
-      <nav class="shrink-0 w-full z-30 px-5 pt-2 pb-[max(12px,env(safe-area-inset-bottom,12px))] border-t border-white/[0.08] bg-[#06080C]/95 backdrop-blur-xl">
-        <div class="grid grid-cols-2 gap-3 max-w-[340px] mx-auto">
+      <nav class="shrink-0 w-full z-30 px-3 pt-2 pb-[max(12px,env(safe-area-inset-bottom,12px))] border-t border-white/[0.08] bg-[#06080C]/95 backdrop-blur-xl">
+        <div id="dock-nav-grid" class="grid grid-cols-3 gap-1.5 max-w-md mx-auto font-mono">
           <button
             id="dock-btn-units"
             type="button"
             onclick="switchMainModule('units')"
-            class="py-2.5 px-3 rounded-2xl font-mono text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/40 shadow-[0_2px_15px_rgba(212,175,55,0.2)]"
+            class="py-2 px-1 rounded-2xl text-[11px] font-semibold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/40 shadow-[0_2px_15px_rgba(212,175,55,0.2)]"
           >
             <svg class="w-4 h-4 text-[#D4AF37]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            <span>एस्टेट यूनिट्स (22)</span>
+            <span id="dock-units-label" class="truncate">Units (22)</span>
           </button>
 
           <button
             id="dock-btn-parking"
             type="button"
             onclick="switchMainModule('parking')"
-            class="py-2.5 px-3 rounded-2xl font-mono text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all text-[#94A3B8] hover:text-white border border-transparent"
+            class="py-2 px-1 rounded-2xl text-[11px] font-semibold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all text-[#94A3B8] hover:text-white border border-transparent relative"
           >
-            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg>
-            <span>पार्किंग गेट</span>
-            <span id="dock-parking-badge" class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">0</span>
+            <div class="relative">
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg>
+              <span id="dock-parking-badge" class="absolute -top-1.5 -right-2.5 px-1 py-0.2 rounded-full text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">0</span>
+            </div>
+            <span id="dock-parking-label" class="truncate">Parking</span>
+          </button>
+
+          <button
+            id="dock-btn-expense"
+            type="button"
+            onclick="openMaintenanceExpenseDrawer()"
+            class="py-2 px-1 rounded-2xl text-[11px] font-semibold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all text-[#94A3B8] hover:text-amber-400 border border-transparent hover:border-amber-500/20 active:scale-95"
+          >
+            <span>🛠️</span>
+            <span id="dock-expense-label" class="truncate">Expense</span>
+          </button>
+
+          <button
+            id="dock-btn-control"
+            type="button"
+            onclick="openMasterOverrideModal()"
+            style="display: none;"
+            class="py-2 px-1 rounded-2xl text-[11px] font-semibold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all text-[#94A3B8] hover:text-[#D4AF37] border border-transparent hover:border-[#D4AF37]/30 active:scale-95"
+          >
+            <svg class="w-4 h-4 text-[#D4AF37]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span id="dock-control-label" class="truncate">Control</span>
           </button>
         </div>
       </nav>
@@ -758,9 +761,15 @@
           </div>
         </div>
 
-        <button onclick="closeDrawer()" aria-label="Close drawer" class="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white transition-colors cursor-pointer border border-white/[0.08]">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+        <div class="flex items-center gap-1.5">
+          <button id="btn-quick-vacate-unit" onclick="quickVacateActiveUnit()" style="display: none;" class="px-2 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-400 font-mono text-[10px] font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-all">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <span id="btn-quick-vacate-text">Vacate</span>
+          </button>
+          <button onclick="closeDrawer()" aria-label="Close drawer" class="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white transition-colors cursor-pointer border border-white/[0.08]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
       </div>
 
       <div class="mt-3 grid grid-cols-2 gap-2 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
@@ -1147,9 +1156,15 @@
           </div>
         </div>
 
-        <button onclick="closeRenewalDrawer()" aria-label="Close drawer" class="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white transition-colors cursor-pointer border border-white/[0.08]">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+        <div class="flex items-center gap-1.5">
+          <button id="btn-quick-delete-subscriber" onclick="quickDeleteActiveSubscriber()" style="display: none;" class="px-2 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-400 font-mono text-[10px] font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-all">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <span id="btn-quick-del-sub-text">Delete</span>
+          </button>
+          <button onclick="closeRenewalDrawer()" aria-label="Close drawer" class="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white transition-colors cursor-pointer border border-white/[0.08]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
       </div>
 
       <!-- Editable Slot Field -->
@@ -1334,154 +1349,247 @@
     <!-- ================= OWNER MASTER OVERRIDE MODAL (PIN: 1912 ONLY) ================= -->
     <div id="modal-owner-override" style="display: none;" class="absolute inset-0 z-50 flex items-center justify-center p-4">
       <div onclick="closeMasterOverrideModal()" class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer"></div>
-      <div class="relative w-full max-w-sm bg-[#0A0D14] border border-[#D4AF37]/50 rounded-3xl p-5 shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-10 flex flex-col gap-3 font-mono max-h-[90vh] overflow-y-auto deck-scrollbar">
-        <div class="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+      <div class="relative w-full max-w-md bg-[#0A0D14] border border-[#D4AF37]/50 rounded-3xl p-4 sm:p-5 shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-10 flex flex-col gap-3 font-mono max-h-[90vh] overflow-y-auto deck-scrollbar">
+        <div class="flex items-center justify-between pb-2.5 border-b border-white/[0.08]">
           <div class="flex items-center gap-2">
             <span class="w-8 h-8 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37] font-bold text-sm">
               ⚙️
             </span>
             <div>
-              <h3 class="text-sm font-bold text-[#FFF4C2]">Master Control Panel</h3>
-              <span class="text-[10px] text-[#D4AF37]">मालिक विशेष अधिकार (PIN: 1912)</span>
+              <h3 id="override-header-title" class="text-sm font-bold text-[#FFF4C2]">Master Control Panel</h3>
+              <span id="override-header-privilege" class="text-[10px] text-[#D4AF37]">मालिक विशेष अधिकार (PIN: 1912)</span>
             </div>
           </div>
-          <button onclick="closeMasterOverrideModal()" class="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white">
+          <button onclick="closeMasterOverrideModal()" class="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
 
-        <!-- 1. ELECTRICITY TARIFFS -->
-        <div class="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
-          <span class="text-xs font-bold text-cyan-300 uppercase flex items-center gap-1">
-            ⚡ बिजली दरें (Electricity Tariffs ₹/यूनिट)
-          </span>
-          <div class="grid grid-cols-3 gap-2 text-xs">
-            <div>
-              <label class="block text-[9px] text-[#94A3B8]">कमरा (Rooms)</label>
-              <input type="number" id="override-tariff-room" step="0.5" class="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-[9px] text-[#94A3B8]">दुकान (Shops)</label>
-              <input type="number" id="override-tariff-shop" step="0.5" class="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-[9px] text-[#94A3B8]">ई-रिक्शा (EV)</label>
-              <input type="number" id="override-tariff-tuktuk" step="0.5" class="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none">
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. COMMERCIAL PARKING CATEGORY FEES & SPLITS -->
-        <div class="p-3 rounded-2xl bg-[#06080C] border border-[#D4AF37]/30 flex flex-col gap-2.5">
-          <span class="text-xs font-bold text-[#FFF4C2] uppercase flex items-center gap-1">
-            🅿️ पार्किंग श्रेणी शुल्क व कमीशन (Fees & Splits)
-          </span>
-
-          <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1 text-[11px]">
-            <span class="font-bold text-sky-300">🚗 Car: Small (हैचबैक)</span>
-            <div class="grid grid-cols-3 gap-1.5 text-[10px]">
-              <div><span class="text-[#64748B]">मासिक: ₹</span><input type="number" id="override-fee-car_small" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-              <div><span class="text-[#D4AF37]">मालिक: ₹</span><input type="number" id="override-owner-car_small" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-              <div><span class="text-cyan-300">रितिन: ₹</span><input type="number" id="override-ritin-car_small" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-            </div>
-          </div>
-
-          <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1 text-[11px]">
-            <span class="font-bold text-amber-300">🚙 Car: Large / SUV</span>
-            <div class="grid grid-cols-3 gap-1.5 text-[10px]">
-              <div><span class="text-[#64748B]">मासिक: ₹</span><input type="number" id="override-fee-car_large" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-              <div><span class="text-[#D4AF37]">मालिक: ₹</span><input type="number" id="override-owner-car_large" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-              <div><span class="text-cyan-300">रितिन: ₹</span><input type="number" id="override-ritin-car_large" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-            </div>
-          </div>
-
-          <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1 text-[11px]">
-            <span class="font-bold text-purple-300">🛻 Pickup / Loader</span>
-            <div class="grid grid-cols-3 gap-1.5 text-[10px]">
-              <div><span class="text-[#64748B]">मासिक: ₹</span><input type="number" id="override-fee-heavy" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-              <div><span class="text-[#D4AF37]">मालिक: ₹</span><input type="number" id="override-owner-heavy" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-              <div><span class="text-cyan-300">रितिन: ₹</span><input type="number" id="override-ritin-heavy" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-            </div>
-          </div>
-
-          <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1 text-[11px]">
-            <span class="font-bold text-emerald-300">🛺 E-Rickshaw / Tuk-Tuk</span>
-            <div class="grid grid-cols-3 gap-1.5 text-[10px]">
-              <div><span class="text-[#64748B]">मासिक: ₹</span><input type="number" id="override-fee-tuktuk" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-              <div><span class="text-[#D4AF37]">मालिक: ₹</span><input type="number" id="override-owner-tuktuk" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-              <div><span class="text-cyan-300">रितिन: ₹</span><input type="number" id="override-ritin-tuktuk" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. UNIT RENT & ARREARS ADJUSTMENT -->
-        <div class="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
-          <span class="text-xs font-bold text-[#EDEDED] uppercase">🏢 यूनिट किराया व बकाया समायोजन</span>
-          <select id="override-unit-select" onchange="onSelectUnitForOverride()" class="w-full py-1.5 px-2 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none">
-          </select>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <label class="block text-[9px] text-[#94A3B8]">मासिक किराया (₹)</label>
-              <input type="number" id="override-unit-rent" class="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED]">
-            </div>
-            <div>
-              <label class="block text-[9px] text-[#94A3B8]">कुल बकाया (₹)</label>
-              <input type="number" id="override-unit-due" class="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-amber-400">
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. PARKING SUBSCRIBER BALANCE & SLOT ADJUSTMENT -->
-        <div class="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
-          <span class="text-xs font-bold text-[#EDEDED] uppercase">🅿️ पार्किंग ग्राहक व स्लॉट समायोजन</span>
-          <select id="override-sub-select" onchange="onSelectSubForOverride()" class="w-full py-1.5 px-2 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none">
-          </select>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <label class="block text-[9px] text-[#94A3B8]">स्लॉट / स्थान</label>
-              <input type="text" id="override-sub-slot" class="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-amber-300">
-            </div>
-            <div>
-              <label class="block text-[9px] text-[#94A3B8]">EV बकाया (₹)</label>
-              <input type="number" id="override-sub-evdue" class="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300">
-            </div>
-          </div>
-        </div>
-
-        <!-- 5. Maintenance Expenses & Manager Udhaar Settlement Panel -->
-        <div class="p-3.5 rounded-2xl bg-[#06080C] border border-amber-500/30 flex flex-col gap-2.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-amber-400 uppercase flex items-center gap-1.5">
-              <span>🛠️</span> <span id="override-expense-title">Maintenance & Manager Udhaar</span>
-            </span>
-            <span id="override-expense-tally" class="text-xs font-mono font-bold text-[#FFF4C2] bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/40">
-              ₹0 Pending
-            </span>
-          </div>
-
-          <div id="override-expense-list" class="flex flex-col gap-2 max-h-48 overflow-y-auto deck-scrollbar">
-            <!-- Populated dynamically -->
-          </div>
-
-          <button
-            id="btn-settle-all-expenses"
-            type="button"
-            onclick="settleAllMaintenanceExpenses()"
-            class="w-full py-2 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-mono text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
-          >
-            <span>✅</span> <span id="label-settle-all">Settle / Clear All Udhaar</span>
+        <!-- Master Tabs -->
+        <div class="grid grid-cols-4 gap-1 p-1 rounded-xl bg-[#06080C] border border-white/[0.08] text-[10.5px]">
+          <button id="master-tab-btn-units" type="button" onclick="switchMasterTab('units')" class="py-1.5 px-1 rounded-lg font-bold transition-all bg-[#0D1117] text-[#D4AF37] border border-[#D4AF37]/40 shadow-sm cursor-pointer">
+            🏢 Units
+          </button>
+          <button id="master-tab-btn-parking" type="button" onclick="switchMasterTab('parking')" class="py-1.5 px-1 rounded-lg font-bold transition-all text-[#94A3B8] hover:text-white cursor-pointer">
+            🅿️ Parking
+          </button>
+          <button id="master-tab-btn-expenses" type="button" onclick="switchMasterTab('expenses')" class="py-1.5 px-1 rounded-lg font-bold transition-all text-[#94A3B8] hover:text-white cursor-pointer">
+            🛠️ Expense
+          </button>
+          <button id="master-tab-btn-tariffs" type="button" onclick="switchMasterTab('tariffs')" class="py-1.5 px-1 rounded-lg font-bold transition-all text-[#94A3B8] hover:text-white cursor-pointer">
+            ⚡ Tariffs
           </button>
         </div>
 
-        <!-- Apply Button -->
-        <button
-          type="button"
-          onclick="applyMasterOverrides()"
-          class="w-full py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 cursor-pointer active:scale-98 transition-all bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] shadow-[0_0_20px_rgba(212,175,55,0.3)] mt-1"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <span>परिवर्तन तुरंत लागू करें (Save Changes)</span>
-        </button>
+        <!-- TAB 1: UNITS MANAGEMENT -->
+        <div id="master-pane-units" class="flex flex-col gap-3">
+          <div class="p-3 rounded-2xl bg-[#06080C] border border-[#D4AF37]/30 flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <span id="label-edit-tenant-details" class="text-xs font-bold text-[#EDEDED] uppercase">Edit Unit & Tenant Details</span>
+              <span id="override-unit-occupancy-badge" class="text-[10px] text-[#D4AF37] font-bold">Occupied</span>
+            </div>
+
+            <div>
+              <label id="label-unit-select" class="block text-[9.5px] text-[#94A3B8] uppercase mb-1">Select Unit</label>
+              <select id="override-unit-select" onchange="onOverrideUnitSelectChange()" class="w-full py-2 px-2.5 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none"></select>
+            </div>
+
+            <div class="flex items-center justify-between p-2 rounded-xl bg-[#0D1117] border border-white/[0.06]">
+              <span id="label-occupancy-status" class="text-[10.5px] text-[#94A3B8]">Occupancy Status:</span>
+              <button id="btn-toggle-occupancy" type="button" onclick="toggleOverrideOccupancy()" class="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 cursor-pointer">
+                Occupied
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <label id="label-unit-tenant" class="block text-[9px] text-[#94A3B8] mb-1">Tenant Name</label>
+                <input type="text" id="override-tenant-name" placeholder="Sunil Verma" class="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none">
+              </div>
+              <div>
+                <label id="label-unit-phone" class="block text-[9px] text-[#94A3B8] mb-1">Tenant Phone</label>
+                <input type="text" id="override-tenant-phone" placeholder="98765-43210" class="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <label id="label-base-rent" class="block text-[9px] text-[#94A3B8] mb-1">Base Rent (₹)</label>
+                <input type="number" id="override-unit-rent" class="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none">
+              </div>
+              <div>
+                <label id="label-rent-due" class="block text-[9px] text-[#94A3B8] mb-1">Rent Due / Arrears (₹)</label>
+                <input type="number" id="override-unit-due" class="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-amber-400 focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label id="label-last-reading" class="block text-[9px] text-cyan-400 mb-1">Last Meter Reading (kWh)</label>
+              <input type="number" id="override-unit-reading" class="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-cyan-500/30 font-bold text-cyan-300 focus:outline-none">
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+              <button type="button" onclick="saveOverrideUnitChanges()" class="flex-1 py-2.5 px-3 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 shadow-md">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span id="btn-save-unit-text">Save Unit Changes</span>
+              </button>
+              <button type="button" onclick="vacateOverrideSelectedUnit()" class="py-2.5 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-400 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer active:scale-98">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                <span id="btn-vacate-unit-text">Vacate</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: PARKING SUBSCRIBERS -->
+        <div id="master-pane-parking" class="flex flex-col gap-3" style="display: none;">
+          <div class="p-3 rounded-2xl bg-[#06080C] border border-cyan-500/30 flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <span id="label-edit-sub-details" class="text-xs font-bold text-[#EDEDED] uppercase">Edit Subscriber Details</span>
+              <span id="override-sub-count-badge" class="text-[10px] text-cyan-400 font-bold">0 Registered</span>
+            </div>
+
+            <div>
+              <label id="label-sub-select" class="block text-[9.5px] text-[#94A3B8] uppercase mb-1">Select Subscriber</label>
+              <select id="override-sub-select" onchange="onOverrideSubSelectChange()" class="w-full py-2 px-2.5 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none"></select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <label id="label-sub-plate" class="block text-[9px] text-[#94A3B8] mb-1">Vehicle Plate</label>
+                <input type="text" id="override-sub-plate" class="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none uppercase">
+              </div>
+              <div>
+                <label id="label-sub-name" class="block text-[9px] text-[#94A3B8] mb-1">Owner Name</label>
+                <input type="text" id="override-sub-name" class="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <label id="label-sub-phone" class="block text-[9px] text-[#94A3B8] mb-1">Phone Number</label>
+                <input type="text" id="override-sub-phone" class="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none">
+              </div>
+              <div>
+                <label id="label-sub-slot" class="block text-[9px] text-[#94A3B8] mb-1">Slot / Location</label>
+                <input type="text" id="override-sub-slot" class="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-amber-300 focus:outline-none">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <label id="label-sub-category" class="block text-[9px] text-[#94A3B8] mb-1">Category</label>
+                <select id="override-sub-category" class="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none">
+                  <option value="car_small">Small Car</option>
+                  <option value="car_large">SUV / Large</option>
+                  <option value="heavy">Heavy / Pickup</option>
+                  <option value="tuktuk">Tuk-Tuk (+EV)</option>
+                </select>
+              </div>
+              <div>
+                <label id="label-sub-status" class="block text-[9px] text-[#94A3B8] mb-1">Pass Status</label>
+                <select id="override-sub-status" class="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none">
+                  <option value="active">Active</option>
+                  <option value="due">Pass Due</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-[#0D1117] border border-cyan-500/20 flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span id="label-sub-ev-facility" class="text-[10px] text-cyan-300 font-bold uppercase">⚡ EV Sub-Meter Facility</span>
+                <button id="btn-toggle-sub-ev" type="button" onclick="toggleOverrideSubEv()" class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-white/[0.05] text-[#94A3B8] cursor-pointer">
+                  NO
+                </button>
+              </div>
+              <div id="override-ev-fields" class="grid grid-cols-2 gap-2 text-xs pt-1" style="display: none;">
+                <div>
+                  <label id="label-sub-ev-reading" class="block text-[8.5px] text-[#94A3B8] mb-0.5">Last EV Reading</label>
+                  <input type="number" id="override-sub-ev-reading" class="w-full py-1 px-2 rounded bg-[#06080C] border border-white/[0.1] font-bold text-cyan-300">
+                </div>
+                <div>
+                  <label id="label-sub-ev-due" class="block text-[8.5px] text-[#94A3B8] mb-0.5">EV Arrears (₹)</label>
+                  <input type="number" id="override-sub-ev-due" class="w-full py-1 px-2 rounded bg-[#06080C] border border-white/[0.1] font-bold text-cyan-300">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+              <button type="button" onclick="saveOverrideSubscriberChanges()" class="flex-1 py-2.5 px-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-[#06080C] font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 shadow-md">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span id="btn-save-sub-text">Save Subscriber Changes</span>
+              </button>
+              <button type="button" onclick="deleteOverrideSelectedSubscriber()" class="py-2.5 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-400 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer active:scale-98">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                <span id="btn-del-sub-text">Delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: MAINTENANCE EXPENSES -->
+        <div id="master-pane-expenses" class="flex flex-col gap-3" style="display: none;">
+          <div class="p-3 rounded-2xl bg-[#06080C] border border-amber-500/30 flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <span id="override-expense-title" class="text-xs font-bold text-amber-300 uppercase flex items-center gap-1.5">
+                <span>🛠️</span>
+                <span>Maintenance & Manager Udhaar</span>
+              </span>
+              <span id="override-expense-tally" class="text-[11px] font-bold text-amber-400 font-mono">₹0 Pending</span>
+            </div>
+
+            <button
+              type="button"
+              onclick="settleAllMaintenanceExpenses()"
+              class="w-full py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span id="label-settle-all">Settle / Clear All Udhaar</span>
+            </button>
+
+            <!-- Expense List with Delete & Settle -->
+            <div id="override-expense-list" class="flex flex-col gap-1.5 max-h-56 overflow-y-auto deck-scrollbar"></div>
+          </div>
+        </div>
+
+        <!-- TAB 4: TARIFFS & SPLITS -->
+        <div id="master-pane-tariffs" class="flex flex-col gap-3" style="display: none;">
+          <div class="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
+            <span class="text-xs font-bold text-cyan-300 uppercase flex items-center gap-1">
+              ⚡ Electricity Tariffs (₹/Unit)
+            </span>
+            <div class="grid grid-cols-3 gap-2 text-xs">
+              <div>
+                <label class="block text-[9px] text-[#94A3B8]">Rooms</label>
+                <input type="number" id="override-tariff-room" step="0.5" class="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[9px] text-[#94A3B8]">Shops</label>
+                <input type="number" id="override-tariff-shop" step="0.5" class="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[9px] text-[#94A3B8]">EV Tuk-Tuk</label>
+                <input type="number" id="override-tariff-tuktuk" step="0.5" class="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none">
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-2xl bg-[#06080C] border border-[#D4AF37]/30 flex flex-col gap-2.5">
+            <span class="text-xs font-bold text-[#FFF4C2] uppercase flex items-center gap-1">
+              🅿️ Parking Fees & Commission Splits
+            </span>
+            <div id="override-pricing-categories" class="flex flex-col gap-2 text-xs"></div>
+          </div>
+
+          <button
+            type="button"
+            onclick="saveTariffsAndSplits()"
+            class="w-full py-2.5 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 cursor-pointer active:scale-98 transition-all bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] shadow-md"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span id="btn-save-tariffs-text">Save Tariffs & Splits</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -2176,30 +2284,30 @@
           topLaserContainer.style.display = 'none';
           haloShockwave.classList.remove('animate-shockwave');
 
-          // Configure role badges & Master Control button
+          // Configure role badges & Master Control dock button
           const deckRoleBadge = document.getElementById('deck-role-badge');
           const parkingRoleBadge = document.getElementById('parking-role-badge');
-          const btnMasterOverrideUnits = document.getElementById('btn-master-override-units');
-          const btnMasterOverrideParking = document.getElementById('btn-master-override-parking');
+          const dockBtnControl = document.getElementById('dock-btn-control');
+          const dockNavGrid = document.getElementById('dock-nav-grid');
 
           if (isOwner) {
-            deckRoleBadge.textContent = '👑 OWNER TELEMETRY';
+            deckRoleBadge.textContent = currentLanguage === 'en' ? '👑 OWNER TELEMETRY' : '👑 मालिक टेलीमेट्री';
             deckRoleBadge.className = 'inline-flex items-center gap-1 text-[10px] font-mono font-bold text-[#D4AF37] tracking-wide uppercase';
-            parkingRoleBadge.textContent = '👑 OWNER FIELD OVERRIDE';
+            parkingRoleBadge.textContent = currentLanguage === 'en' ? '👑 OWNER FIELD OVERRIDE' : '👑 मालिक टेलीमेट्री';
             parkingRoleBadge.className = 'inline-flex items-center gap-1 text-[10px] font-mono font-bold text-[#D4AF37] tracking-wide uppercase';
             
-            // SHOW MASTER OVERRIDE BUTTON TO OWNER ONLY
-            btnMasterOverrideUnits.style.display = 'flex';
-            btnMasterOverrideParking.style.display = 'flex';
+            // SHOW MASTER OVERRIDE TAB IN BOTTOM DOCK TO OWNER ONLY
+            if (dockBtnControl) dockBtnControl.style.display = 'flex';
+            if (dockNavGrid) dockNavGrid.className = 'grid grid-cols-4 gap-1.5 max-w-md mx-auto font-mono';
           } else {
-            deckRoleBadge.textContent = '👤 MANAGER SHIFT (RITIN)';
+            deckRoleBadge.textContent = currentLanguage === 'en' ? '👤 MANAGER SHIFT (RITIN)' : '👤 मैनेजर शिफ्ट (रितिन)';
             deckRoleBadge.className = 'inline-flex items-center gap-1 text-[10px] font-mono font-bold text-cyan-400 tracking-wide uppercase';
-            parkingRoleBadge.textContent = '👤 MANAGER SHIFT (RITIN)';
+            parkingRoleBadge.textContent = currentLanguage === 'en' ? '👤 MANAGER SHIFT (RITIN)' : '👤 मैनेजर शिफ्ट (रितिन)';
             parkingRoleBadge.className = 'inline-flex items-center gap-1 text-[10px] font-mono font-bold text-cyan-400 tracking-wide uppercase';
             
-            // HIDE MASTER OVERRIDE BUTTON FROM MANAGER
-            btnMasterOverrideUnits.style.display = 'none';
-            btnMasterOverrideParking.style.display = 'none';
+            // HIDE MASTER OVERRIDE TAB IN BOTTOM DOCK FROM MANAGER
+            if (dockBtnControl) dockBtnControl.style.display = 'none';
+            if (dockNavGrid) dockNavGrid.className = 'grid grid-cols-3 gap-1.5 max-w-md mx-auto font-mono';
           }
 
           deckEl.style.display = 'flex';
@@ -2225,6 +2333,11 @@
   closeReceiptModal();
   closeMonthlyReceiptModal();
   closeMasterOverrideModal();
+
+  const dockBtnControl = document.getElementById('dock-btn-control');
+  if (dockBtnControl) dockBtnControl.style.display = 'none';
+  const dockNavGrid = document.getElementById('dock-nav-grid');
+  if (dockNavGrid) dockNavGrid.className = 'grid grid-cols-3 gap-1.5 max-w-md mx-auto font-mono';
 
   deckEl.style.opacity = '0';
   deckEl.style.transform = 'translateY(20px) scale(0.97)';
@@ -2537,7 +2650,7 @@
         const isPending = e.status === 'pending_settlement';
         const catKey = 'cat' + (e.category === 'plumbing' ? 'Plumbing' : e.category === 'electrical' ? 'Electrical' : e.category === 'hardware_repair' ? 'Hardware' : e.category === 'cleaning_supplies' ? 'Cleaning' : e.category === 'fuel_misc' ? 'Fuel' : 'Other');
         const catName = t(catKey) || e.category;
-        return '<div class="p-2.5 rounded-xl border flex flex-col gap-1 text-[11px] font-mono ' + (isPending ? 'bg-amber-950/20 border-amber-500/30' : 'bg-white/[0.02] border-white/[0.05] opacity-60') + '">' +
+        return '<div class="p-2.5 rounded-xl border flex flex-col gap-1.5 text-[11px] font-mono ' + (isPending ? 'bg-amber-950/20 border-amber-500/30' : 'bg-white/[0.02] border-white/[0.05] opacity-60') + '">' +
           '<div class="flex items-center justify-between">' +
             '<span class="font-bold text-[#EDEDED] flex items-center gap-1.5">' +
               '<span class="text-amber-400">' + catName + '</span>' +
@@ -2545,11 +2658,14 @@
             '</span>' +
             '<span class="font-bold text-amber-300">₹' + e.amount.toLocaleString('en-IN') + '</span>' +
           '</div>' +
-          '<div class="flex items-center justify-between text-[10px] text-[#CBD5E1] mt-0.5">' +
-            '<span class="truncate pr-2">' + e.description + (e.vendor && e.vendor !== '-' ? ' [' + e.vendor + ']' : '') + '</span>' +
+          '<div class="text-[10px] text-[#CBD5E1] truncate pr-2">' +
+            e.description + (e.vendor && e.vendor !== '-' ? ' [' + e.vendor + ']' : '') +
+          '</div>' +
+          '<div class="flex items-center justify-end gap-2 pt-1 border-t border-white/[0.05]">' +
             (isPending 
               ? '<button type="button" onclick="settleSingleExpense(\'' + e.id + '\')" class="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-[9.5px] font-bold shrink-0 cursor-pointer active:scale-95 transition-all">' + (currentLanguage === 'en' ? 'Settle' : 'चुकता') + '</button>'
-              : '<span class="text-emerald-400 text-[9px]">' + t('settledStatus') + '</span>') +
+              : '<span class="text-emerald-400 text-[9px] mr-auto">' + t('settledStatus') + '</span>') +
+            '<button type="button" onclick="deleteMaintenanceExpense(\'' + e.id + '\')" class="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-[9.5px] font-bold shrink-0 cursor-pointer active:scale-95 transition-all">' + (currentLanguage === 'en' ? 'Delete' : 'हटाएं') + '</button>' +
           '</div>' +
         '</div>';
       }).join('');
@@ -2586,6 +2702,10 @@
       activeDrawerUnit = unit;
       if (navigator.vibrate) navigator.vibrate([14]);
 
+      const quickVacateBtn = document.getElementById('btn-quick-vacate-unit');
+      if (quickVacateBtn) {
+        quickVacateBtn.style.display = (currentUserRole === 'owner' && unit.isOccupied) ? 'flex' : 'none';
+      }
       document.getElementById('drawer-unit-badge').textContent = unit.name;
       document.getElementById('drawer-tenant-name').textContent = unit.tenantName;
       const rate = unit.type === 'room' ? electricityTariffs.room : electricityTariffs.shop;
@@ -3348,38 +3468,61 @@ Thank you. Shree Balaji Parking.`;
       document.getElementById('modal-monthly-receipt').style.display = 'none';
     }
 
-    // ================= OWNER MASTER OVERRIDE PANEL (PIN: 1912 ONLY) =================
+    // ================= OWNER MASTER CONTROL & EDIT/DELETE PANEL (PIN: 1912 ONLY) =================
+    let currentMasterTab = 'units';
+    let currentOverrideUnitOccupied = false;
+    let currentOverrideSubEvFacility = false;
+
+    function switchMasterTab(tab) {
+      currentMasterTab = tab;
+      const tabs = ['units', 'parking', 'expenses', 'tariffs'];
+      tabs.forEach(t => {
+        const pane = document.getElementById('master-pane-' + t);
+        const btn = document.getElementById('master-tab-btn-' + t);
+        if (pane) pane.style.display = t === tab ? 'flex' : 'none';
+        if (btn) {
+          if (t === tab) {
+            btn.className = 'py-1.5 px-1 rounded-lg font-bold transition-all bg-[#0D1117] text-[#D4AF37] border border-[#D4AF37]/40 shadow-sm cursor-pointer';
+          } else {
+            btn.className = 'py-1.5 px-1 rounded-lg font-bold transition-all text-[#94A3B8] hover:text-white cursor-pointer';
+          }
+        }
+      });
+      if (tab === 'expenses') {
+        renderOverrideExpenseList();
+      }
+    }
+
     function openMasterOverrideModal() {
       if (currentUserRole !== 'owner') return;
-      if (navigator.vibrate) navigator.vibrate([16]);
+      if (navigator.vibrate) navigator.vibrate([14]);
 
-      document.getElementById('override-tariff-room').value = electricityTariffs.room;
-      document.getElementById('override-tariff-shop').value = electricityTariffs.shop;
-      document.getElementById('override-tariff-tuktuk').value = electricityTariffs.tuktuk;
+      // Populate Tariffs
+      document.getElementById('override-tariff-room').value = currentTariffs.room;
+      document.getElementById('override-tariff-shop').value = currentTariffs.shop;
+      document.getElementById('override-tariff-tuktuk').value = currentTariffs.tuktuk;
 
-      ['car_small', 'car_large', 'heavy', 'tuktuk'].forEach(cat => {
-        document.getElementById(`override-fee-${cat}`).value = categoryPricing[cat].fee;
-        document.getElementById(`override-owner-${cat}`).value = categoryPricing[cat].owner;
-        document.getElementById(`override-ritin-${cat}`).value = categoryPricing[cat].ritin;
-      });
+      // Populate Unit Select
+      const unitSelect = document.getElementById('override-unit-select');
+      unitSelect.innerHTML = estateUnits.map(u => 
+        '<option value="' + u.id + '">' + u.name + ' - ' + (u.isOccupied ? u.tenantName : '(' + (currentLanguage === 'en' ? 'Vacant' : 'रिक्त') + ')') + '</option>'
+      ).join('');
 
+      if (estateUnits.length > 0) {
+        loadOverrideUnit(estateUnits[0].id);
+      }
+
+      // Populate Subscriber Select
+      populateOverrideSubSelect();
+
+      // Populate Pricing Categories
+      renderOverridePricing();
+
+      // Render Expenses
       updateManagerUdhaarDisplay();
       renderOverrideExpenseList();
 
-      const unitSelect = document.getElementById('override-unit-select');
-      unitSelect.innerHTML = estateUnits.map(u => `<option value="${u.id}">${u.name} - ${u.isOccupied ? u.tenantName : (currentLanguage === 'en' ? '(Vacant)' : '(रिक्त)')}</option>`).join('');
-      onSelectUnitForOverride();
-
-      const subSelect = document.getElementById('override-sub-select');
-      if (parkingSubscribers.length === 0) {
-        subSelect.innerHTML = `<option value="">${currentLanguage === 'en' ? '(No registered subscribers)' : '(कोई पंजीकृत ग्राहक नहीं)'}</option>`;
-        document.getElementById('override-sub-slot').value = '';
-        document.getElementById('override-sub-evdue').value = '0';
-      } else {
-        subSelect.innerHTML = parkingSubscribers.map(s => `<option value="${s.id}">${s.vehicleNumber} - ${s.ownerName} (${s.slot})</option>`).join('');
-        onSelectSubForOverride();
-      }
-
+      switchMasterTab('units');
       document.getElementById('modal-owner-override').style.display = 'flex';
     }
 
@@ -3387,61 +3530,275 @@ Thank you. Shree Balaji Parking.`;
       document.getElementById('modal-owner-override').style.display = 'none';
     }
 
-    function onSelectUnitForOverride() {
-      const unitId = document.getElementById('override-unit-select').value;
-      const unit = estateUnits.find(u => u.id === unitId);
-      if (!unit) return;
-      document.getElementById('override-unit-rent').value = unit.rentAmount;
-      document.getElementById('override-unit-due').value = unit.rentDueAmount;
+    function onOverrideUnitSelectChange() {
+      const id = document.getElementById('override-unit-select').value;
+      loadOverrideUnit(id);
     }
 
-    function onSelectSubForOverride() {
-      const subId = document.getElementById('override-sub-select').value;
-      const sub = parkingSubscribers.find(s => s.id === subId);
-      if (!sub) {
-        document.getElementById('override-sub-slot').value = '';
-        document.getElementById('override-sub-evdue').value = '0';
+    function loadOverrideUnit(id) {
+      const u = estateUnits.find(x => x.id === id);
+      if (!u) return;
+      document.getElementById('override-tenant-name').value = u.tenantName || '';
+      document.getElementById('override-tenant-phone').value = u.tenantPhone || '';
+      document.getElementById('override-unit-rent').value = u.rentAmount || 0;
+      document.getElementById('override-unit-due').value = u.rentDueAmount || 0;
+      document.getElementById('override-unit-reading').value = u.lastReading || 0;
+      currentOverrideUnitOccupied = Boolean(u.isOccupied);
+      updateOverrideOccupancyUI();
+    }
+
+    function toggleOverrideOccupancy() {
+      currentOverrideUnitOccupied = !currentOverrideUnitOccupied;
+      updateOverrideOccupancyUI();
+    }
+
+    function updateOverrideOccupancyUI() {
+      const badge = document.getElementById('override-unit-occupancy-badge');
+      const btn = document.getElementById('btn-toggle-occupancy');
+      if (currentOverrideUnitOccupied) {
+        badge.textContent = currentLanguage === 'en' ? 'Occupied' : 'किराए पर';
+        badge.className = 'text-[10px] text-emerald-400 font-bold';
+        btn.textContent = currentLanguage === 'en' ? 'Occupied' : 'किराए पर';
+        btn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 cursor-pointer';
+      } else {
+        badge.textContent = currentLanguage === 'en' ? 'Vacant' : 'रिक्त';
+        badge.className = 'text-[10px] text-[#94A3B8] font-bold';
+        btn.textContent = currentLanguage === 'en' ? 'Vacant' : 'रिक्त';
+        btn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-white/[0.05] text-[#94A3B8] border border-white/[0.1] cursor-pointer';
+      }
+    }
+
+    function saveOverrideUnitChanges() {
+      const id = document.getElementById('override-unit-select').value;
+      const u = estateUnits.find(x => x.id === id);
+      if (!u) return;
+
+      const name = (document.getElementById('override-tenant-name').value || '').trim();
+      const phone = (document.getElementById('override-tenant-phone').value || '').trim();
+      const rent = parseInt(document.getElementById('override-unit-rent').value || '0', 10);
+      const due = parseInt(document.getElementById('override-unit-due').value || '0', 10);
+      const reading = parseFloat(document.getElementById('override-unit-reading').value || '0');
+
+      u.isOccupied = currentOverrideUnitOccupied;
+      u.tenantName = currentOverrideUnitOccupied ? name : '';
+      u.tenantPhone = currentOverrideUnitOccupied ? phone : '';
+      u.rentAmount = isNaN(rent) ? 0 : rent;
+      u.rentDueAmount = isNaN(due) ? 0 : due;
+      u.lastReading = isNaN(reading) ? 0 : reading;
+
+      renderUnitsDeck();
+      if (navigator.vibrate) navigator.vibrate([16, 24]);
+      alert(currentLanguage === 'en' ? 'Unit changes saved!' : 'यूनिट विवरण सुरक्षित किया गया!');
+    }
+
+    function vacateOverrideSelectedUnit() {
+      const id = document.getElementById('override-unit-select').value;
+      vacateUnit(id);
+    }
+
+    function vacateUnit(id) {
+      const u = estateUnits.find(x => x.id === id);
+      if (!u) return;
+
+      const msg = currentLanguage === 'en' 
+        ? 'Are you sure you want to vacate ' + u.name + ' and reset to empty?' 
+        : 'क्या आप ' + u.name + ' के किराएदार को हटाकर यूनिट खाली करना चाहते हैं?';
+      if (!confirm(msg)) return;
+
+      u.isOccupied = false;
+      u.tenantName = '';
+      u.tenantPhone = '';
+      u.rentAmount = 0;
+      u.rentDueAmount = 0;
+      u.isReadingPending = false;
+
+      loadOverrideUnit(id);
+      renderUnitsDeck();
+      closeDrawer();
+
+      if (navigator.vibrate) navigator.vibrate([24, 32]);
+      alert(currentLanguage === 'en' ? u.name + ' vacated!' : u.name + ' खाली कर दी गई!');
+    }
+
+    function quickVacateActiveUnit() {
+      if (activeDrawerUnit) {
+        vacateUnit(activeDrawerUnit.id);
+      }
+    }
+
+    function populateOverrideSubSelect() {
+      const subSelect = document.getElementById('override-sub-select');
+      const countBadge = document.getElementById('override-sub-count-badge');
+      if (countBadge) countBadge.textContent = parkingSubscribers.length + (currentLanguage === 'en' ? ' Registered' : ' पंजीकृत');
+
+      if (parkingSubscribers.length === 0) {
+        subSelect.innerHTML = '<option value="">(' + (currentLanguage === 'en' ? 'No subscribers found' : 'कोई सब्सक्राइबर नहीं') + ')</option>';
         return;
       }
-      document.getElementById('override-sub-slot').value = sub.slot || (currentLanguage === 'en' ? 'Open Yard' : 'खुला प्रांगण');
-      document.getElementById('override-sub-evdue').value = sub.evDueAmount || 0;
+
+      subSelect.innerHTML = parkingSubscribers.map(s =>
+        '<option value="' + s.id + '">' + s.plate + ' - ' + s.ownerName + ' (' + s.slot + ')</option>'
+      ).join('');
+
+      loadOverrideSub(parkingSubscribers[0].id);
     }
 
-    function applyMasterOverrides() {
-      if (currentUserRole !== 'owner') return;
+    function onOverrideSubSelectChange() {
+      const id = document.getElementById('override-sub-select').value;
+      loadOverrideSub(id);
+    }
 
-      electricityTariffs.room = parseFloat(document.getElementById('override-tariff-room').value) || 9.0;
-      electricityTariffs.shop = parseFloat(document.getElementById('override-tariff-shop').value) || 11.0;
-      electricityTariffs.tuktuk = parseFloat(document.getElementById('override-tariff-tuktuk').value) || 9.0;
+    function loadOverrideSub(id) {
+      const s = parkingSubscribers.find(x => x.id === id);
+      if (!s) return;
+      document.getElementById('override-sub-plate').value = s.plate || '';
+      document.getElementById('override-sub-name').value = s.ownerName || '';
+      document.getElementById('override-sub-phone').value = s.phone || '';
+      document.getElementById('override-sub-slot').value = s.slot || 'General';
+      document.getElementById('override-sub-category').value = s.category || 'car_small';
+      document.getElementById('override-sub-status').value = s.passStatus || 'active';
 
-      ['car_small', 'car_large', 'heavy', 'tuktuk'].forEach(cat => {
-        categoryPricing[cat].fee = parseInt(document.getElementById(`override-fee-${cat}`).value, 10) || categoryPricing[cat].fee;
-        categoryPricing[cat].owner = parseInt(document.getElementById(`override-owner-${cat}`).value, 10) || categoryPricing[cat].owner;
-        categoryPricing[cat].ritin = parseInt(document.getElementById(`override-ritin-${cat}`).value, 10) || categoryPricing[cat].ritin;
+      currentOverrideSubEvFacility = Boolean(s.hasEvFacility);
+      const evBtn = document.getElementById('btn-toggle-sub-ev');
+      const evFields = document.getElementById('override-ev-fields');
+      if (currentOverrideSubEvFacility) {
+        evBtn.textContent = 'YES';
+        evBtn.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 cursor-pointer';
+        evFields.style.display = 'grid';
+        document.getElementById('override-sub-ev-reading').value = s.lastEvReading || 0;
+        document.getElementById('override-sub-ev-due').value = s.evDueAmount || 0;
+      } else {
+        evBtn.textContent = 'NO';
+        evBtn.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold bg-white/[0.05] text-[#94A3B8] cursor-pointer';
+        evFields.style.display = 'none';
+      }
+    }
+
+    function toggleOverrideSubEv() {
+      currentOverrideSubEvFacility = !currentOverrideSubEvFacility;
+      const evBtn = document.getElementById('btn-toggle-sub-ev');
+      const evFields = document.getElementById('override-ev-fields');
+      if (currentOverrideSubEvFacility) {
+        evBtn.textContent = 'YES';
+        evBtn.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 cursor-pointer';
+        evFields.style.display = 'grid';
+      } else {
+        evBtn.textContent = 'NO';
+        evBtn.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold bg-white/[0.05] text-[#94A3B8] cursor-pointer';
+        evFields.style.display = 'none';
+      }
+    }
+
+    function saveOverrideSubscriberChanges() {
+      const id = document.getElementById('override-sub-select').value;
+      const s = parkingSubscribers.find(x => x.id === id);
+      if (!s) return;
+
+      s.plate = (document.getElementById('override-sub-plate').value || '').trim().toUpperCase();
+      s.ownerName = (document.getElementById('override-sub-name').value || '').trim();
+      s.phone = (document.getElementById('override-sub-phone').value || '').trim();
+      s.slot = (document.getElementById('override-sub-slot').value || '').trim() || 'General';
+      s.category = document.getElementById('override-sub-category').value;
+      s.passStatus = document.getElementById('override-sub-status').value;
+      s.hasEvFacility = currentOverrideSubEvFacility;
+      if (currentOverrideSubEvFacility) {
+        s.lastEvReading = parseFloat(document.getElementById('override-sub-ev-reading').value || '0');
+        s.evDueAmount = parseInt(document.getElementById('override-sub-ev-due').value || '0', 10);
+      }
+
+      populateOverrideSubSelect();
+      renderParkingGate();
+      if (navigator.vibrate) navigator.vibrate([16, 24]);
+      alert(currentLanguage === 'en' ? 'Subscriber saved!' : 'सब्सक्राइबर विवरण सुरक्षित किया गया!');
+    }
+
+    function deleteOverrideSelectedSubscriber() {
+      const id = document.getElementById('override-sub-select').value;
+      deleteSubscriber(id);
+    }
+
+    function deleteSubscriber(id) {
+      const s = parkingSubscribers.find(x => x.id === id);
+      if (!s) return;
+
+      const msg = currentLanguage === 'en'
+        ? 'Are you sure you want to permanently delete subscriber ' + s.plate + ' (' + s.ownerName + ')?'
+        : 'क्या आप सब्सक्राइबर ' + s.plate + ' (' + s.ownerName + ') को हटाना चाहते हैं?';
+      if (!confirm(msg)) return;
+
+      parkingSubscribers = parkingSubscribers.filter(x => x.id !== id);
+      populateOverrideSubSelect();
+      renderParkingGate();
+      closeRenewalDrawer();
+
+      if (navigator.vibrate) navigator.vibrate([24, 32]);
+      alert(currentLanguage === 'en' ? 'Subscriber deleted!' : 'सब्सक्राइबर हटा दिया गया!');
+    }
+
+    function quickDeleteActiveSubscriber() {
+      if (activeSelectedSubscriber) {
+        deleteSubscriber(activeSelectedSubscriber.id);
+      }
+    }
+
+    function deleteMaintenanceExpense(id) {
+      const msg = currentLanguage === 'en'
+        ? 'Are you sure you want to delete this maintenance expense?'
+        : 'क्या आप इस मेंटेनेंस खर्च को हटाना चाहते हैं?';
+      if (!confirm(msg)) return;
+
+      maintenanceExpenses = maintenanceExpenses.filter(e => e.id !== id);
+      updateManagerUdhaarDisplay();
+      renderOverrideExpenseList();
+      if (navigator.vibrate) navigator.vibrate([24, 32]);
+    }
+
+    function renderOverridePricing() {
+      const container = document.getElementById('override-pricing-categories');
+      if (!container) return;
+      const cats = ['car_small', 'car_large', 'heavy', 'tuktuk'];
+      container.innerHTML = cats.map(cat => {
+        const p = parkingPricing[cat];
+        return '<div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1">' +
+          '<span class="font-bold text-[#EDEDED]">' + p.label + '</span>' +
+          '<div class="grid grid-cols-3 gap-1.5 text-[10px]">' +
+            '<div>' +
+              '<span class="text-[#64748B]">' + (currentLanguage === 'en' ? 'Fee: ₹' : 'शुल्क: ₹') + '</span>' +
+              '<input type="number" id="pricing-fee-' + cat + '" value="' + p.fee + '" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]">' +
+            '</div>' +
+            '<div>' +
+              '<span class="text-[#D4AF37]">' + (currentLanguage === 'en' ? 'Owner: ₹' : 'मालिक: ₹') + '</span>' +
+              '<input type="number" id="pricing-owner-' + cat + '" value="' + p.owner + '" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]">' +
+            '</div>' +
+            '<div>' +
+              '<span class="text-cyan-300">' + (currentLanguage === 'en' ? 'Ritin: ₹' : 'रितिन: ₹') + '</span>' +
+              '<input type="number" id="pricing-ritin-' + cat + '" value="' + p.ritin + '" class="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]">' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function saveTariffsAndSplits() {
+      currentTariffs.room = parseFloat(document.getElementById('override-tariff-room').value || '9.0');
+      currentTariffs.shop = parseFloat(document.getElementById('override-tariff-shop').value || '11.0');
+      currentTariffs.tuktuk = parseFloat(document.getElementById('override-tariff-tuktuk').value || '9.0');
+
+      const cats = ['car_small', 'car_large', 'heavy', 'tuktuk'];
+      cats.forEach(cat => {
+        const fee = parseInt(document.getElementById('pricing-fee-' + cat).value || '0', 10);
+        const owner = parseInt(document.getElementById('pricing-owner-' + cat).value || '0', 10);
+        const ritin = parseInt(document.getElementById('pricing-ritin-' + cat).value || '0', 10);
+        parkingPricing[cat].fee = fee;
+        parkingPricing[cat].owner = owner;
+        parkingPricing[cat].ritin = ritin;
       });
 
-      selectNewPassCategory(newPassCategory);
-
-      const unitId = document.getElementById('override-unit-select').value;
-      const unit = estateUnits.find(u => u.id === unitId);
-      if (unit) {
-        unit.rentAmount = parseInt(document.getElementById('override-unit-rent').value, 10) || unit.rentAmount;
-        unit.rentDueAmount = parseInt(document.getElementById('override-unit-due').value, 10) || 0;
-      }
-
-      const subId = document.getElementById('override-sub-select').value;
-      const sub = parkingSubscribers.find(s => s.id === subId);
-      if (sub) {
-        sub.slot = document.getElementById('override-sub-slot').value.trim() || sub.slot;
-        sub.evDueAmount = parseInt(document.getElementById('override-sub-evdue').value, 10) || 0;
-      }
-
-      if (navigator.vibrate) navigator.vibrate([24, 30, 24]);
-      closeMasterOverrideModal();
-      selectNewPassCategory(newPassCategory);
-      renderUnitsDeck();
       renderParkingGate();
+      if (navigator.vibrate) navigator.vibrate([16, 24]);
+      alert(currentLanguage === 'en' ? 'Tariffs & Splits saved!' : 'दरें व कमीशन सुरक्षित किया गया!');
     }
+
   </script>
 </body>
 </html>

@@ -31,7 +31,9 @@ import {
   Truck,
   Settings,
   Sliders,
-  Wrench
+  Wrench,
+  Trash2,
+  Edit3
 } from 'lucide-react';
 
 type ScreenState = 'splash' | 'pin' | 'units_deck' | 'owner_console' | 'manager_console';
@@ -60,6 +62,7 @@ export interface UnitItem {
   type: 'room' | 'shop';
   isOccupied: boolean;
   tenantName?: string;
+  tenantPhone?: string;
   rentAmount: number;
   rentDueAmount: number;
   lastReading: number;
@@ -346,6 +349,34 @@ const DICTIONARY = {
     catCleaning: '🧹 Cleaning',
     catFuel: '⛽ Fuel/Misc',
     catOther: '📦 Other',
+    masterTabUnits: '🏢 Units',
+    masterTabParking: '🅿️ Parking',
+    masterTabExpenses: '🛠️ Expenses',
+    masterTabTariffs: '⚡ Tariffs',
+    editTenantDetails: 'Edit Unit & Tenant Details',
+    tenantPhoneLabel: 'Tenant Phone',
+    occupiedStatusLabel: 'Occupancy Status',
+    occupiedText: 'Occupied',
+    vacantText: 'Vacant',
+    lastReadingLabel: 'Last Meter Reading (kWh)',
+    vacateTenantBtn: 'Vacate & Remove Tenant',
+    vacateConfirmPrompt: 'Are you sure you want to vacate this tenant and reset this unit to empty?',
+    saveUnitChangesBtn: 'Save Unit Changes',
+    editSubscriberDetails: 'Edit Subscriber Details',
+    plateLabel: 'Vehicle Plate',
+    ownerNameLabel: 'Owner / Driver Name',
+    phoneLabel: 'Phone Number',
+    categoryLabel: 'Vehicle Category',
+    passStatusLabel: 'Pass Status',
+    validTillLabel: 'Valid Till Date',
+    evFacilityLabel: 'EV Sub-Meter Facility',
+    evReadingLabel: 'Last EV Reading (kWh)',
+    deleteSubscriberBtn: 'Delete Subscriber',
+    deleteSubscriberPrompt: 'Are you sure you want to permanently delete this subscriber?',
+    saveSubscriberChangesBtn: 'Save Subscriber Changes',
+    deleteExpenseBtn: 'Delete',
+    deleteExpensePrompt: 'Are you sure you want to permanently delete this maintenance expense?',
+    saveTariffsBtn: 'Save Tariffs & Splits',
   },
   hi: {
     brandEstate: 'श्री बालाजी एस्टेट',
@@ -470,6 +501,34 @@ const DICTIONARY = {
     catCleaning: '🧹 सफाई',
     catFuel: '⛽ ईंधन/विविध',
     catOther: '📦 अन्य',
+    masterTabUnits: '🏢 यूनिट्स',
+    masterTabParking: '🅿️ पार्किंग',
+    masterTabExpenses: '🛠️ खर्च',
+    masterTabTariffs: '⚡ दरें',
+    editTenantDetails: 'यूनिट व किराएदार विवरण बदलें',
+    tenantPhoneLabel: 'किराएदार मोबाइल',
+    occupiedStatusLabel: 'आवास स्थिति',
+    occupiedText: 'किराए पर',
+    vacantText: 'रिक्त',
+    lastReadingLabel: 'मीटर रीडिंग (kWh)',
+    vacateTenantBtn: 'किराएदार हटाएं (यूनिट खाली करें)',
+    vacateConfirmPrompt: 'क्या आप इस किराएदार को हटाकर यूनिट को खाली करना चाहते हैं?',
+    saveUnitChangesBtn: 'यूनिट विवरण सुरक्षित करें',
+    editSubscriberDetails: 'सब्सक्राइबर विवरण बदलें',
+    plateLabel: 'गाड़ी नंबर',
+    ownerNameLabel: 'मालिक / चालक का नाम',
+    phoneLabel: 'मोबाइल नंबर',
+    categoryLabel: 'गाड़ी श्रेणी',
+    passStatusLabel: 'पास स्थिति',
+    validTillLabel: 'वैधता तिथि',
+    evFacilityLabel: 'EV सब-मीटर सुविधा',
+    evReadingLabel: 'EV रीडिंग (kWh)',
+    deleteSubscriberBtn: 'सब्सक्राइबर हटाएं',
+    deleteSubscriberPrompt: 'क्या आप इस सब्सक्राइबर को स्थायी रूप से हटाना चाहते हैं?',
+    saveSubscriberChangesBtn: 'सब्सक्राइबर विवरण सुरक्षित करें',
+    deleteExpenseBtn: 'हटाएं',
+    deleteExpensePrompt: 'क्या आप इस मेंटेनेंस खर्च को स्थायी रूप से हटाना चाहते हैं?',
+    saveTariffsBtn: 'दरें व कमीशन सुरक्षित करें',
   }
 };
 
@@ -564,6 +623,7 @@ export default function Home() {
           type: row.type,
           isOccupied: Boolean(row.is_occupied),
           tenantName: row.tenant_name || undefined,
+          tenantPhone: row.tenant_phone || undefined,
           rentAmount: Number(row.base_rent),
           rentDueAmount: Number(row.rent_due_amount || 0),
           lastReading: Number(row.last_reading || 0),
@@ -726,12 +786,28 @@ export default function Home() {
 
   // Owner Master Override Modal state (PIN: 1912 ONLY)
   const [isMasterOverrideOpen, setIsMasterOverrideOpen] = useState<boolean>(false);
+  const [masterControlTab, setMasterControlTab] = useState<'units' | 'parking' | 'expenses' | 'tariffs'>('units');
+
+  // Unit Editing
   const [overrideSelectedUnitId, setOverrideSelectedUnitId] = useState<string>(STATIC_UNITS[0].id);
   const [overrideUnitRent, setOverrideUnitRent] = useState<string>(String(STATIC_UNITS[0].rentAmount));
   const [overrideUnitDue, setOverrideUnitDue] = useState<string>(String(STATIC_UNITS[0].rentDueAmount));
+  const [overrideTenantName, setOverrideTenantName] = useState<string>('');
+  const [overrideTenantPhone, setOverrideTenantPhone] = useState<string>('');
+  const [overrideUnitOccupied, setOverrideUnitOccupied] = useState<boolean>(false);
+  const [overrideUnitReading, setOverrideUnitReading] = useState<string>('0');
 
+  // Subscriber Editing
   const [overrideSelectedSubId, setOverrideSelectedSubId] = useState<string>('');
+  const [overrideSubPlate, setOverrideSubPlate] = useState<string>('');
+  const [overrideSubOwnerName, setOverrideSubOwnerName] = useState<string>('');
+  const [overrideSubPhone, setOverrideSubPhone] = useState<string>('');
+  const [overrideSubCategory, setOverrideSubCategory] = useState<VehicleCategory>('car_small');
   const [overrideSubSlot, setOverrideSubSlot] = useState<string>('');
+  const [overrideSubStatus, setOverrideSubStatus] = useState<'active' | 'due'>('active');
+  const [overrideSubValidTill, setOverrideSubValidTill] = useState<string>('');
+  const [overrideSubEvFacility, setOverrideSubEvFacility] = useState<boolean>(false);
+  const [overrideSubEvReading, setOverrideSubEvReading] = useState<string>('0');
   const [overrideSubEvDue, setOverrideSubEvDue] = useState<string>('0');
 
   interface MonthlyReceiptPayload {
@@ -1123,118 +1199,260 @@ export default function Home() {
     setSelectedSubForRenewal(null);
   };
 
-  // Master Override Handlers (PIN: 1912 ONLY)
+  // ================= OWNER MASTER CONTROL & EDIT/DELETE HANDLERS (PIN: 1912 ONLY) =================
+  const selectOverrideUnit = (id: string) => {
+    setOverrideSelectedUnitId(id);
+    const u = units.find((x) => x.id === id);
+    if (u) {
+      setOverrideUnitRent(String(u.rentAmount || 0));
+      setOverrideUnitDue(String(u.rentDueAmount || 0));
+      setOverrideTenantName(u.tenantName || '');
+      setOverrideTenantPhone(u.tenantPhone || '');
+      setOverrideUnitOccupied(u.isOccupied);
+      setOverrideUnitReading(String(u.lastReading || 0));
+    }
+  };
+
+  const selectOverrideSub = (id: string) => {
+    setOverrideSelectedSubId(id);
+    const s = subscribers.find((x) => x.id === id);
+    if (s) {
+      setOverrideSubPlate(s.vehicleNumber || '');
+      setOverrideSubOwnerName(s.ownerName || '');
+      setOverrideSubPhone(s.phone || '');
+      setOverrideSubCategory(s.category);
+      setOverrideSubSlot(s.slot || 'General');
+      setOverrideSubStatus(s.passStatus);
+      setOverrideSubValidTill(s.validTillDate || '');
+      setOverrideSubEvFacility(Boolean(s.hasEvFacility));
+      setOverrideSubEvReading(String(s.lastEvReading || 0));
+      setOverrideSubEvDue(String(s.evDueAmount || 0));
+    }
+  };
+
   const handleOpenMasterOverride = () => {
     if (userRole !== 'owner') return;
     const currentUnit = units.find((u) => u.id === overrideSelectedUnitId) || units[0];
     if (currentUnit) {
-      setOverrideUnitRent(String(currentUnit.rentAmount || 0));
-      setOverrideUnitDue(String(currentUnit.rentDueAmount || 0));
+      selectOverrideUnit(currentUnit.id);
+    }
+    if (subscribers.length > 0) {
+      const currentSub = subscribers.find((s) => s.id === overrideSelectedSubId) || subscribers[0];
+      selectOverrideSub(currentSub.id);
     }
     setIsMasterOverrideOpen(true);
   };
 
-  const handleApplyMasterOverrides = () => {
-    const newRent = parseInt(overrideUnitRent, 10);
-    const newDue = parseInt(overrideUnitDue, 10) || 0;
-    const newSlotVal = overrideSubSlot.trim();
-    const newEvDueVal = parseInt(overrideSubEvDue, 10) || 0;
+  const handleSaveUnitChanges = async () => {
+    const rent = parseInt(overrideUnitRent, 10) || 0;
+    const due = parseInt(overrideUnitDue, 10) || 0;
+    const reading = parseFloat(overrideUnitReading) || 0;
+    const name = overrideTenantName.trim();
+    const phone = overrideTenantPhone.trim();
+    const isOcc = overrideUnitOccupied;
 
-    // 1. Update Unit
     setUnits((prev) =>
       prev.map((u) =>
         u.id === overrideSelectedUnitId
           ? {
               ...u,
-              rentAmount: isNaN(newRent) ? u.rentAmount : newRent,
-              rentDueAmount: newDue,
+              isOccupied: isOcc,
+              tenantName: isOcc ? name : '',
+              tenantPhone: isOcc ? phone : '',
+              rentAmount: rent,
+              rentDueAmount: due,
+              lastReading: reading,
             }
           : u
       )
     );
 
-    // 2. Update Subscriber
+    try {
+      await supabase
+        .from('estate_units')
+        .update({
+          is_occupied: isOcc,
+          tenant_name: isOcc ? name : null,
+          tenant_phone: isOcc ? phone : null,
+          base_rent: rent,
+          rent_due_amount: due,
+          last_reading: reading,
+        })
+        .eq('id', overrideSelectedUnitId);
+    } catch (err) {
+      console.error('Failed to update unit in Supabase:', err);
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([16, 24]);
+    alert(lang === 'en' ? 'Unit changes saved successfully!' : 'यूनिट विवरण सफलतापूर्वक सुरक्षित किया गया!');
+  };
+
+  const handleVacateUnit = async (unitId: string) => {
+    if (!confirm(t('vacateConfirmPrompt'))) return;
+
+    setUnits((prev) =>
+      prev.map((u) =>
+        u.id === unitId
+          ? {
+              ...u,
+              isOccupied: false,
+              tenantName: '',
+              tenantPhone: '',
+              rentAmount: 0,
+              rentDueAmount: 0,
+              isReadingPending: false,
+            }
+          : u
+      )
+    );
+
+    if (overrideSelectedUnitId === unitId) {
+      setOverrideTenantName('');
+      setOverrideTenantPhone('');
+      setOverrideUnitRent('0');
+      setOverrideUnitDue('0');
+      setOverrideUnitOccupied(false);
+    }
+    handleCloseDrawer();
+
+    try {
+      await supabase
+        .from('estate_units')
+        .update({
+          is_occupied: false,
+          tenant_name: null,
+          tenant_phone: null,
+          base_rent: 0,
+          rent_due_amount: 0,
+          is_reading_pending: false,
+        })
+        .eq('id', unitId);
+    } catch (err) {
+      console.error('Failed to vacate unit in Supabase:', err);
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([24, 32]);
+    alert(lang === 'en' ? 'Tenant removed and unit reset to vacant!' : 'किराएदार हटा दिया गया और यूनिट रिक्त हो गई!');
+  };
+
+  const handleSaveSubscriberChanges = async () => {
+    const plate = overrideSubPlate.trim();
+    const owner = overrideSubOwnerName.trim();
+    const phone = overrideSubPhone.trim();
+    const slot = overrideSubSlot.trim();
+    const evDue = parseInt(overrideSubEvDue, 10) || 0;
+    const evReading = parseFloat(overrideSubEvReading) || 0;
+
     setSubscribers((prev) =>
       prev.map((s) =>
         s.id === overrideSelectedSubId
           ? {
               ...s,
-              slot: newSlotVal || s.slot,
-              evDueAmount: newEvDueVal,
+              vehicleNumber: plate,
+              ownerName: owner,
+              phone,
+              category: overrideSubCategory,
+              slot: slot || 'General',
+              passStatus: overrideSubStatus,
+              validTillDate: overrideSubValidTill,
+              hasEvFacility: overrideSubEvFacility,
+              lastEvReading: evReading,
+              evDueAmount: evDue,
             }
           : s
       )
     );
 
-    // Supabase Live Sync
-    if (supabase) {
-      // 1. Persist Tariffs
-      supabase
+    try {
+      await supabase
+        .from('parking_subscribers')
+        .update({
+          vehicle_plate: plate,
+          owner_name: owner,
+          phone: phone || null,
+          category: overrideSubCategory,
+          assigned_slot: slot || 'General',
+          pass_status: overrideSubStatus,
+          has_ev_facility: overrideSubEvFacility,
+          last_ev_reading: evReading,
+          ev_due_amount: evDue,
+        })
+        .eq('id', overrideSelectedSubId);
+    } catch (err) {
+      console.error('Failed to update subscriber in Supabase:', err);
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([16, 24]);
+    alert(lang === 'en' ? 'Subscriber details saved!' : 'सब्सक्राइबर विवरण सुरक्षित किया गया!');
+  };
+
+  const handleDeleteSubscriber = async (subId: string) => {
+    if (!confirm(t('deleteSubscriberPrompt'))) return;
+
+    setSubscribers((prev) => prev.filter((s) => s.id !== subId));
+    if (overrideSelectedSubId === subId) {
+      setOverrideSelectedSubId('');
+    }
+    if (selectedSubForRenewal && selectedSubForRenewal.id === subId) {
+      setSelectedSubForRenewal(null);
+    }
+
+    try {
+      await supabase
+        .from('parking_subscribers')
+        .delete()
+        .eq('id', subId);
+    } catch (err) {
+      console.error('Failed to delete subscriber in Supabase:', err);
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([24, 32]);
+    alert(lang === 'en' ? 'Subscriber deleted permanently!' : 'सब्सक्राइबर स्थायी रूप से हटा दिया गया!');
+  };
+
+  const handleDeleteExpense = async (expId: string) => {
+    if (!confirm(t('deleteExpensePrompt'))) return;
+
+    setMaintenanceExpenses((prev) => prev.filter((e) => e.id !== expId));
+
+    try {
+      await supabase
+        .from('maintenance_expenses')
+        .delete()
+        .eq('id', expId);
+    } catch (err) {
+      console.error('Failed to delete expense in Supabase:', err);
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([24, 32]);
+  };
+
+  const handleSaveTariffsAndSplits = async () => {
+    try {
+      await supabase
         .from('system_config')
         .upsert({
           key: 'tariffs',
           value: { room: tariffs.room, shop: tariffs.shop, tuktuk_ev: tariffs.tuktuk },
           updated_at: new Date().toISOString(),
-        })
-        .then(({ error }) => {
-          if (error) console.error('Error persisting tariffs:', error);
         });
 
-      // 2. Persist Parking Pricing
-      supabase
+      await supabase
         .from('system_config')
         .upsert({
           key: 'parking_pricing',
-          value: {
-            car_small: { fee: pricing.car_small.fee, owner: pricing.car_small.owner, ritin: pricing.car_small.ritin },
-            car_large: { fee: pricing.car_large.fee, owner: pricing.car_large.owner, ritin: pricing.car_large.ritin },
-            heavy: { fee: pricing.heavy.fee, owner: pricing.heavy.owner, ritin: pricing.heavy.ritin },
-            tuktuk: { fee: pricing.tuktuk.fee, owner: pricing.tuktuk.owner, ritin: pricing.tuktuk.ritin },
-          },
+          value: pricing,
           updated_at: new Date().toISOString(),
-        })
-        .then(({ error }) => {
-          if (error) console.error('Error persisting parking pricing:', error);
         });
-
-      // 3. Persist Unit Overrides
-      if (overrideSelectedUnitId) {
-        supabase
-          .from('estate_units')
-          .update({
-            base_rent: isNaN(newRent) ? undefined : newRent,
-            rent_due_amount: newDue,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', overrideSelectedUnitId)
-          .then(({ error }) => {
-            if (error) console.error('Error updating unit in DB:', error);
-          });
-      }
-
-      // 4. Persist Subscriber Overrides
-      if (overrideSelectedSubId) {
-        supabase
-          .from('parking_subscribers')
-          .update({
-            assigned_slot: newSlotVal || undefined,
-            ev_due_amount: newEvDueVal,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', overrideSelectedSubId)
-          .then(({ error }) => {
-            if (error) console.error('Error updating subscriber in DB:', error);
-          });
-      }
+    } catch (err) {
+      console.error('Failed to update tariffs in Supabase:', err);
     }
 
-    setIsMasterOverrideOpen(false);
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate([24, 30, 24]);
-    }
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([16, 24]);
+    alert(lang === 'en' ? 'Tariffs & Splits saved!' : 'दरें व कमीशन सुरक्षित किया गया!');
   };
 
-  // Dual-Wallet Cash Split state (Rooms & Shops)
+    // Dual-Wallet Cash Split state (Rooms & Shops)
   const [rentPaidInput, setRentPaidInput] = useState<string>('');
   const [elecPaidInput, setElecPaidInput] = useState<string>('');
   interface ReceiptPayload {
@@ -2103,28 +2321,8 @@ ${elecLine}--------------------------------
                         </div>
                       </div>
 
-                      {/* Right Controls: Master Override (Owner Only), Language Toggle & Lock */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={handleOpenExpenseDrawer}
-                          className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
-                        >
-                          <Wrench className="w-3.5 h-3.5" />
-                          <span>{t('addExpenseBtn')}</span>
-                        </button>
-
-                        {userRole === 'owner' && (
-                          <button
-                            type="button"
-                            onClick={handleOpenMasterOverride}
-                            className="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]"
-                          >
-                            <Sliders className="w-3.5 h-3.5" />
-                            <span>{t('controlBtn')}</span>
-                          </button>
-                        )}
-
+                      {/* Right Controls: Language Toggle & Lock */}
+                      <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
                           onClick={toggleLanguage}
@@ -2289,28 +2487,8 @@ ${elecLine}--------------------------------
                         </div>
                       </div>
 
-                      {/* Right Controls: Master Override, Language Toggle & Lock */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={handleOpenExpenseDrawer}
-                          className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
-                        >
-                          <Wrench className="w-3.5 h-3.5" />
-                          <span>{t('addExpenseBtn')}</span>
-                        </button>
-
-                        {userRole === 'owner' && (
-                          <button
-                            type="button"
-                            onClick={handleOpenMasterOverride}
-                            className="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]"
-                          >
-                            <Sliders className="w-3.5 h-3.5" />
-                            <span>{t('controlBtn')}</span>
-                          </button>
-                        )}
-
+                      {/* Right Controls: Language Toggle & Lock */}
+                      <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
                           onClick={toggleLanguage}
@@ -2608,36 +2786,64 @@ ${elecLine}--------------------------------
               )}
 
               {/* Bottom Dock Navigation */}
-              <nav className="shrink-0 w-full z-30 px-5 pt-2 pb-[max(12px,env(safe-area-inset-bottom,12px))] border-t border-white/[0.08] bg-[#06080C]/95 backdrop-blur-xl">
-                <div className="grid grid-cols-2 gap-3 max-w-[340px] mx-auto">
+              <nav className="shrink-0 w-full z-30 px-3 pt-2 pb-[max(12px,env(safe-area-inset-bottom,12px))] border-t border-white/[0.08] bg-[#06080C]/95 backdrop-blur-xl">
+                <div className={`grid ${userRole === 'owner' ? 'grid-cols-4' : 'grid-cols-3'} gap-1.5 max-w-md mx-auto font-mono`}>
+                  {/* Units Tab */}
                   <button
                     type="button"
                     onClick={() => setActiveModule('units')}
-                    className={`py-2.5 px-3 rounded-2xl font-mono text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                    className={`py-2 px-1 rounded-2xl text-[11px] font-semibold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all ${
                       activeModule === 'units'
                         ? 'bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/40 shadow-[0_2px_15px_rgba(212,175,55,0.2)]'
                         : 'text-[#94A3B8] hover:text-white border border-transparent'
                     }`}
                   >
-                    <Building2 className="w-4 h-4 text-[#D4AF37]" />
-                    <span>{t('moduleUnits')} (22)</span>
+                    <Building2 className={`w-4 h-4 ${activeModule === 'units' ? 'text-[#D4AF37]' : 'text-[#94A3B8]'}`} />
+                    <span className="truncate">{t('moduleUnits')}</span>
                   </button>
 
+                  {/* Parking Tab */}
                   <button
                     type="button"
                     onClick={() => setActiveModule('parking')}
-                    className={`py-2.5 px-3 rounded-2xl font-mono text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                    className={`py-2 px-1 rounded-2xl text-[11px] font-semibold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all relative ${
                       activeModule === 'parking'
                         ? 'bg-[#0D1117] text-[#EDEDED] border border-cyan-500/40 shadow-[0_2px_15px_rgba(6,182,212,0.2)]'
                         : 'text-[#94A3B8] hover:text-white border border-transparent'
                     }`}
                   >
-                    <Car className="w-4 h-4 text-cyan-400" />
-                    <span>{t('moduleParking')}</span>
-                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                      {totalInside}
-                    </span>
+                    <div className="relative">
+                      <Car className={`w-4 h-4 ${activeModule === 'parking' ? 'text-cyan-400' : 'text-[#94A3B8]'}`} />
+                      {totalInside > 0 && (
+                        <span className="absolute -top-1.5 -right-2.5 px-1 py-0.2 rounded-full text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                          {totalInside}
+                        </span>
+                      )}
+                    </div>
+                    <span className="truncate">{t('moduleParking')}</span>
                   </button>
+
+                  {/* Maintenance Expense Tab (Available to Manager & Owner) */}
+                  <button
+                    type="button"
+                    onClick={handleOpenExpenseDrawer}
+                    className="py-2 px-1 rounded-2xl text-[11px] font-semibold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all text-[#94A3B8] hover:text-amber-400 border border-transparent hover:border-amber-500/20 active:scale-95"
+                  >
+                    <Wrench className="w-4 h-4 text-amber-400" />
+                    <span className="truncate">{t('addExpenseBtn')}</span>
+                  </button>
+
+                  {/* Owner Master Control Tab (Owner Only) */}
+                  {userRole === 'owner' && (
+                    <button
+                      type="button"
+                      onClick={handleOpenMasterOverride}
+                      className="py-2 px-1 rounded-2xl text-[11px] font-semibold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all text-[#94A3B8] hover:text-[#D4AF37] border border-transparent hover:border-[#D4AF37]/30 active:scale-95"
+                    >
+                      <Sliders className="w-4 h-4 text-[#D4AF37]" />
+                      <span className="truncate">{t('controlBtn')}</span>
+                    </button>
+                  )}
                 </div>
               </nav>
             </motion.div>
@@ -2922,9 +3128,22 @@ ${elecLine}--------------------------------
                       </span>
                     </div>
                   </div>
-                  <button onClick={handleCloseDrawer} className="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white">
-                    <X className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    {userRole === 'owner' && selectedUnit && selectedUnit.isOccupied && (
+                      <button
+                        type="button"
+                        onClick={() => handleVacateUnit(selectedUnit.id)}
+                        className="px-2 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-400 font-mono text-[10px] font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-all"
+                        title={t('vacateTenantBtn')}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>{lang === 'en' ? 'Vacate' : 'खाली करें'}</span>
+                      </button>
+                    )}
+                    <button onClick={handleCloseDrawer} className="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 {receiptData ? (
@@ -3153,9 +3372,22 @@ ${elecLine}--------------------------------
                       </span>
                     </div>
                   </div>
-                  <button onClick={() => setSelectedSubForRenewal(null)} className="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white">
-                    <X className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    {userRole === 'owner' && selectedSubForRenewal && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteSubscriber(selectedSubForRenewal.id)}
+                        className="px-2 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-400 font-mono text-[10px] font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-all"
+                        title={t('deleteSubscriberBtn')}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>{lang === 'en' ? 'Delete' : 'हटाएं'}</span>
+                      </button>
+                    )}
+                    <button onClick={() => setSelectedSubForRenewal(null)} className="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Editable Slot */}
@@ -3371,9 +3603,10 @@ ${elecLine}--------------------------------
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-sm bg-[#0A0D14] border border-[#D4AF37]/50 rounded-3xl p-5 shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-50 flex flex-col gap-3 font-mono max-h-[90vh] overflow-y-auto deck-scrollbar"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[94%] max-w-md bg-[#0A0D14] border border-[#D4AF37]/50 rounded-3xl p-4 sm:p-5 shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-50 flex flex-col gap-3 font-mono max-h-[90vh] overflow-y-auto deck-scrollbar"
               >
-                <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+                {/* Modal Header */}
+                <div className="flex items-center justify-between pb-2.5 border-b border-white/[0.08]">
                   <div className="flex items-center gap-2">
                     <span className="w-8 h-8 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37] font-bold text-sm">
                       ⚙️
@@ -3388,275 +3621,544 @@ ${elecLine}--------------------------------
                   </button>
                 </div>
 
-                {/* 1. Electricity Tariffs */}
-                <div className="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
-                  <span className="text-xs font-bold text-cyan-300 uppercase flex items-center gap-1">
-                    {t('electricityTariffs')}
-                  </span>
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div>
-                      <label className="block text-[9px] text-[#94A3B8]">{t('tariffRoom')}</label>
-                      <input
-                        type="number"
-                        step="0.5"
-                        value={tariffs.room}
-                        onChange={(e) => setTariffs((t) => ({ ...t, room: parseFloat(e.target.value) || t.room }))}
-                        className="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] text-[#94A3B8]">{t('tariffShop')}</label>
-                      <input
-                        type="number"
-                        step="0.5"
-                        value={tariffs.shop}
-                        onChange={(e) => setTariffs((t) => ({ ...t, shop: parseFloat(e.target.value) || t.shop }))}
-                        className="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] text-[#94A3B8]">{t('tariffEv')}</label>
-                      <input
-                        type="number"
-                        step="0.5"
-                        value={tariffs.tuktuk}
-                        onChange={(e) => setTariffs((t) => ({ ...t, tuktuk: parseFloat(e.target.value) || t.tuktuk }))}
-                        className="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none"
-                      />
-                    </div>
-                  </div>
+                {/* Sub-Tabs in Master Control */}
+                <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-[#06080C] border border-white/[0.08] text-[10.5px]">
+                  <button
+                    type="button"
+                    onClick={() => setMasterControlTab('units')}
+                    className={`py-1.5 px-1 rounded-lg font-bold transition-all ${
+                      masterControlTab === 'units'
+                        ? 'bg-[#0D1117] text-[#D4AF37] border border-[#D4AF37]/40 shadow-sm'
+                        : 'text-[#94A3B8] hover:text-white'
+                    }`}
+                  >
+                    {t('masterTabUnits')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMasterControlTab('parking')}
+                    className={`py-1.5 px-1 rounded-lg font-bold transition-all ${
+                      masterControlTab === 'parking'
+                        ? 'bg-[#0D1117] text-cyan-300 border border-cyan-500/40 shadow-sm'
+                        : 'text-[#94A3B8] hover:text-white'
+                    }`}
+                  >
+                    {t('masterTabParking')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMasterControlTab('expenses')}
+                    className={`py-1.5 px-1 rounded-lg font-bold transition-all ${
+                      masterControlTab === 'expenses'
+                        ? 'bg-[#0D1117] text-amber-300 border border-amber-500/40 shadow-sm'
+                        : 'text-[#94A3B8] hover:text-white'
+                    }`}
+                  >
+                    {t('masterTabExpenses')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMasterControlTab('tariffs')}
+                    className={`py-1.5 px-1 rounded-lg font-bold transition-all ${
+                      masterControlTab === 'tariffs'
+                        ? 'bg-[#0D1117] text-[#FFF4C2] border border-white/[0.2] shadow-sm'
+                        : 'text-[#94A3B8] hover:text-white'
+                    }`}
+                  >
+                    {t('masterTabTariffs')}
+                  </button>
                 </div>
 
-                {/* 2. Category Fees & Splits */}
-                <div className="p-3 rounded-2xl bg-[#06080C] border border-[#D4AF37]/30 flex flex-col gap-2.5">
-                  <span className="text-xs font-bold text-[#FFF4C2] uppercase flex items-center gap-1">
-                    {t('parkingPricing')}
-                  </span>
-                  {(['car_small', 'car_large', 'heavy', 'tuktuk'] as VehicleCategory[]).map((cat) => {
-                    const p = pricing[cat];
-                    const catLabels = getCategoryLabels(cat);
-                    return (
-                      <div key={cat} className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1 text-[11px]">
-                        <span className="font-bold text-[#EDEDED]">{catLabels.label}</span>
-                        <div className="grid grid-cols-3 gap-1.5 text-[10px]">
-                          <div>
-                            <span className="text-[#64748B]">{lang === 'en' ? 'Monthly: ₹' : 'मासिक: ₹'}</span>
-                            <input
-                              type="number"
-                              value={p.fee}
-                              onChange={(e) => {
-                                const val = parseInt(e.target.value, 10) || 0;
-                                setPricing((prev) => ({ ...prev, [cat]: { ...prev[cat], fee: val } }));
-                              }}
-                              className="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"
-                            />
-                          </div>
-                          <div>
-                            <span className="text-[#D4AF37]">{t('ownerShare')}: ₹</span>
-                            <input
-                              type="number"
-                              value={p.owner}
-                              onChange={(e) => {
-                                const val = parseInt(e.target.value, 10) || 0;
-                                setPricing((prev) => ({ ...prev, [cat]: { ...prev[cat], owner: val } }));
-                              }}
-                              className="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"
-                            />
-                          </div>
-                          <div>
-                            <span className="text-cyan-300">{t('ritinCut')}: ₹</span>
-                            <input
-                              type="number"
-                              value={p.ritin}
-                              onChange={(e) => {
-                                const val = parseInt(e.target.value, 10) || 0;
-                                setPricing((prev) => ({ ...prev, [cat]: { ...prev[cat], ritin: val } }));
-                              }}
-                              className="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"
-                            />
-                          </div>
+                {/* TAB 1: UNITS MANAGEMENT (EDIT & VACATE/DELETE) */}
+                {masterControlTab === 'units' && (
+                  <div className="flex flex-col gap-3">
+                    <div className="p-3 rounded-2xl bg-[#06080C] border border-[#D4AF37]/30 flex flex-col gap-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#EDEDED] uppercase">{t('editTenantDetails')}</span>
+                        <span className="text-[10px] text-[#D4AF37] font-bold">
+                          {overrideUnitOccupied ? t('occupiedText') : t('vacantText')}
+                        </span>
+                      </div>
+
+                      {/* Unit Selector */}
+                      <div>
+                        <label className="block text-[9.5px] text-[#94A3B8] uppercase mb-1">{t('unitSelectLabel')}</label>
+                        <select
+                          value={overrideSelectedUnitId}
+                          onChange={(e) => selectOverrideUnit(e.target.value)}
+                          className="w-full py-2 px-2.5 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none"
+                        >
+                          {units.map((u) => (
+                            <option key={u.id} value={u.id}>
+                              {u.name} - {u.isOccupied ? u.tenantName : `(${t('vacantText')})`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Occupancy Toggle */}
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#0D1117] border border-white/[0.06]">
+                        <span className="text-[10.5px] text-[#94A3B8]">{t('occupiedStatusLabel')}:</span>
+                        <button
+                          type="button"
+                          onClick={() => setOverrideUnitOccupied(!overrideUnitOccupied)}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                            overrideUnitOccupied
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                              : 'bg-white/[0.05] text-[#94A3B8] border border-white/[0.1]'
+                          }`}
+                        >
+                          {overrideUnitOccupied ? t('occupiedText') : t('vacantText')}
+                        </button>
+                      </div>
+
+                      {/* Tenant Name & Phone */}
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <label className="block text-[9px] text-[#94A3B8] mb-1">{t('tenant')}</label>
+                          <input
+                            type="text"
+                            value={overrideTenantName}
+                            onChange={(e) => setOverrideTenantName(e.target.value)}
+                            placeholder="Sunil Verma"
+                            className="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] text-[#94A3B8] mb-1">{t('tenantPhoneLabel')}</label>
+                          <input
+                            type="text"
+                            value={overrideTenantPhone}
+                            onChange={(e) => setOverrideTenantPhone(e.target.value)}
+                            placeholder="98765-43210"
+                            className="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none"
+                          />
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
 
-                {/* 3. Unit Rent & Arrears Adjustment */}
-                <div className="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
-                  <span className="text-xs font-bold text-[#EDEDED] uppercase">{t('unitRentAdjustment')}</span>
-                  <select
-                    value={overrideSelectedUnitId}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      setOverrideSelectedUnitId(id);
-                      const u = units.find((x) => x.id === id);
-                      if (u) {
-                        setOverrideUnitRent(String(u.rentAmount));
-                        setOverrideUnitDue(String(u.rentDueAmount));
-                      }
-                    }}
-                    className="w-full py-1.5 px-2 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none"
-                  >
-                    {units.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} - {u.isOccupied ? u.tenantName : `(${t('vacant')})`}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <label className="block text-[9px] text-[#94A3B8]">{t('unitRentLabel')}</label>
-                      <input
-                        type="number"
-                        value={overrideUnitRent}
-                        onChange={(e) => setOverrideUnitRent(e.target.value)}
-                        className="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] text-[#94A3B8]">{t('unitDueLabel')}</label>
-                      <input
-                        type="number"
-                        value={overrideUnitDue}
-                        onChange={(e) => setOverrideUnitDue(e.target.value)}
-                        className="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-amber-400"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4. Parking Subscriber Balance & Slot Adjustment */}
-                <div className="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
-                  <span className="text-xs font-bold text-[#EDEDED] uppercase">{t('parkingSubAdjustment')}</span>
-                  {subscribers.length === 0 ? (
-                    <div className="py-2.5 px-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[11px] font-mono text-[#94A3B8] text-center">
-                      {t('noSubsToAdjust')}
-                    </div>
-                  ) : (
-                    <select
-                      value={overrideSelectedSubId}
-                      onChange={(e) => {
-                        const id = e.target.value;
-                        setOverrideSelectedSubId(id);
-                        const s = subscribers.find((x) => x.id === id);
-                        if (s) {
-                          setOverrideSubSlot(s.slot || 'General');
-                          setOverrideSubEvDue(String(s.evDueAmount || 0));
-                        }
-                      }}
-                      className="w-full py-1.5 px-2 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none"
-                    >
-                      {subscribers.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.vehicleNumber} - {s.ownerName} ({s.slot})
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <label className="block text-[9px] text-[#94A3B8]">{t('slotYard')}</label>
-                      <input
-                        type="text"
-                        value={overrideSubSlot}
-                        onChange={(e) => setOverrideSubSlot(e.target.value)}
-                        className="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-amber-300"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] text-[#94A3B8]">{t('evArrears')}</label>
-                      <input
-                        type="number"
-                        value={overrideSubEvDue}
-                        onChange={(e) => setOverrideSubEvDue(e.target.value)}
-                        className="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 5. Maintenance & Manager Udhaar Settlement */}
-                <div className="p-3 rounded-2xl bg-[#06080C] border border-amber-500/30 flex flex-col gap-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-300 uppercase flex items-center gap-1.5">
-                      <Wrench className="w-3.5 h-3.5 text-amber-400" />
-                      {t('maintenanceLedgerTitle')}
-                    </span>
-                    <span className="text-[11px] font-bold text-amber-400 font-mono">
-                      ₹{pendingMaintenanceTotal.toLocaleString('en-IN')} {t('dueLabel')}
-                    </span>
-                  </div>
-
-                  {pendingMaintenanceTotal > 0 && (
-                    <button
-                      type="button"
-                      onClick={settleAllMaintenanceExpenses}
-                      className="w-full py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{t('settleAllBtn')} (₹{pendingMaintenanceTotal.toLocaleString('en-IN')})</span>
-                    </button>
-                  )}
-
-                  {/* Audit List */}
-                  <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto deck-scrollbar">
-                    {maintenanceExpenses.length === 0 ? (
-                      <div className="py-2.5 px-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[10.5px] font-mono text-[#94A3B8] text-center">
-                        {t('noPendingExpenses')}
+                      {/* Base Rent & Due Amount */}
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <label className="block text-[9px] text-[#94A3B8] mb-1">{t('unitRentLabel')}</label>
+                          <input
+                            type="number"
+                            value={overrideUnitRent}
+                            onChange={(e) => setOverrideUnitRent(e.target.value)}
+                            className="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] text-[#94A3B8] mb-1">{t('unitDueLabel')}</label>
+                          <input
+                            type="number"
+                            value={overrideUnitDue}
+                            onChange={(e) => setOverrideUnitDue(e.target.value)}
+                            className="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-amber-400 focus:outline-none"
+                          />
+                        </div>
                       </div>
-                    ) : (
-                      maintenanceExpenses.map((exp) => {
-                        const isPending = exp.status === 'pending_settlement';
-                        const catKey = ('cat' + (exp.category === 'plumbing' ? 'Plumbing' : exp.category === 'electrical' ? 'Electrical' : exp.category === 'hardware_repair' ? 'Hardware' : exp.category === 'cleaning_supplies' ? 'Cleaning' : exp.category === 'fuel_misc' ? 'Fuel' : 'Other')) as keyof typeof DICTIONARY['en'];
-                        const catName = t(catKey) || exp.category;
-                        return (
-                          <div
-                            key={exp.id}
-                            className={`p-2 rounded-xl border flex flex-col gap-1 text-[11px] font-mono ${
-                              isPending
-                                ? 'bg-amber-950/20 border-amber-500/30'
-                                : 'bg-white/[0.02] border-white/[0.05] opacity-60'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-[#EDEDED] flex items-center gap-1.5">
-                                <span className="text-amber-400">{catName}</span>
-                                <span className="text-[9.5px] text-[#64748B]">({exp.date || '-'})</span>
-                              </span>
-                              <span className="font-bold text-amber-300">₹{exp.amount.toLocaleString('en-IN')}</span>
+
+                      {/* Last Meter Reading */}
+                      <div>
+                        <label className="block text-[9px] text-cyan-400 mb-1">{t('lastReadingLabel')}</label>
+                        <input
+                          type="number"
+                          value={overrideUnitReading}
+                          onChange={(e) => setOverrideUnitReading(e.target.value)}
+                          className="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-cyan-500/30 font-bold text-cyan-300 focus:outline-none"
+                        />
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={handleSaveUnitChanges}
+                          className="flex-1 py-2.5 px-3 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 shadow-md"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>{t('saveUnitChangesBtn')}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleVacateUnit(overrideSelectedUnitId)}
+                          className="py-2.5 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-400 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer active:scale-98"
+                          title={t('vacateTenantBtn')}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>{lang === 'en' ? 'Vacate' : 'खाली करें'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 2: PARKING SUBSCRIBERS (EDIT & DELETE) */}
+                {masterControlTab === 'parking' && (
+                  <div className="flex flex-col gap-3">
+                    <div className="p-3 rounded-2xl bg-[#06080C] border border-cyan-500/30 flex flex-col gap-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#EDEDED] uppercase">{t('editSubscriberDetails')}</span>
+                        <span className="text-[10px] text-cyan-400 font-bold">
+                          {subscribers.length} {t('registeredSubscribers')}
+                        </span>
+                      </div>
+
+                      {subscribers.length === 0 ? (
+                        <div className="py-4 px-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-[#94A3B8] text-center">
+                          {t('noSubsToAdjust')}
+                        </div>
+                      ) : (
+                        <>
+                          {/* Subscriber Selector */}
+                          <div>
+                            <label className="block text-[9.5px] text-[#94A3B8] uppercase mb-1">{t('registeredSubscribers')}</label>
+                            <select
+                              value={overrideSelectedSubId}
+                              onChange={(e) => selectOverrideSub(e.target.value)}
+                              className="w-full py-2 px-2.5 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none"
+                            >
+                              {subscribers.map((s) => (
+                                <option key={s.id} value={s.id}>
+                                  {s.vehicleNumber} - {s.ownerName} ({s.slot})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Plate & Owner Name */}
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <label className="block text-[9px] text-[#94A3B8] mb-1">{t('plateLabel')}</label>
+                              <input
+                                type="text"
+                                value={overrideSubPlate}
+                                onChange={(e) => setOverrideSubPlate(e.target.value)}
+                                className="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none uppercase"
+                              />
                             </div>
-                            <div className="flex items-center justify-between text-[10px] text-[#CBD5E1] mt-0.5">
-                              <span className="truncate pr-2">
-                                {exp.description} {exp.vendor && exp.vendor !== '-' ? `[${exp.vendor}]` : ''}
-                              </span>
-                              {isPending ? (
-                                <button
-                                  type="button"
-                                  onClick={() => settleSingleExpense(exp.id)}
-                                  className="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-[9.5px] font-bold shrink-0 cursor-pointer active:scale-95 transition-all"
-                                >
-                                  {t('settleBtn')}
-                                </button>
-                              ) : (
-                                <span className="text-emerald-400 text-[9px]">{t('settledStatus')}</span>
-                              )}
+                            <div>
+                              <label className="block text-[9px] text-[#94A3B8] mb-1">{t('ownerNameLabel')}</label>
+                              <input
+                                type="text"
+                                value={overrideSubOwnerName}
+                                onChange={(e) => setOverrideSubOwnerName(e.target.value)}
+                                className="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Phone & Slot */}
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <label className="block text-[9px] text-[#94A3B8] mb-1">{t('phoneLabel')}</label>
+                              <input
+                                type="text"
+                                value={overrideSubPhone}
+                                onChange={(e) => setOverrideSubPhone(e.target.value)}
+                                className="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] text-[#94A3B8] mb-1">{t('slotYard')}</label>
+                              <input
+                                type="text"
+                                value={overrideSubSlot}
+                                onChange={(e) => setOverrideSubSlot(e.target.value)}
+                                className="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-amber-300 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Category & Status */}
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <label className="block text-[9px] text-[#94A3B8] mb-1">{t('categoryLabel')}</label>
+                              <select
+                                value={overrideSubCategory}
+                                onChange={(e) => setOverrideSubCategory(e.target.value as VehicleCategory)}
+                                className="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none"
+                              >
+                                <option value="car_small">Small Car (₹{pricing.car_small.fee})</option>
+                                <option value="car_large">SUV / Large (₹{pricing.car_large.fee})</option>
+                                <option value="heavy">Heavy / Pickup (₹{pricing.heavy.fee})</option>
+                                <option value="tuktuk">Tuk-Tuk (+EV) (₹{pricing.tuktuk.fee})</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[9px] text-[#94A3B8] mb-1">{t('passStatusLabel')}</label>
+                              <select
+                                value={overrideSubStatus}
+                                onChange={(e) => setOverrideSubStatus(e.target.value as 'active' | 'due')}
+                                className="w-full py-1.5 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-[#EDEDED] focus:outline-none"
+                              >
+                                <option value="active">{t('passActive')}</option>
+                                <option value="due">{t('passDue')}</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* EV Facility Toggle & Reading/Due */}
+                          <div className="p-2.5 rounded-xl bg-[#0D1117] border border-cyan-500/20 flex flex-col gap-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] text-cyan-300 font-bold uppercase">{t('evFacilityLabel')}</span>
+                              <button
+                                type="button"
+                                onClick={() => setOverrideSubEvFacility(!overrideSubEvFacility)}
+                                className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${
+                                  overrideSubEvFacility ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'bg-white/[0.05] text-[#94A3B8]'
+                                }`}
+                              >
+                                {overrideSubEvFacility ? 'YES' : 'NO'}
+                              </button>
+                            </div>
+                            {overrideSubEvFacility && (
+                              <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                                <div>
+                                  <label className="block text-[8.5px] text-[#94A3B8] mb-0.5">{t('evReadingLabel')}</label>
+                                  <input
+                                    type="number"
+                                    value={overrideSubEvReading}
+                                    onChange={(e) => setOverrideSubEvReading(e.target.value)}
+                                    className="w-full py-1 px-2 rounded bg-[#06080C] border border-white/[0.1] font-bold text-cyan-300"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[8.5px] text-[#94A3B8] mb-0.5">{t('evArrears')}</label>
+                                  <input
+                                    type="number"
+                                    value={overrideSubEvDue}
+                                    onChange={(e) => setOverrideSubEvDue(e.target.value)}
+                                    className="w-full py-1 px-2 rounded bg-[#06080C] border border-white/[0.1] font-bold text-cyan-300"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={handleSaveSubscriberChanges}
+                              className="flex-1 py-2.5 px-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-[#06080C] font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 shadow-md"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>{t('saveSubscriberChangesBtn')}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSubscriber(overrideSelectedSubId)}
+                              className="py-2.5 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-400 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer active:scale-98"
+                              title={t('deleteSubscriberBtn')}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>{lang === 'en' ? 'Delete' : 'हटाएं'}</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 3: MAINTENANCE EXPENSES (EDIT, SETTLE & DELETE) */}
+                {masterControlTab === 'expenses' && (
+                  <div className="flex flex-col gap-3">
+                    <div className="p-3 rounded-2xl bg-[#06080C] border border-amber-500/30 flex flex-col gap-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-amber-300 uppercase flex items-center gap-1.5">
+                          <Wrench className="w-3.5 h-3.5 text-amber-400" />
+                          {t('maintenanceLedgerTitle')}
+                        </span>
+                        <span className="text-[11px] font-bold text-amber-400 font-mono">
+                          ₹{pendingMaintenanceTotal.toLocaleString('en-IN')} {t('dueLabel')}
+                        </span>
+                      </div>
+
+                      {pendingMaintenanceTotal > 0 && (
+                        <button
+                          type="button"
+                          onClick={settleAllMaintenanceExpenses}
+                          className="w-full py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>{t('settleAllBtn')} (₹{pendingMaintenanceTotal.toLocaleString('en-IN')})</span>
+                        </button>
+                      )}
+
+                      {/* Audit List with Delete */}
+                      <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto deck-scrollbar">
+                        {maintenanceExpenses.length === 0 ? (
+                          <div className="py-4 px-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-xs font-mono text-[#94A3B8] text-center">
+                            {t('noPendingExpenses')}
+                          </div>
+                        ) : (
+                          maintenanceExpenses.map((exp) => {
+                            const isPending = exp.status === 'pending_settlement';
+                            const catKey = ('cat' + (exp.category === 'plumbing' ? 'Plumbing' : exp.category === 'electrical' ? 'Electrical' : exp.category === 'hardware_repair' ? 'Hardware' : exp.category === 'cleaning_supplies' ? 'Cleaning' : exp.category === 'fuel_misc' ? 'Fuel' : 'Other')) as keyof typeof DICTIONARY['en'];
+                            const catName = t(catKey) || exp.category;
+                            return (
+                              <div
+                                key={exp.id}
+                                className={`p-2.5 rounded-xl border flex flex-col gap-1.5 text-[11px] font-mono ${
+                                  isPending
+                                    ? 'bg-amber-950/20 border-amber-500/30'
+                                    : 'bg-white/[0.02] border-white/[0.05] opacity-60'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-bold text-[#EDEDED] flex items-center gap-1.5">
+                                    <span className="text-amber-400">{catName}</span>
+                                    <span className="text-[9.5px] text-[#64748B]">({exp.date || '-'})</span>
+                                  </span>
+                                  <span className="font-bold text-amber-300">₹{exp.amount.toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] text-[#CBD5E1]">
+                                  <span className="truncate pr-2">
+                                    {exp.description} {exp.vendor && exp.vendor !== '-' ? `[${exp.vendor}]` : ''}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-end gap-2 pt-1 border-t border-white/[0.05]">
+                                  {isPending ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => settleSingleExpense(exp.id)}
+                                      className="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-[9.5px] font-bold shrink-0 cursor-pointer active:scale-95 transition-all"
+                                    >
+                                      {t('settleBtn')}
+                                    </button>
+                                  ) : (
+                                    <span className="text-emerald-400 text-[9px] mr-auto">{t('settledStatus')}</span>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteExpense(exp.id)}
+                                    className="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-[9.5px] font-bold shrink-0 cursor-pointer active:scale-95 transition-all flex items-center gap-1"
+                                    title={t('deleteExpenseBtn')}
+                                  >
+                                    <Trash2 className="w-2.5 h-2.5" />
+                                    <span>{t('deleteExpenseBtn')}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 4: TARIFFS & VEHICLE PRICING SPLITS */}
+                {masterControlTab === 'tariffs' && (
+                  <div className="flex flex-col gap-3">
+                    {/* Electricity Tariffs */}
+                    <div className="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
+                      <span className="text-xs font-bold text-cyan-300 uppercase flex items-center gap-1">
+                        {t('electricityTariffs')}
+                      </span>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div>
+                          <label className="block text-[9px] text-[#94A3B8]">{t('tariffRoom')}</label>
+                          <input
+                            type="number"
+                            step="0.5"
+                            value={tariffs.room}
+                            onChange={(e) => setTariffs((t) => ({ ...t, room: parseFloat(e.target.value) || t.room }))}
+                            className="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] text-[#94A3B8]">{t('tariffShop')}</label>
+                          <input
+                            type="number"
+                            step="0.5"
+                            value={tariffs.shop}
+                            onChange={(e) => setTariffs((t) => ({ ...t, shop: parseFloat(e.target.value) || t.shop }))}
+                            className="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] text-[#94A3B8]">{t('tariffEv')}</label>
+                          <input
+                            type="number"
+                            step="0.5"
+                            value={tariffs.tuktuk}
+                            onChange={(e) => setTariffs((t) => ({ ...t, tuktuk: parseFloat(e.target.value) || t.tuktuk }))}
+                            className="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Category Pricing & Splits */}
+                    <div className="p-3 rounded-2xl bg-[#06080C] border border-[#D4AF37]/30 flex flex-col gap-2.5">
+                      <span className="text-xs font-bold text-[#FFF4C2] uppercase flex items-center gap-1">
+                        {t('parkingPricing')}
+                      </span>
+                      {(['car_small', 'car_large', 'heavy', 'tuktuk'] as VehicleCategory[]).map((cat) => {
+                        const p = pricing[cat];
+                        const catLabels = getCategoryLabels(cat);
+                        return (
+                          <div key={cat} className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1 text-[11px]">
+                            <span className="font-bold text-[#EDEDED]">{catLabels.label}</span>
+                            <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+                              <div>
+                                <span className="text-[#64748B]">{lang === 'en' ? 'Fee: ₹' : 'शुल्क: ₹'}</span>
+                                <input
+                                  type="number"
+                                  value={p.fee}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10) || 0;
+                                    setPricing((prev) => ({ ...prev, [cat]: { ...prev[cat], fee: val } }));
+                                  }}
+                                  className="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"
+                                />
+                              </div>
+                              <div>
+                                <span className="text-[#D4AF37]">{t('ownerShare')}: ₹</span>
+                                <input
+                                  type="number"
+                                  value={p.owner}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10) || 0;
+                                    setPricing((prev) => ({ ...prev, [cat]: { ...prev[cat], owner: val } }));
+                                  }}
+                                  className="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"
+                                />
+                              </div>
+                              <div>
+                                <span className="text-cyan-300">{t('ritinCut')}: ₹</span>
+                                <input
+                                  type="number"
+                                  value={p.ritin}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10) || 0;
+                                    setPricing((prev) => ({ ...prev, [cat]: { ...prev[cat], ritin: val } }));
+                                  }}
+                                  className="w-full py-0.5 px-1.5 rounded bg-[#0D1117] border border-white/[0.1] text-[#EDEDED]"
+                                />
+                              </div>
                             </div>
                           </div>
                         );
-                      })
-                    )}
-                  </div>
-                </div>
+                      })}
+                    </div>
 
-                {/* Apply Button */}
-                <button
-                  type="button"
-                  onClick={handleApplyMasterOverrides}
-                  className="w-full py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 cursor-pointer active:scale-98 transition-all bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] shadow-[0_0_20px_rgba(212,175,55,0.3)] mt-1"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>{t('saveChanges')}</span>
-                </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveTariffsAndSplits}
+                      className="w-full py-2.5 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 cursor-pointer active:scale-98 transition-all bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] shadow-md"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>{t('saveTariffsBtn')}</span>
+                    </button>
+                  </div>
+                )}
               </motion.div>
             </>
           )}
