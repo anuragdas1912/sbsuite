@@ -1520,37 +1520,31 @@
     }
 
     function lockTerminal() {
-      if (navigator.vibrate) navigator.vibrate([16]);
-      closeDrawer();
-      closeRenewalDrawer();
-      closeReceiptModal();
-      closeMonthlyReceiptModal();
-      closeMasterOverrideModal();
-      const overrideBtn = document.getElementById('owner-override-btn');
-      if (overrideBtn) overrideBtn.classList.add('hidden');
-      closeRenewalDrawer();
-      closeReceiptModal();
-      closeMonthlyReceiptModal();
-      closeMasterOverrideModal();
+  if (navigator.vibrate) navigator.vibrate([16]);
+  closeDrawer();
+  closeRenewalDrawer();
+  closeReceiptModal();
+  closeMonthlyReceiptModal();
+  closeMasterOverrideModal();
 
-      deckEl.style.opacity = '0';
-      deckEl.style.transform = 'translateY(20px) scale(0.97)';
-      deckEl.style.pointerEvents = 'none';
+  deckEl.style.opacity = '0';
+  deckEl.style.transform = 'translateY(20px) scale(0.97)';
+  deckEl.style.pointerEvents = 'none';
 
-      setTimeout(() => {
-        deckEl.style.display = 'none';
-        currentPin = '';
-        isProcessing = false;
-        currentUserRole = null;
-        updatePinDots();
-        pinEl.style.pointerEvents = 'auto';
-        pinEl.style.display = 'flex';
-        pinEl.style.opacity = '1';
-        pinEl.style.transform = 'translateY(0) scale(1)';
-        feedbackEl.textContent = 'Authorized Personnel Only';
-        feedbackEl.className = 'h-7 mt-3 flex items-center justify-center text-[11px] font-mono text-[#475569] tracking-wider uppercase';
-      }, 300);
-    }
+  setTimeout(() => {
+    deckEl.style.display = 'none';
+    currentPin = '';
+    isProcessing = false;
+    currentUserRole = null;
+    updatePinDots();
+    pinEl.style.pointerEvents = 'auto';
+    pinEl.style.display = 'flex';
+    pinEl.style.opacity = '1';
+    pinEl.style.transform = 'translateY(0) scale(1)';
+    feedbackEl.textContent = 'Authorized Personnel Only';
+    feedbackEl.className = 'h-7 mt-3 flex items-center justify-center text-[11px] font-mono text-[#475569] tracking-wider uppercase';
+  }, 300);
+}
 
     // ================= MODULE & TAB SWITCHING =================
     function switchMainModule(mod) {
