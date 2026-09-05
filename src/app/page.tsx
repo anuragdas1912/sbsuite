@@ -431,13 +431,20 @@ export default function Home() {
     const sub = selectedSubForRenewal;
     const catPrice = pricing[sub.category] || pricing.car_small;
 
+    const newSlot = renewalSlot.trim() || sub.slot;
+    const passPaid = parseInt(renewalPassPaid || '0', 10);
+    const evPaid = sub.hasEvFacility ? parseInt(renewalEvPaid || '0', 10) : 0;
+    const totalPaid = passPaid + evPaid;
+
+    if (totalPaid <= 0) {
+      alert('कृपया प्राप्त राशि दर्ज करें');
+      return;
+    }
+
     const today = new Date();
     const expiry = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
     const dateText = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
     const expiryText = `${String(expiry.getDate()).padStart(2, '0')}/${String(expiry.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-
-    const passPaid = parseInt(renewalPassPaid || '0', 10);
-    const evPaid = sub.hasEvFacility ? parseInt(renewalEvPaid || '0', 10) : 0;
 
     let evLines = '';
     let newEvReading = sub.lastEvReading || 0;
@@ -456,46 +463,48 @@ export default function Home() {
       const totalEvDue = currBill + (sub.evDueAmount || 0);
       newEvArrears = Math.max(0, totalEvDue - evPaid);
 
-      evLines = `ई-रिक्शा सब-मीटर रीडिंग: ${prev} -> ${newEvReading} (${consumed} यूनिट @ ₹${tariffs.tuktuk})
-ई-रिक्शा चार्जिंग बिजली बिल: कुल ₹${totalEvDue}
-चार्जिंग जमा राशि: ₹${evPaid} (बकाया शेष: ₹${newEvArrears})
-`;
+      evLines = `ई-रिक्शा सब-मीटर रीडिंग: ${prev} -> ${newEvReading} (${consumed} यूनिट @ ₹${tariffs.tuktuk})\nई-रिक्शा चार्जिंग बिजली बिल: कुल ₹${totalEvDue}\nचार्जिंग जमा राशि: ₹${evPaid} (बकाया शेष: ₹${newEvArrears})\n`;
     }
 
     setSubscribers((prev) =>
-      prev.map((s) =>
-        s.id === sub.id
-          ? {
-              ...s,
-              slot: renewalSlot.trim() || s.slot,
-              passStatus: 'active',
-              validTillDate: expiryText,
-              lastPaidDate: dateText,
-              lastEvReading: newEvReading,
-              evDueAmount: newEvArrears,
-            }
-          : s
-      )
+      prev.map((s) => {
+        if (s.id !== sub.id) return s;
+        return {
+          ...s,
+          slot: newSlot,
+          passStatus: passPaid > 0 ? 'active' : s.passStatus,
+          validTillDate: passPaid > 0 ? expiryText : s.validTillDate,
+          lastPaidDate: passPaid > 0 ? dateText : s.lastPaidDate,
+          lastEvReading: newEvReading,
+          evDueAmount: newEvArrears,
+        };
+      })
     );
 
-    const totalPaid = passPaid + evPaid;
+    const isEvOnly = passPaid === 0 && evPaid > 0 && sub.hasEvFacility;
+    const isCombined = passPaid > 0 && evPaid > 0;
+
+    let splitOwnerNet = 0;
+    let splitRitinCut = 0;
+    let receiptText = '';
+
+    if (isEvOnly) {
+      splitOwnerNet = evPaid;
+      splitRitinCut = 0;
+      receiptText = `श्री बालाजी पार्किंग (ई-रिक्शा चार्जिंग रसीद)\n(ट्रांजिट कैंप, रुद्रपुर)\n\nवाहन नंबर: [${sub.vehicleNumber}] (${catPrice.label})\nस्लॉट: [${newSlot}]\nधारक: [${sub.ownerName}]\nतारीख: [${dateText}]\n--------------------------------\n${evLines}--------------------------------\nकुल नकद प्राप्त: ₹${totalPaid} (बिजली बिल)\nमालिक हिस्सा (बिजली फंड): ₹${evPaid} | रितिन कमीशन: ₹0\n--------------------------------\nधन्यवाद। श्री बालाजी पार्किंग।`;
+    } else if (isCombined) {
+      splitOwnerNet = catPrice.owner + evPaid;
+      splitRitinCut = catPrice.ritin;
+      receiptText = `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)\nमासिक पास एवं ई-रिक्शा चार्जिंग रसीद\n\nवाहन नंबर: [${sub.vehicleNumber}] (${catPrice.label})\nस्लॉट: [${newSlot}]\nधारक: [${sub.ownerName}]\nतारीख: [${dateText}]\n--------------------------------\nमासिक पार्किंग पास: ₹${passPaid} (वैध: ${dateText} से ${expiryText})\n${evLines}--------------------------------\nकुल नकद प्राप्त: ₹${totalPaid}\nमालिक हिस्सा: ₹${splitOwnerNet} | रितिन कमीशन: ₹${splitRitinCut}\n--------------------------------\nधन्यवाद। श्री बालाजी पार्किंग।`;
+    } else {
+      splitOwnerNet = catPrice.owner;
+      splitRitinCut = catPrice.ritin;
+      receiptText = `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)\nमासिक पार्किंग पास रसीद\n\nवाहन नंबर: [${sub.vehicleNumber}] (${catPrice.label})\nस्लॉट: [${newSlot}]\nधारक: [${sub.ownerName}]\nतारीख: [${dateText}]\n--------------------------------\nमासिक पार्किंग पास: ₹${passPaid} (वैध: ${dateText} से ${expiryText})\n--------------------------------\nकुल नकद प्राप्त: ₹${totalPaid}\nमालिक हिस्सा: ₹${splitOwnerNet} | रितिन कमीशन: ₹${splitRitinCut}\n--------------------------------\nधन्यवाद। श्री बालाजी पार्किंग।`;
+    }
+
     setTotalParkingCollected((prev) => prev + totalPaid);
-    setOwnerParkingShare((prev) => prev + (catPrice.owner + evPaid));
-    setRitinParkingCut((prev) => prev + catPrice.ritin);
-
-    const receiptText = `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
-मासिक पास नवीनीकरण रसीद
-
-वाहन नंबर: [${sub.vehicleNumber}] (${catPrice.label})
-स्लॉट: [${renewalSlot.trim() || sub.slot}]
-धारक: [${sub.ownerName}]
-तारीख: [${dateText}]
---------------------------------
-मासिक पार्किंग पास: ₹${passPaid} (वैध: ${dateText} से ${expiryText})
-${evLines}--------------------------------
-कुल नकद प्राप्त: ₹${totalPaid}
-मालिक हिस्सा: ₹${catPrice.owner} | रितिन कमीशन: ₹${catPrice.ritin}
-धन्यवाद। श्री बालाजी पार्किंग।`;
+    setOwnerParkingShare((prev) => prev + splitOwnerNet);
+    setRitinParkingCut((prev) => prev + splitRitinCut);
 
     const encoded = encodeURIComponent(receiptText);
     const whatsappUrl = `https://wa.me/?text=${encoded}`;
@@ -509,12 +518,12 @@ ${evLines}--------------------------------
       vehicleNumber: sub.vehicleNumber,
       ownerName: sub.ownerName,
       categoryText: catPrice.label,
-      slot: renewalSlot.trim() || sub.slot,
+      slot: newSlot,
       dateText,
-      validityText: `${dateText} से ${expiryText}`,
+      validityText: passPaid > 0 ? `${dateText} से ${expiryText}` : sub.validTillDate,
       amount: totalPaid,
-      ownerNet: catPrice.owner,
-      ritinCut: catPrice.ritin,
+      ownerNet: splitOwnerNet,
+      ritinCut: splitRitinCut,
       evLines,
       whatsappUrl,
       smsUrl,
@@ -593,7 +602,7 @@ ${evLines}--------------------------------
   const canSaveReading = isInputValid && selectedUnit && !isLowerThanPrev;
 
   // Rent & Arrears Calculations
-  const effectiveRentDue = selectedUnit ? (selectedUnit.rentDueAmount > 0 ? selectedUnit.rentDueAmount : selectedUnit.rentAmount) : 0;
+  const effectiveRentDue = selectedUnit ? ((selectedUnit.rentDueAmount !== undefined && selectedUnit.rentDueAmount !== null) ? selectedUnit.rentDueAmount : selectedUnit.rentAmount) : 0;
   const rentPaidNum = rentPaidInput.trim() !== '' ? parseInt(rentPaidInput, 10) || 0 : 0;
   const elecPaidNum = elecPaidInput.trim() !== '' ? parseInt(elecPaidInput, 10) || 0 : 0;
   const remainingRentDue = Math.max(0, effectiveRentDue - rentPaidNum);
@@ -606,7 +615,7 @@ ${evLines}--------------------------------
     setCurrentReadingInput('');
     setMeterPhotoUrl(null);
     setReceiptData(null);
-    const rentDue = unit.rentDueAmount > 0 ? unit.rentDueAmount : unit.rentAmount;
+    const rentDue = (unit.rentDueAmount !== undefined && unit.rentDueAmount !== null) ? unit.rentDueAmount : unit.rentAmount;
     setRentPaidInput(String(rentDue));
     setElecPaidInput('0');
   };
@@ -715,7 +724,7 @@ ${elecLine}--------------------------------
   const totalFiltered = filteredUnits.length;
   const occupiedCount = useMemo(() => filteredUnits.filter((u) => u.isOccupied).length, [filteredUnits]);
   const totalRentDue = useMemo(() => {
-    return filteredUnits.reduce((sum, u) => sum + (u.rentDueAmount > 0 ? u.rentDueAmount : (u.isOccupied ? u.rentAmount : 0)), 0);
+    return filteredUnits.reduce((sum, u) => sum + ((u.rentDueAmount !== undefined && u.rentDueAmount !== null) ? u.rentDueAmount : (u.isOccupied ? u.rentAmount : 0)), 0);
   }, [filteredUnits]);
   const pendingMetersCount = useMemo(() => {
     return filteredUnits.filter((u) => u.isOccupied && u.isReadingPending).length;
@@ -828,7 +837,7 @@ ${elecLine}--------------------------------
             setIsError(false);
             setIsProcessing(false);
             setStatusMessage('Authorized Personnel Only');
-          }, 950);
+          }, 650);
         }
       }
     },
@@ -1211,7 +1220,7 @@ ${elecLine}--------------------------------
                         }
 
                         const isMeterPending = unit.isReadingPending;
-                        const dueAmount = unit.rentDueAmount > 0 ? unit.rentDueAmount : unit.rentAmount;
+                        const dueAmount = (unit.rentDueAmount !== undefined && unit.rentDueAmount !== null) ? unit.rentDueAmount : unit.rentAmount;
 
                         return (
                           <div

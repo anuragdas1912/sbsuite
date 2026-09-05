@@ -1458,7 +1458,7 @@
         feedbackEl.textContent = 'Authorized Personnel Only';
         feedbackEl.className = 'h-7 mt-3 flex items-center justify-center text-[11px] font-mono text-[#475569] tracking-wider uppercase';
         isProcessing = false;
-      }, 950);
+      }, 650);
     }
 
     function grantAccess(message, textClass, isOwner) {
@@ -1522,6 +1522,12 @@
     function lockTerminal() {
       if (navigator.vibrate) navigator.vibrate([16]);
       closeDrawer();
+      closeRenewalDrawer();
+      closeReceiptModal();
+      closeMonthlyReceiptModal();
+      closeMasterOverrideModal();
+      const overrideBtn = document.getElementById('owner-override-btn');
+      if (overrideBtn) overrideBtn.classList.add('hidden');
       closeRenewalDrawer();
       closeReceiptModal();
       closeMonthlyReceiptModal();
@@ -1593,7 +1599,7 @@
 
       const totalUnits = filteredUnits.length;
       const occupiedUnits = filteredUnits.filter(u => u.isOccupied).length;
-      const totalRentDue = filteredUnits.reduce((sum, u) => sum + (u.rentDueAmount > 0 ? u.rentDueAmount : (u.isOccupied ? u.rentAmount : 0)), 0);
+      const totalRentDue = filteredUnits.reduce((sum, u) => sum + ((u.rentDueAmount !== undefined && u.rentDueAmount !== null) ? u.rentDueAmount : (u.isOccupied ? u.rentAmount : 0)), 0);
       const pendingMetersCount = filteredUnits.filter(u => u.isOccupied && u.isReadingPending).length;
 
       document.getElementById('stat-occupancy').textContent = `${occupiedUnits}/${totalUnits}`;
@@ -1617,7 +1623,7 @@
         }
 
         const isMeterPending = unit.isReadingPending;
-        const dueAmount = unit.rentDueAmount > 0 ? unit.rentDueAmount : unit.rentAmount;
+        const dueAmount = (unit.rentDueAmount !== undefined && unit.rentDueAmount !== null) ? unit.rentDueAmount : unit.rentAmount;
 
         return `
           <div
@@ -1637,7 +1643,7 @@
             <span class="text-xs text-[#CBD5E1] truncate mt-1">${unit.tenantName}</span>
 
             <div class="mt-2.5 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono">
-              <span class="text-amber-400 font-bold">₹${dueAmount.toLocaleString('en-IN')}</span>
+              <span class="${dueAmount > 0 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}">₹${dueAmount.toLocaleString('en-IN')}${dueAmount === 0 ? ' <span class="text-[9px] text-emerald-400/80 font-normal">(चुकता)</span>' : ''}</span>
               ${isMeterPending
                 ? '<span class="text-[9px] text-cyan-300 bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/30">⚡ रीडिंग बाकी</span>'
                 : `<span class="text-[9px] text-[#64748B]">${unit.lastReading} kWh</span>`
@@ -1665,7 +1671,7 @@
       document.getElementById('drawer-units-consumed').textContent = '0';
       document.getElementById('drawer-elec-due').textContent = '₹0';
 
-      const totalRentDue = unit.rentDueAmount > 0 ? unit.rentDueAmount : unit.rentAmount;
+      const totalRentDue = (unit.rentDueAmount !== undefined && unit.rentDueAmount !== null) ? unit.rentDueAmount : unit.rentAmount;
       document.getElementById('drawer-pay-rent-due').textContent = `बकाया: ₹${totalRentDue.toLocaleString('en-IN')}`;
       document.getElementById('drawer-pay-rent-input').value = totalRentDue;
       document.getElementById('drawer-pay-elec-input').value = '0';
@@ -1782,7 +1788,7 @@
       if (!activeDrawerUnit) return;
       const rentPaid = parseInt(document.getElementById('drawer-pay-rent-input').value || '0', 10);
       const elecPaid = parseInt(document.getElementById('drawer-pay-elec-input').value || '0', 10);
-      const totalDueRent = activeDrawerUnit.rentDueAmount > 0 ? activeDrawerUnit.rentDueAmount : activeDrawerUnit.rentAmount;
+      const totalDueRent = (activeDrawerUnit.rentDueAmount !== undefined && activeDrawerUnit.rentDueAmount !== null) ? activeDrawerUnit.rentDueAmount : activeDrawerUnit.rentAmount;
       const arrearsRemaining = Math.max(0, totalDueRent - rentPaid);
       const hintEl = document.getElementById('drawer-pay-rent-arrears-hint');
 
@@ -1807,7 +1813,7 @@
 
       const rentPaid = parseInt(document.getElementById('drawer-pay-rent-input').value || '0', 10);
       const elecPaid = parseInt(document.getElementById('drawer-pay-elec-input').value || '0', 10);
-      const totalDueRent = activeDrawerUnit.rentDueAmount > 0 ? activeDrawerUnit.rentDueAmount : activeDrawerUnit.rentAmount;
+      const totalDueRent = (activeDrawerUnit.rentDueAmount !== undefined && activeDrawerUnit.rentDueAmount !== null) ? activeDrawerUnit.rentDueAmount : activeDrawerUnit.rentAmount;
       const remainingRent = Math.max(0, totalDueRent - rentPaid);
 
       activeDrawerUnit.rentDueAmount = remainingRent;
