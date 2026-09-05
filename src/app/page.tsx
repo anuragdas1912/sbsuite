@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Delete,
@@ -217,6 +218,13 @@ function VolumetricMonolith({ className = 'w-36 h-36' }: { className?: string })
   );
 }
 
+function formatDbDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return String(dateStr);
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
+
 export default function Home() {
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
   const [userRole, setUserRole] = useState<UserRole | null>(null);
@@ -250,6 +258,106 @@ export default function Home() {
     shop: 11.0,
     tuktuk: 9.0
   });
+
+  // ================= SUPABASE DATA FETCH & REALTIME BINDINGS =================
+  const fetchInitialData = useCallback(async () => {
+    try {
+      // 1. Fetch estate units
+      const { data: unitsData, error: unitsError } = await supabase
+        .from('estate_units')
+        .select('*')
+        .order('id', { ascending: true });
+
+      if (!unitsError && unitsData && unitsData.length > 0) {
+        const mappedUnits: UnitItem[] = unitsData.map((row: any) => ({
+          id: row.id,
+          name: row.name,
+          type: row.type,
+          isOccupied: Boolean(row.is_occupied),
+          tenantName: row.tenant_name || undefined,
+          rentAmount: Number(row.base_rent),
+          rentDueAmount: Number(row.rent_due_amount || 0),
+          lastReading: Number(row.last_reading || 0),
+          isReadingPending: Boolean(row.is_reading_pending),
+        }));
+        setUnits(mappedUnits);
+      }
+
+      // 2. Fetch parking subscribers
+      const { data: subsData, error: subsError } = await supabase
+        .from('parking_subscribers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!subsError && subsData && subsData.length > 0) {
+        const mappedSubs: MonthlySubscriber[] = subsData.map((row: any) => ({
+          id: row.id,
+          vehicleNumber: row.vehicle_plate,
+          ownerName: row.owner_name,
+          phone: row.phone || '',
+          category: row.category as VehicleCategory,
+          slot: row.assigned_slot || 'Open Yard',
+          passStatus: row.pass_status as 'active' | 'due',
+          validTillDate: formatDbDate(row.valid_till),
+          isParkedInside: Boolean(row.is_parked_inside),
+          lastPaidDate: formatDbDate(row.last_paid_date),
+          hasEvFacility: Boolean(row.has_ev_facility),
+          lastEvReading: Number(row.last_ev_reading || 0),
+          evDueAmount: Number(row.ev_due_amount || 0),
+        }));
+        setSubscribers(mappedSubs);
+      }
+
+      // 3. Fetch system config
+      const { data: configData, error: configError } = await supabase
+        .from('system_config')
+        .select('*');
+
+      if (!configError && configData) {
+        const tariffsRow = configData.find((c: any) => c.key === 'tariffs');
+        if (tariffsRow && tariffsRow.value) {
+          setTariffs({
+            room: Number(tariffsRow.value.room || 9.0),
+            shop: Number(tariffsRow.value.shop || 11.0),
+            tuktuk: Number(tariffsRow.value.tuktuk_ev || 9.0),
+          });
+        }
+
+        const pricingRow = configData.find((c: any) => c.key === 'parking_pricing');
+        if (pricingRow && pricingRow.value) {
+          setPricing((prev) => ({
+            car_small: { ...prev.car_small, ...pricingRow.value.car_small },
+            car_large: { ...prev.car_large, ...pricingRow.value.car_large },
+            heavy:     { ...prev.heavy,     ...pricingRow.value.heavy },
+            tuktuk:    { ...prev.tuktuk,    ...pricingRow.value.tuktuk },
+          }));
+        }
+      }
+    } catch (err) {
+      console.warn('Initial data load error:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchInitialData();
+
+    const channel = supabase
+      .channel('public_db_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estate_units' }, () => {
+        fetchInitialData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'parking_subscribers' }, () => {
+        fetchInitialData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'system_config' }, () => {
+        fetchInitialData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchInitialData]);
 
   // Financial Split Ledger
   const [totalParkingCollected, setTotalParkingCollected] = useState<number>(26500);
@@ -326,9 +434,24 @@ export default function Home() {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate([14]);
     }
-    setSubscribers((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, isParkedInside: !s.isParkedInside } : s))
-    );
+    const sub = subscribers.find((s) => s.id === id);
+    if (sub) {
+      const nextInside = !sub.isParkedInside;
+      setSubscribers((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, isParkedInside: nextInside } : s))
+      );
+      // Live Supabase Mutation: Update Field Presence
+      supabase
+        .from('parking_subscribers')
+        .update({
+          is_parked_inside: nextInside,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .then(({ error }) => {
+          if (error) console.error('Error updating presence in DB:', error);
+        });
+    }
   };
 
   // Issue New Monthly Pass (Flexible Category Pricing)
@@ -367,6 +490,54 @@ export default function Home() {
     setTotalParkingCollected((prev) => prev + currentCatPrice.fee);
     setOwnerParkingShare((prev) => prev + currentCatPrice.owner);
     setRitinParkingCut((prev) => prev + currentCatPrice.ritin);
+
+    // Live Supabase Mutation: Insert Subscriber & Collections Ledger
+    if (supabase) {
+      supabase
+        .from('parking_subscribers')
+        .insert({
+          vehicle_plate: trimmedPlate,
+          owner_name: trimmedName,
+          phone: newPhone.trim() || '',
+          category: newCategory,
+          assigned_slot: slotAssigned,
+          pass_status: 'active',
+          valid_till: expiry.toISOString(),
+          last_paid_date: today.toISOString(),
+          is_parked_inside: true,
+          has_ev_facility: hasEv,
+          last_ev_reading: initialReading,
+          ev_due_amount: 0,
+        })
+        .select()
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error inserting subscriber in DB:', error);
+            return;
+          }
+          if (data) {
+            setSubscribers((prev) =>
+              prev.map((s) => (s.id === newSub.id ? { ...s, id: data.id } : s))
+            );
+          }
+        });
+
+      supabase
+        .from('collections_ledger')
+        .insert({
+          source_type: 'parking_pass',
+          source_id: trimmedPlate,
+          total_cash: currentCatPrice.fee,
+          owner_share: currentCatPrice.owner,
+          ritin_commission: currentCatPrice.ritin,
+          note: `मासिक पास - ${trimmedPlate} (${currentCatPrice.label})`,
+          received_by: userRole || 'staff',
+        })
+        .then(({ error }) => {
+          if (error) console.error('Error recording pass in ledger:', error);
+        });
+    }
 
     setNewVehicleNumber('');
     setNewOwnerName('');
@@ -481,6 +652,81 @@ export default function Home() {
       })
     );
 
+    // Live Supabase Mutation: Update Subscriber & Ledger
+    if (supabase) {
+      const updatePayload: any = {
+        assigned_slot: newSlot,
+        last_ev_reading: newEvReading,
+        ev_due_amount: newEvArrears,
+        updated_at: new Date().toISOString(),
+      };
+      if (passPaid > 0) {
+        updatePayload.pass_status = 'active';
+        updatePayload.valid_till = expiry.toISOString();
+        updatePayload.last_paid_date = today.toISOString();
+      }
+      supabase
+        .from('parking_subscribers')
+        .update(updatePayload)
+        .eq('id', sub.id)
+        .then(({ error }) => {
+          if (error) console.error('Error renewing subscriber in DB:', error);
+        });
+
+      if (passPaid > 0) {
+        supabase
+          .from('collections_ledger')
+          .insert({
+            source_type: 'parking_pass',
+            source_id: sub.vehicleNumber,
+            total_cash: passPaid,
+            owner_share: catPrice.owner,
+            ritin_commission: catPrice.ritin,
+            note: `मासिक पास नवीनीकरण - ${sub.vehicleNumber} (${catPrice.label})`,
+            received_by: userRole || 'staff',
+          })
+          .then(({ error }) => {
+            if (error) console.error('Error recording renewal pass in ledger:', error);
+          });
+      }
+
+      if (evPaid > 0) {
+        supabase
+          .from('collections_ledger')
+          .insert({
+            source_type: 'tuktuk_charging',
+            source_id: sub.vehicleNumber,
+            total_cash: evPaid,
+            owner_share: evPaid,
+            ritin_commission: 0,
+            note: `ई-रिक्शा चार्जिंग बिजली बिल - ${sub.vehicleNumber}`,
+            received_by: userRole || 'staff',
+          })
+          .then(({ error }) => {
+            if (error) console.error('Error recording tuktuk charging in ledger:', error);
+          });
+      }
+
+      if (sub.hasEvFacility && newEvReading > (sub.lastEvReading || 0)) {
+        const consumed = newEvReading - (sub.lastEvReading || 0);
+        supabase
+          .from('meter_readings_log')
+          .insert({
+            target_type: 'tuktuk_ev',
+            target_id: sub.id,
+            prev_reading: sub.lastEvReading || 0,
+            curr_reading: newEvReading,
+            units_consumed: consumed,
+            tariff_rate: tariffs.tuktuk,
+            total_bill: consumed * tariffs.tuktuk,
+            recorded_by: userRole || 'staff',
+          })
+          .then(({ error }) => {
+            if (error) console.error('Error logging EV meter reading in DB:', error);
+          });
+      }
+    }
+
     const isEvOnly = passPaid === 0 && evPaid > 0 && sub.hasEvFacility;
     const isCombined = passPaid > 0 && evPaid > 0;
 
@@ -540,14 +786,19 @@ export default function Home() {
   };
 
   const handleApplyMasterOverrides = () => {
+    const newRent = parseInt(overrideUnitRent, 10);
+    const newDue = parseInt(overrideUnitDue, 10) || 0;
+    const newSlotVal = overrideSubSlot.trim();
+    const newEvDueVal = parseInt(overrideSubEvDue, 10) || 0;
+
     // 1. Update Unit
     setUnits((prev) =>
       prev.map((u) =>
         u.id === overrideSelectedUnitId
           ? {
               ...u,
-              rentAmount: parseInt(overrideUnitRent, 10) || u.rentAmount,
-              rentDueAmount: parseInt(overrideUnitDue, 10) || 0,
+              rentAmount: isNaN(newRent) ? u.rentAmount : newRent,
+              rentDueAmount: newDue,
             }
           : u
       )
@@ -559,12 +810,74 @@ export default function Home() {
         s.id === overrideSelectedSubId
           ? {
               ...s,
-              slot: overrideSubSlot.trim() || s.slot,
-              evDueAmount: parseInt(overrideSubEvDue, 10) || 0,
+              slot: newSlotVal || s.slot,
+              evDueAmount: newEvDueVal,
             }
           : s
       )
     );
+
+    // Supabase Live Sync
+    if (supabase) {
+      // 1. Persist Tariffs
+      supabase
+        .from('system_config')
+        .upsert({
+          key: 'tariffs',
+          value: { room: tariffs.room, shop: tariffs.shop, tuktuk_ev: tariffs.tuktuk },
+          updated_at: new Date().toISOString(),
+        })
+        .then(({ error }) => {
+          if (error) console.error('Error persisting tariffs:', error);
+        });
+
+      // 2. Persist Parking Pricing
+      supabase
+        .from('system_config')
+        .upsert({
+          key: 'parking_pricing',
+          value: {
+            car_small: { fee: pricing.car_small.fee, owner: pricing.car_small.owner, ritin: pricing.car_small.ritin },
+            car_large: { fee: pricing.car_large.fee, owner: pricing.car_large.owner, ritin: pricing.car_large.ritin },
+            heavy: { fee: pricing.heavy.fee, owner: pricing.heavy.owner, ritin: pricing.heavy.ritin },
+            tuktuk: { fee: pricing.tuktuk.fee, owner: pricing.tuktuk.owner, ritin: pricing.tuktuk.ritin },
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .then(({ error }) => {
+          if (error) console.error('Error persisting parking pricing:', error);
+        });
+
+      // 3. Persist Unit Overrides
+      if (overrideSelectedUnitId) {
+        supabase
+          .from('estate_units')
+          .update({
+            base_rent: isNaN(newRent) ? undefined : newRent,
+            rent_due_amount: newDue,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', overrideSelectedUnitId)
+          .then(({ error }) => {
+            if (error) console.error('Error updating unit in DB:', error);
+          });
+      }
+
+      // 4. Persist Subscriber Overrides
+      if (overrideSelectedSubId) {
+        supabase
+          .from('parking_subscribers')
+          .update({
+            assigned_slot: newSlotVal || undefined,
+            ev_due_amount: newEvDueVal,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', overrideSelectedSubId)
+          .then(({ error }) => {
+            if (error) console.error('Error updating subscriber in DB:', error);
+          });
+      }
+    }
 
     setIsMasterOverrideOpen(false);
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -632,6 +945,10 @@ export default function Home() {
 
   const handleSaveReadingOnly = () => {
     if (!canSaveReading || !selectedUnit || currentReadingNum === null) return;
+    const prevReading = selectedUnit.lastReading;
+    const consumedUnits = currentReadingNum - prevReading;
+    const bill = consumedUnits * tariffRate;
+
     setUnits((prev) =>
       prev.map((u) =>
         u.id === selectedUnit.id
@@ -639,6 +956,38 @@ export default function Home() {
           : u
       )
     );
+
+    // Live Supabase Mutation: Update Unit Reading
+    supabase
+      .from('estate_units')
+      .update({
+        last_reading: currentReadingNum,
+        is_reading_pending: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', selectedUnit.id)
+      .then(({ error }) => {
+        if (error) console.error('Error updating unit reading in DB:', error);
+      });
+
+    // Live Supabase Mutation: Log Sub-Meter Reading
+    supabase
+      .from('meter_readings_log')
+      .insert({
+        target_type: 'unit',
+        target_id: selectedUnit.id,
+        prev_reading: prevReading,
+        curr_reading: currentReadingNum,
+        units_consumed: consumedUnits,
+        tariff_rate: tariffRate,
+        total_bill: bill,
+        photo_url: meterPhotoUrl,
+        recorded_by: userRole || 'staff',
+      })
+      .then(({ error }) => {
+        if (error) console.error('Error logging meter reading in DB:', error);
+      });
+
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate([24, 30, 24]);
     }
@@ -666,6 +1015,77 @@ export default function Home() {
         return u;
       })
     );
+
+    // Live Supabase Mutation: Update Unit Rent & Meter State
+    supabase
+      .from('estate_units')
+      .update({
+        rent_due_amount: remainingRentDue,
+        last_reading: newLastReading,
+        is_reading_pending: hasValidReading ? false : (elecPaidNum > 0 ? false : selectedUnit.isReadingPending),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', selectedUnit.id)
+      .then(({ error }) => {
+        if (error) console.error('Error updating unit payment in DB:', error);
+      });
+
+    // Live Supabase Mutation: Record Rent Collection in Ledger
+    if (rentPaidNum > 0) {
+      supabase
+        .from('collections_ledger')
+        .insert({
+          source_type: 'estate_rent',
+          source_id: selectedUnit.id,
+          total_cash: rentPaidNum,
+          owner_share: rentPaidNum,
+          ritin_commission: 0,
+          note: `किराया जमा - ${selectedUnit.name} (${selectedUnit.tenantName || ''})`,
+          received_by: userRole || 'staff',
+        })
+        .then(({ error }) => {
+          if (error) console.error('Error recording rent in ledger:', error);
+        });
+    }
+
+    // Live Supabase Mutation: Record Electricity Collection in Ledger
+    if (elecPaidNum > 0) {
+      supabase
+        .from('collections_ledger')
+        .insert({
+          source_type: 'estate_electricity',
+          source_id: selectedUnit.id,
+          total_cash: elecPaidNum,
+          owner_share: elecPaidNum,
+          ritin_commission: 0,
+          note: `बिजली बिल जमा - ${selectedUnit.name}`,
+          received_by: userRole || 'staff',
+        })
+        .then(({ error }) => {
+          if (error) console.error('Error recording elec in ledger:', error);
+        });
+    }
+
+    // Live Supabase Mutation: Log Sub-Meter Reading if Taken
+    if (hasValidReading && currentNum !== null) {
+      const consumedUnits = currentNum - prevReading;
+      supabase
+        .from('meter_readings_log')
+        .insert({
+          target_type: 'unit',
+          target_id: selectedUnit.id,
+          prev_reading: prevReading,
+          curr_reading: currentNum,
+          units_consumed: consumedUnits,
+          tariff_rate: tariffRate,
+          total_bill: consumedUnits * tariffRate,
+          photo_url: meterPhotoUrl,
+          recorded_by: userRole || 'staff',
+        })
+        .then(({ error }) => {
+          if (error) console.error('Error logging meter reading in DB:', error);
+        });
+    }
 
     const today = new Date();
     const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
