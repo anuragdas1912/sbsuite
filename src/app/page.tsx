@@ -36,12 +36,17 @@ export interface UnitItem {
   isReadingPending: boolean;
 }
 
-export interface ParkedVehicle {
+export interface MonthlySubscriber {
   id: string;
   vehicleNumber: string;
+  ownerName: string;
+  phone?: string;
   type: 'bike' | 'car';
-  entryTimestamp: number;
-  entryTimeFormatted: string;
+  passStatus: 'active' | 'due';
+  validTillDate: string;
+  isParkedInside: boolean;
+  lastPaidDate: string;
+  monthlyFee: number;
 }
 
 const PARKING_CAPACITY = {
@@ -49,71 +54,45 @@ const PARKING_CAPACITY = {
   car: 10,
 };
 
-function calculateParkingFare(type: 'bike' | 'car', durationMinutes: number) {
-  const baseMinutes = 120;
-  if (type === 'bike') {
-    const baseFare = 20;
-    const hourlyRate = 10;
-    if (durationMinutes <= baseMinutes) {
-      return { fare: baseFare, baseHours: 2, rateDescription: 'Base: ₹20 (पहला 2 घंटा)' };
-    }
-    const extraMinutes = durationMinutes - baseMinutes;
-    const extraHours = Math.ceil(extraMinutes / 60);
-    return {
-      fare: baseFare + extraHours * hourlyRate,
-      baseHours: 2,
-      rateDescription: `Base ₹20 (2hr) + ₹${extraHours * hourlyRate} (${extraHours} घंटा @ ₹10)`,
-    };
-  } else {
-    const baseFare = 40;
-    const hourlyRate = 20;
-    if (durationMinutes <= baseMinutes) {
-      return { fare: baseFare, baseHours: 2, rateDescription: 'Base: ₹40 (पहला 2 घंटा)' };
-    }
-    const extraMinutes = durationMinutes - baseMinutes;
-    const extraHours = Math.ceil(extraMinutes / 60);
-    return {
-      fare: baseFare + extraHours * hourlyRate,
-      baseHours: 2,
-      rateDescription: `Base ₹40 (2hr) + ₹${extraHours * hourlyRate} (${extraHours} घंटा @ ₹20)`,
-    };
-  }
-}
+const MONTHLY_FEE = 700;
+const OWNER_SHARE = 500;
+const MANAGER_COMMISSION = 200;
 
-function formatDurationHindi(minutes: number): string {
-  const hrs = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hrs === 0) return `${mins} मिनट`;
-  if (mins === 0) return `${hrs} घंटा`;
-  return `${hrs} घंटा ${mins} मिनट`;
-}
+// Seed 22 Bikes (19 Active, 3 Due) and 8 Cars (7 Active, 1 Due) = 30 Subscribers (26 Active, 4 Due)
+const INITIAL_SUBSCRIBERS: MonthlySubscriber[] = [
+  // 8 Cars (Capacity: 10, Active: 7, Due: 1)
+  { id: 'sub-c1', vehicleNumber: 'UK 06 AB 1912', ownerName: 'राजेश कुमार', phone: '98371-20411', type: 'car', passStatus: 'active', validTillDate: '30/09/2026', isParkedInside: true, lastPaidDate: '01/09/2026', monthlyFee: 700 },
+  { id: 'sub-c2', vehicleNumber: 'UK 06 CD 4589', ownerName: 'अमित सिब्बल', phone: '94120-88320', type: 'car', passStatus: 'active', validTillDate: '28/09/2026', isParkedInside: true, lastPaidDate: '29/08/2026', monthlyFee: 700 },
+  { id: 'sub-c3', vehicleNumber: 'DL 01 AX 7721', ownerName: 'डॉ. पी. के. शर्मा', phone: '98102-34901', type: 'car', passStatus: 'active', validTillDate: '04/10/2026', isParkedInside: false, lastPaidDate: '05/09/2026', monthlyFee: 700 },
+  { id: 'sub-c4', vehicleNumber: 'UP 25 BE 3390', ownerName: 'विक्रम सिंह राणा', phone: '97190-44120', type: 'car', passStatus: 'active', validTillDate: '22/09/2026', isParkedInside: true, lastPaidDate: '23/08/2026', monthlyFee: 700 },
+  { id: 'sub-c5', vehicleNumber: 'UK 04 F 9012', ownerName: 'दीपक बिष्ट', phone: '99270-11234', type: 'car', passStatus: 'due', validTillDate: '02/09/2026', isParkedInside: true, lastPaidDate: '03/08/2026', monthlyFee: 700 },
+  { id: 'sub-c6', vehicleNumber: 'HR 26 DQ 1104', ownerName: 'संजय ग्रोवर', phone: '98114-55092', type: 'car', passStatus: 'active', validTillDate: '15/09/2026', isParkedInside: false, lastPaidDate: '16/08/2026', monthlyFee: 700 },
+  { id: 'sub-c7', vehicleNumber: 'UK 06 AE 7780', ownerName: 'मनीष अग्रवाल', phone: '94111-78902', type: 'car', passStatus: 'active', validTillDate: '01/10/2026', isParkedInside: true, lastPaidDate: '02/09/2026', monthlyFee: 700 },
+  { id: 'sub-c8', vehicleNumber: 'UP 22 M 2244', ownerName: 'अनिल रस्तोगी', phone: '96340-99812', type: 'car', passStatus: 'active', validTillDate: '26/09/2026', isParkedInside: true, lastPaidDate: '27/08/2026', monthlyFee: 700 },
 
-const INITIAL_PARKED_VEHICLES: ParkedVehicle[] = [
-  { id: 'pv-01', vehicleNumber: 'UK 06 AB 1912', type: 'car', entryTimestamp: Date.now() - 145 * 60000, entryTimeFormatted: '02:45 PM' },
-  { id: 'pv-02', vehicleNumber: 'UK 06 CD 4589', type: 'car', entryTimestamp: Date.now() - 110 * 60000, entryTimeFormatted: '03:20 PM' },
-  { id: 'pv-03', vehicleNumber: 'DL 01 AX 7721', type: 'car', entryTimestamp: Date.now() - 75 * 60000, entryTimeFormatted: '03:55 PM' },
-  { id: 'pv-04', vehicleNumber: 'UP 25 BE 3390', type: 'car', entryTimestamp: Date.now() - 50 * 60000, entryTimeFormatted: '04:20 PM' },
-  { id: 'pv-05', vehicleNumber: 'UK 04 F 9012', type: 'car', entryTimestamp: Date.now() - 35 * 60000, entryTimeFormatted: '04:35 PM' },
-  { id: 'pv-06', vehicleNumber: 'HR 26 DQ 1104', type: 'car', entryTimestamp: Date.now() - 15 * 60000, entryTimeFormatted: '04:55 PM' },
-
-  { id: 'pv-07', vehicleNumber: 'UK 06 M 1289', type: 'bike', entryTimestamp: Date.now() - 180 * 60000, entryTimeFormatted: '02:10 PM' },
-  { id: 'pv-08', vehicleNumber: 'UK 06 K 8820', type: 'bike', entryTimestamp: Date.now() - 160 * 60000, entryTimeFormatted: '02:30 PM' },
-  { id: 'pv-09', vehicleNumber: 'UK 06 Q 3411', type: 'bike', entryTimestamp: Date.now() - 135 * 60000, entryTimeFormatted: '02:55 PM' },
-  { id: 'pv-10', vehicleNumber: 'UK 06 J 5678', type: 'bike', entryTimestamp: Date.now() - 120 * 60000, entryTimeFormatted: '03:10 PM' },
-  { id: 'pv-11', vehicleNumber: 'UP 22 R 9912', type: 'bike', entryTimestamp: Date.now() - 105 * 60000, entryTimeFormatted: '03:25 PM' },
-  { id: 'pv-12', vehicleNumber: 'UK 06 L 4120', type: 'bike', entryTimestamp: Date.now() - 95 * 60000, entryTimeFormatted: '03:35 PM' },
-  { id: 'pv-13', vehicleNumber: 'UK 06 H 2234', type: 'bike', entryTimestamp: Date.now() - 85 * 60000, entryTimeFormatted: '03:45 PM' },
-  { id: 'pv-14', vehicleNumber: 'UK 06 N 7781', type: 'bike', entryTimestamp: Date.now() - 70 * 60000, entryTimeFormatted: '04:00 PM' },
-  { id: 'pv-15', vehicleNumber: 'UK 06 P 1904', type: 'bike', entryTimestamp: Date.now() - 65 * 60000, entryTimeFormatted: '04:05 PM' },
-  { id: 'pv-16', vehicleNumber: 'UP 21 Z 6652', type: 'bike', entryTimestamp: Date.now() - 55 * 60000, entryTimeFormatted: '04:15 PM' },
-  { id: 'pv-17', vehicleNumber: 'UK 06 G 3310', type: 'bike', entryTimestamp: Date.now() - 48 * 60000, entryTimeFormatted: '04:22 PM' },
-  { id: 'pv-18', vehicleNumber: 'UK 06 S 8890', type: 'bike', entryTimestamp: Date.now() - 40 * 60000, entryTimeFormatted: '04:30 PM' },
-  { id: 'pv-19', vehicleNumber: 'UK 06 T 1209', type: 'bike', entryTimestamp: Date.now() - 32 * 60000, entryTimeFormatted: '04:38 PM' },
-  { id: 'pv-20', vehicleNumber: 'UK 04 D 7715', type: 'bike', entryTimestamp: Date.now() - 25 * 60000, entryTimeFormatted: '04:45 PM' },
-  { id: 'pv-21', vehicleNumber: 'UK 06 W 4429', type: 'bike', entryTimestamp: Date.now() - 20 * 60000, entryTimeFormatted: '04:50 PM' },
-  { id: 'pv-22', vehicleNumber: 'UK 06 B 8802', type: 'bike', entryTimestamp: Date.now() - 14 * 60000, entryTimeFormatted: '04:56 PM' },
-  { id: 'pv-23', vehicleNumber: 'UK 06 E 5519', type: 'bike', entryTimestamp: Date.now() - 8 * 60000, entryTimeFormatted: '05:02 PM' },
-  { id: 'pv-24', vehicleNumber: 'UK 06 X 3108', type: 'bike', entryTimestamp: Date.now() - 3 * 60000, entryTimeFormatted: '05:07 PM' },
+  // 22 Bikes (Capacity: 30, Active: 19, Due: 3)
+  { id: 'sub-b01', vehicleNumber: 'UK 06 M 1289', ownerName: 'राहुल यादव', phone: '95570-33412', type: 'bike', passStatus: 'active', validTillDate: '30/09/2026', isParkedInside: true, lastPaidDate: '01/09/2026', monthlyFee: 700 },
+  { id: 'sub-b02', vehicleNumber: 'UK 06 K 8820', ownerName: 'सूरज कश्यप', phone: '97580-22109', type: 'bike', passStatus: 'active', validTillDate: '27/09/2026', isParkedInside: true, lastPaidDate: '28/08/2026', monthlyFee: 700 },
+  { id: 'sub-b03', vehicleNumber: 'UK 06 Q 3411', ownerName: 'मोहम्मद इरफ़ान', phone: '98971-88410', type: 'bike', passStatus: 'due', validTillDate: '01/09/2026', isParkedInside: true, lastPaidDate: '02/08/2026', monthlyFee: 700 },
+  { id: 'sub-b04', vehicleNumber: 'UK 06 J 5678', ownerName: 'कमल तिवारी', phone: '94121-66782', type: 'bike', passStatus: 'active', validTillDate: '03/10/2026', isParkedInside: true, lastPaidDate: '04/09/2026', monthlyFee: 700 },
+  { id: 'sub-b05', vehicleNumber: 'UP 22 R 9912', ownerName: 'प्रमोद मौर्या', phone: '97198-44510', type: 'bike', passStatus: 'active', validTillDate: '20/09/2026', isParkedInside: false, lastPaidDate: '21/08/2026', monthlyFee: 700 },
+  { id: 'sub-b06', vehicleNumber: 'UK 06 L 4120', ownerName: 'रोहित जोशी', phone: '98375-99014', type: 'bike', passStatus: 'active', validTillDate: '25/09/2026', isParkedInside: true, lastPaidDate: '26/08/2026', monthlyFee: 700 },
+  { id: 'sub-b07', vehicleNumber: 'UK 06 H 2234', ownerName: 'अशोक सैनी', phone: '94560-12345', type: 'bike', passStatus: 'active', validTillDate: '29/09/2026', isParkedInside: true, lastPaidDate: '30/08/2026', monthlyFee: 700 },
+  { id: 'sub-b08', vehicleNumber: 'UK 06 N 7781', ownerName: 'हरीश चंदोला', phone: '99271-88231', type: 'bike', passStatus: 'due', validTillDate: '04/09/2026', isParkedInside: true, lastPaidDate: '05/08/2026', monthlyFee: 700 },
+  { id: 'sub-b09', vehicleNumber: 'UK 06 P 1904', ownerName: 'दिनेश गंगवार', phone: '95480-77123', type: 'bike', passStatus: 'active', validTillDate: '18/09/2026', isParkedInside: true, lastPaidDate: '19/08/2026', monthlyFee: 700 },
+  { id: 'sub-b10', vehicleNumber: 'UP 21 Z 6652', ownerName: 'मुकेश सक्सेना', phone: '98970-11945', type: 'bike', passStatus: 'active', validTillDate: '23/09/2026', isParkedInside: false, lastPaidDate: '24/08/2026', monthlyFee: 700 },
+  { id: 'sub-b11', vehicleNumber: 'UK 06 G 3310', ownerName: 'प्रवीण रावत', phone: '94129-33821', type: 'bike', passStatus: 'active', validTillDate: '02/10/2026', isParkedInside: true, lastPaidDate: '03/09/2026', monthlyFee: 700 },
+  { id: 'sub-b12', vehicleNumber: 'UK 06 S 8890', ownerName: 'गौरव पाल', phone: '97600-44912', type: 'bike', passStatus: 'active', validTillDate: '19/09/2026', isParkedInside: true, lastPaidDate: '20/08/2026', monthlyFee: 700 },
+  { id: 'sub-b13', vehicleNumber: 'UK 06 T 1209', ownerName: 'अनिल नेगी', phone: '98378-55410', type: 'bike', passStatus: 'active', validTillDate: '30/09/2026', isParkedInside: true, lastPaidDate: '01/09/2026', monthlyFee: 700 },
+  { id: 'sub-b14', vehicleNumber: 'UK 04 D 7715', ownerName: 'भूपेश आर्य', phone: '94117-66230', type: 'bike', passStatus: 'active', validTillDate: '24/09/2026', isParkedInside: false, lastPaidDate: '25/08/2026', monthlyFee: 700 },
+  { id: 'sub-b15', vehicleNumber: 'UK 06 W 4429', ownerName: 'राजू वर्मा', phone: '95577-11290', type: 'bike', passStatus: 'active', validTillDate: '28/09/2026', isParkedInside: true, lastPaidDate: '29/08/2026', monthlyFee: 700 },
+  { id: 'sub-b16', vehicleNumber: 'UK 06 B 8802', ownerName: 'गोपाल धामी', phone: '97192-33410', type: 'bike', passStatus: 'due', validTillDate: '03/09/2026', isParkedInside: true, lastPaidDate: '04/08/2026', monthlyFee: 700 },
+  { id: 'sub-b17', vehicleNumber: 'UK 06 E 5519', ownerName: 'मनोज पांडे', phone: '98976-44120', type: 'bike', passStatus: 'active', validTillDate: '21/09/2026', isParkedInside: true, lastPaidDate: '22/08/2026', monthlyFee: 700 },
+  { id: 'sub-b18', vehicleNumber: 'UK 06 X 3108', ownerName: 'सतीश चौहान', phone: '94125-88910', type: 'bike', passStatus: 'active', validTillDate: '01/10/2026', isParkedInside: true, lastPaidDate: '02/09/2026', monthlyFee: 700 },
+  { id: 'sub-b19', vehicleNumber: 'UK 06 Y 4901', ownerName: 'आनंद भट्ट', phone: '97611-22890', type: 'bike', passStatus: 'active', validTillDate: '17/09/2026', isParkedInside: true, lastPaidDate: '18/08/2026', monthlyFee: 700 },
+  { id: 'sub-b20', vehicleNumber: 'UP 22 K 6720', ownerName: 'विशाल गुप्ता', phone: '98370-11456', type: 'bike', passStatus: 'active', validTillDate: '26/09/2026', isParkedInside: false, lastPaidDate: '27/08/2026', monthlyFee: 700 },
+  { id: 'sub-b21', vehicleNumber: 'UK 06 Z 1150', ownerName: 'तपन अधिकारी', phone: '94580-99231', type: 'bike', passStatus: 'active', validTillDate: '29/09/2026', isParkedInside: true, lastPaidDate: '30/08/2026', monthlyFee: 700 },
+  { id: 'sub-b22', vehicleNumber: 'UK 06 AA 8210', ownerName: 'ललित शर्मा', phone: '99275-33120', type: 'bike', passStatus: 'active', validTillDate: '04/10/2026', isParkedInside: true, lastPaidDate: '05/09/2026', monthlyFee: 700 },
 ];
 
 const STATIC_UNITS: UnitItem[] = [
@@ -325,131 +304,118 @@ export default function Home() {
   const [currentReadingInput, setCurrentReadingInput] = useState<string>('');
   const [meterPhotoUrl, setMeterPhotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // ================= COMMERCIAL PARKING GATE STATE =================
+  // ================= COMMERCIAL PARKING MONTHLY PASS STATE =================
   const [activeModule, setActiveModule] = useState<'units' | 'parking'>('units');
-  const [parkedVehicles, setParkedVehicles] = useState<ParkedVehicle[]>(INITIAL_PARKED_VEHICLES);
-  const [shiftParkingCash, setShiftParkingCash] = useState<number>(1640);
-  const [entryVehicleType, setEntryVehicleType] = useState<'bike' | 'car'>('bike');
-  const [vehicleNumberInput, setVehicleNumberInput] = useState<string>('');
+  const [subscribers, setSubscribers] = useState<MonthlySubscriber[]>(INITIAL_SUBSCRIBERS);
+
+  // Financial Split Ledger: 26 active paid passes = ₹18,200 collected (Owner: ₹13,000, Ritin: ₹5,200)
+  const [totalParkingCollected, setTotalParkingCollected] = useState<number>(18200);
+  const [ownerParkingShare, setOwnerParkingShare] = useState<number>(13000);
+  const [ritinParkingCut, setRitinParkingCut] = useState<number>(5200);
+
+  // New Pass Issuance Form
+  const [newVehicleType, setNewVehicleType] = useState<'bike' | 'car'>('bike');
+  const [newVehicleNumber, setNewVehicleNumber] = useState<string>('');
+  const [newOwnerName, setNewOwnerName] = useState<string>('');
+  const [newPhone, setNewPhone] = useState<string>('');
+
   const [parkingSearchQuery, setParkingSearchQuery] = useState<string>('');
-  const [currentTimeTick, setCurrentTimeTick] = useState<number>(Date.now());
-  const [selectedVehicleForExit, setSelectedVehicleForExit] = useState<ParkedVehicle | null>(null);
+  const [selectedSubForRenewal, setSelectedSubForRenewal] = useState<MonthlySubscriber | null>(null);
 
-  interface EntrySlipPayload {
+  interface MonthlyReceiptPayload {
     vehicleNumber: string;
+    ownerName: string;
     typeText: string;
-    timeText: string;
     dateText: string;
+    validityText: string;
+    amount: number;
+    ownerNet: number;
+    ritinCut: number;
     whatsappUrl: string;
     smsUrl: string;
     rawText: string;
   }
-  const [activeEntrySlip, setActiveEntrySlip] = useState<EntrySlipPayload | null>(null);
+  const [activeMonthlyReceipt, setActiveMonthlyReceipt] = useState<MonthlyReceiptPayload | null>(null);
 
-  interface ExitReceiptPayload {
-    vehicleNumber: string;
-    typeText: string;
-    inTime: string;
-    outTime: string;
-    durationText: string;
-    fare: number;
-    dateText: string;
-    whatsappUrl: string;
-    smsUrl: string;
-    rawText: string;
-  }
-  const [activeExitReceipt, setActiveExitReceipt] = useState<ExitReceiptPayload | null>(null);
-
-  // Periodic timer to keep parking duration counters updated live
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTimeTick(Date.now()), 30000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const bikeCount = useMemo(() => parkedVehicles.filter((v) => v.type === 'bike').length, [parkedVehicles]);
-  const carCount = useMemo(() => parkedVehicles.filter((v) => v.type === 'car').length, [parkedVehicles]);
+  // Slot capacity
+  const bikeCount = useMemo(() => subscribers.filter((s) => s.type === 'bike').length, [subscribers]);
+  const carCount = useMemo(() => subscribers.filter((s) => s.type === 'car').length, [subscribers]);
   const isBikeFull = bikeCount >= PARKING_CAPACITY.bike;
   const isCarFull = carCount >= PARKING_CAPACITY.car;
-  const isCurrentCategoryFull = entryVehicleType === 'bike' ? isBikeFull : isCarFull;
+  const isSelectedCategoryFull = newVehicleType === 'bike' ? isBikeFull : isCarFull;
 
-  const filteredParkedVehicles = useMemo(() => {
-    if (!parkingSearchQuery.trim()) return parkedVehicles;
+  const activePassCount = useMemo(() => subscribers.filter((s) => s.passStatus === 'active').length, [subscribers]);
+  const duePassCount = useMemo(() => subscribers.filter((s) => s.passStatus === 'due').length, [subscribers]);
+
+  const filteredSubscribers = useMemo(() => {
+    if (!parkingSearchQuery.trim()) return subscribers;
     const q = parkingSearchQuery.trim().toUpperCase();
-    return parkedVehicles.filter((v) => v.vehicleNumber.toUpperCase().includes(q));
-  }, [parkedVehicles, parkingSearchQuery]);
+    return subscribers.filter((s) =>
+      s.vehicleNumber.toUpperCase().includes(q) ||
+      s.ownerName.toUpperCase().includes(q) ||
+      (s.phone && s.phone.includes(q))
+    );
+  }, [subscribers, parkingSearchQuery]);
 
-  const handleCheckInVehicle = () => {
-    const trimmed = vehicleNumberInput.trim().toUpperCase();
-    if (!trimmed || trimmed.length < 3) return;
-    if (entryVehicleType === 'bike' && isBikeFull) return;
-    if (entryVehicleType === 'car' && isCarFull) return;
-
-    const now = new Date();
-    const timeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    const dateText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
-    const typeText = entryVehicleType === 'bike' ? 'बाइक' : 'कार';
-
-    const newVehicle: ParkedVehicle = {
-      id: `pv-${Date.now()}`,
-      vehicleNumber: trimmed,
-      type: entryVehicleType,
-      entryTimestamp: now.getTime(),
-      entryTimeFormatted: timeFormatted,
-    };
-
-    setParkedVehicles((prev) => [newVehicle, ...prev]);
-    setVehicleNumberInput('');
-
-    const slipText = `श्री बालाजी पार्किंग (रुद्रपुर)
-प्रवेश पर्ची (Entry Slip)
-वाहन: [${trimmed}] (${typeText})
-समय: [${timeFormatted} | ${dateText}]
-कृपया पर्ची सुरक्षित रखें।`;
-
-    const encoded = encodeURIComponent(slipText);
-    const whatsappUrl = `https://wa.me/?text=${encoded}`;
-    const smsUrl = `sms:?body=${encoded}`;
-
+  // 1-Tap Field Presence Toggle (अंदर vs बाहर)
+  const handleTogglePresence = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate([18, 30, 24]);
+      navigator.vibrate([14]);
     }
-
-    setActiveEntrySlip({
-      vehicleNumber: trimmed,
-      typeText,
-      timeText: timeFormatted,
-      dateText,
-      whatsappUrl,
-      smsUrl,
-      rawText: slipText,
-    });
+    setSubscribers((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, isParkedInside: !s.isParkedInside } : s))
+    );
   };
 
-  const handleExitVehicle = () => {
-    if (!selectedVehicleForExit) return;
+  // Issue New Monthly Pass (Flat ₹700 Split)
+  const handleIssueNewPass = () => {
+    const trimmedPlate = newVehicleNumber.trim().toUpperCase();
+    const trimmedName = newOwnerName.trim();
+    if (!trimmedPlate || trimmedPlate.length < 3 || !trimmedName) return;
+    if (isSelectedCategoryFull) return;
 
-    const now = new Date();
-    const outTimeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    const dateText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
-    const typeText = selectedVehicleForExit.type === 'bike' ? 'बाइक' : 'कार';
+    const today = new Date();
+    const expiry = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const dateText = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+    const expiryText = `${String(expiry.getDate()).padStart(2, '0')}/${String(expiry.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+    const typeText = newVehicleType === 'bike' ? 'बाइक' : 'कार';
 
-    const durationMs = Math.max(0, now.getTime() - selectedVehicleForExit.entryTimestamp);
-    const durationMinutes = Math.max(1, Math.floor(durationMs / 60000));
-    const durationText = formatDurationHindi(durationMinutes);
-    const { fare } = calculateParkingFare(selectedVehicleForExit.type, durationMinutes);
+    const newSub: MonthlySubscriber = {
+      id: `sub-${Date.now()}`,
+      vehicleNumber: trimmedPlate,
+      ownerName: trimmedName,
+      phone: newPhone.trim() || undefined,
+      type: newVehicleType,
+      passStatus: 'active',
+      validTillDate: expiryText,
+      isParkedInside: true,
+      lastPaidDate: dateText,
+      monthlyFee: 700,
+    };
 
-    setParkedVehicles((prev) => prev.filter((v) => v.id !== selectedVehicleForExit.id));
-    setShiftParkingCash((prev) => prev + fare);
+    setSubscribers((prev) => [newSub, ...prev]);
+    setTotalParkingCollected((prev) => prev + 700);
+    setOwnerParkingShare((prev) => prev + 500);
+    setRitinParkingCut((prev) => prev + 200);
 
-    const receiptText = `श्री बालाजी पार्किंग (रुद्रपुर)
-निकास रसीद (Exit Receipt)
-वाहन: [${selectedVehicleForExit.vehicleNumber}] (${typeText})
-प्रवेश: [${selectedVehicleForExit.entryTimeFormatted}] | निकास: [${outTimeFormatted}]
-कुल समय: [${durationText}]
+    setNewVehicleNumber('');
+    setNewOwnerName('');
+    setNewPhone('');
+
+    const receiptText = `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
+मासिक पार्किंग रसीद (Monthly Pass)
+
+वाहन नंबर: [${trimmedPlate}] (${typeText})
+धारक: [${trimmedName}]
+तारीख: [${dateText}]
 --------------------------------
-पार्किंग शुल्क: ₹${fare}
-स्थिति: भुगतान सफल (नकद)
-धन्यवाद। फिर पधारें।`;
+मासिक शुल्क: ₹700 (नकद प्राप्त)
+वैधता: [${dateText} से ${expiryText}]
+स्थिति: सक्रिय पास (Active)
+--------------------------------
+मालिक हिस्सा: ₹500 | रितिन कमीशन: ₹200
+धन्यवाद। श्री बालाजी पार्किंग।`;
 
     const encoded = encodeURIComponent(receiptText);
     const whatsappUrl = `https://wa.me/?text=${encoded}`;
@@ -459,21 +425,86 @@ export default function Home() {
       navigator.vibrate([18, 30, 24]);
     }
 
-    setActiveExitReceipt({
-      vehicleNumber: selectedVehicleForExit.vehicleNumber,
+    setActiveMonthlyReceipt({
+      vehicleNumber: trimmedPlate,
+      ownerName: trimmedName,
       typeText,
-      inTime: selectedVehicleForExit.entryTimeFormatted,
-      outTime: outTimeFormatted,
-      durationText,
-      fare,
       dateText,
+      validityText: `${dateText} से ${expiryText}`,
+      amount: 700,
+      ownerNet: 500,
+      ritinCut: 200,
       whatsappUrl,
       smsUrl,
       rawText: receiptText,
     });
-    setSelectedVehicleForExit(null);
   };
 
+  // 1-Tap Pass Renewal (Flat ₹700 Split)
+  const handleRenewPass = () => {
+    if (!selectedSubForRenewal) return;
+
+    const today = new Date();
+    const expiry = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const dateText = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+    const expiryText = `${String(expiry.getDate()).padStart(2, '0')}/${String(expiry.getMonth() + 1).padStart(2, '0')}/${expiry.getFullYear()}`;
+    const typeText = selectedSubForRenewal.type === 'bike' ? 'बाइक' : 'कार';
+
+    setSubscribers((prev) =>
+      prev.map((s) =>
+        s.id === selectedSubForRenewal.id
+          ? {
+              ...s,
+              passStatus: 'active',
+              validTillDate: expiryText,
+              lastPaidDate: dateText,
+            }
+          : s
+      )
+    );
+
+    setTotalParkingCollected((prev) => prev + 700);
+    setOwnerParkingShare((prev) => prev + 500);
+    setRitinParkingCut((prev) => prev + 200);
+
+    const receiptText = `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
+मासिक पार्किंग रसीद (Monthly Pass)
+
+वाहन नंबर: [${selectedSubForRenewal.vehicleNumber}] (${typeText})
+धारक: [${selectedSubForRenewal.ownerName}]
+तारीख: [${dateText}]
+--------------------------------
+मासिक शुल्क: ₹700 (नकद प्राप्त)
+वैधता: [${dateText} से ${expiryText}]
+स्थिति: सक्रिय पास (Active)
+--------------------------------
+मालिक हिस्सा: ₹500 | रितिन कमीशन: ₹200
+धन्यवाद। श्री बालाजी पार्किंग।`;
+
+    const encoded = encodeURIComponent(receiptText);
+    const whatsappUrl = `https://wa.me/?text=${encoded}`;
+    const smsUrl = `sms:?body=${encoded}`;
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([18, 30, 24]);
+    }
+
+    setActiveMonthlyReceipt({
+      vehicleNumber: selectedSubForRenewal.vehicleNumber,
+      ownerName: selectedSubForRenewal.ownerName,
+      typeText,
+      dateText,
+      validityText: `${dateText} से ${expiryText}`,
+      amount: 700,
+      ownerNet: 500,
+      ritinCut: 200,
+      whatsappUrl,
+      smsUrl,
+      rawText: receiptText,
+    });
+
+    setSelectedSubForRenewal(null);
+  };
 
   // Dual-Wallet Cash Split state
   const [rentPaidInput, setRentPaidInput] = useState<string>('');
@@ -1284,7 +1315,7 @@ ${elecLine}
                 </>
               ) : (
                 <>
-                  {/* ================= COMMERCIAL PARKING GATE MODULE ================= */}
+                  {/* ================= COMMERCIAL PARKING MONTHLY SUBSCRIPTION MODULE ================= */}
                   {/* 1. Pinned Parking Gate Header */}
                   <header className="shrink-0 w-full z-20 px-5 pt-[max(12px,env(safe-area-inset-top,12px))] pb-3 border-b border-white/[0.06] bg-[#06080C]/95 backdrop-blur-xl">
                     <div className="flex items-center justify-between">
@@ -1299,7 +1330,7 @@ ${elecLine}
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34D399] animate-pulse" />
                           </div>
                           <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-cyan-400/90 tracking-wide uppercase">
-                            Field Gate Terminal // {userRole === 'owner' ? 'Owner Telemetry' : 'Shift Active'}
+                            Monthly Subscription Ledger // ₹700 Flat
                           </span>
                         </div>
                       </div>
@@ -1315,9 +1346,9 @@ ${elecLine}
                       </button>
                     </div>
 
-                    {/* LIVE OCCUPANCY TELEMETRY HUD */}
+                    {/* LIVE OCCUPANCY & FINANCIAL SPLIT TELEMETRY HUD */}
                     <div className="mt-3 grid grid-cols-3 gap-1.5">
-                      {/* 2-Wheeler Chip */}
+                      {/* 2-Wheeler Capacity Chip */}
                       <div className={`py-1.5 px-2 rounded-xl flex flex-col items-center justify-center border font-mono transition-colors ${
                         isBikeFull
                           ? 'bg-rose-950/60 border-rose-500/60 text-rose-300 animate-pulse'
@@ -1332,7 +1363,7 @@ ${elecLine}
                         </span>
                       </div>
 
-                      {/* 4-Wheeler Chip */}
+                      {/* 4-Wheeler Capacity Chip */}
                       <div className={`py-1.5 px-2 rounded-xl flex flex-col items-center justify-center border font-mono transition-colors ${
                         isCarFull
                           ? 'bg-rose-950/60 border-rose-500/60 text-rose-300 animate-pulse'
@@ -1347,37 +1378,59 @@ ${elecLine}
                         </span>
                       </div>
 
-                      {/* Shift Cash Counter */}
+                      {/* Pass Summary Chip */}
                       <div className="py-1.5 px-2 rounded-xl bg-white/[0.03] border border-white/[0.08] flex flex-col items-center justify-center font-mono text-[#CBD5E1]">
-                        <span className="text-[9px] text-[#94A3B8] uppercase">Shift Cash</span>
-                        <span className="text-xs font-bold text-emerald-400 mt-0.5">
-                          ₹{shiftParkingCash.toLocaleString('en-IN')}
-                        </span>
+                        <span className="text-[9px] text-[#94A3B8] uppercase">Passes Status</span>
+                        <div className="flex items-center gap-1.5 mt-0.5 text-xs font-bold">
+                          <span className="text-emerald-400">{activePassCount} वैध</span>
+                          <span className="text-white/20">|</span>
+                          <span className="text-amber-400">{duePassCount} देय</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* FINANCIAL LEDGER SPLIT RIBBON (OWNER NET ₹500 | RITIN CUT ₹200) */}
+                    <div className="mt-2 py-2 px-3 rounded-xl bg-gradient-to-r from-[#D4AF37]/10 via-[#0D1117] to-cyan-950/20 border border-white/[0.08] flex items-center justify-between font-mono text-xs shadow-inner">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] text-[#94A3B8] uppercase font-semibold">कुल संग्रह (Total)</span>
+                        <span className="text-[#FFF4C2] font-bold text-sm">₹{totalParkingCollected.toLocaleString('en-IN')}</span>
+                      </div>
+
+                      <div className="flex items-center gap-3 border-l border-white/[0.08] pl-3">
+                        <div className="flex flex-col items-end">
+                          <span className="text-[9px] text-[#D4AF37] uppercase">मालिक नेट (₹500/v)</span>
+                          <span className="text-[#EDEDED] font-semibold">₹{ownerParkingShare.toLocaleString('en-IN')}</span>
+                        </div>
+
+                        <div className="flex flex-col items-end border-l border-white/[0.06] pl-3">
+                          <span className="text-[9px] text-cyan-400 uppercase">रितिन कमीशन (₹200/v)</span>
+                          <span className="text-cyan-300 font-semibold">₹{ritinParkingCut.toLocaleString('en-IN')}</span>
+                        </div>
                       </div>
                     </div>
                   </header>
 
-                  {/* 2. Scrollable Parking Main */}
+                  {/* 2. Scrollable Monthly Subscribers Deck */}
                   <main className="flex-1 w-full min-h-0 overflow-y-auto overscroll-contain px-4 pt-3 pb-4 deck-scrollbar flex flex-col gap-3.5">
-                    {/* FAST VEHICLE ENTRY FLOW (GATE-IN) */}
+                    {/* FAST MONTHLY PASS ISSUANCE CARD */}
                     <div className="p-3.5 rounded-2xl bg-[#0A0D14] border border-white/[0.08] shadow-lg flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-mono font-bold text-[#EDEDED] uppercase tracking-wider flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22D3EE]" />
-                          फास्ट वाहन प्रवेश (Fast Entry)
+                          नया मासिक पास जारी करें (New Pass)
                         </span>
-                        <span className="text-[10px] font-mono text-[#94A3B8]">
-                          {entryVehicleType === 'bike' ? '₹20 (2hr), +₹10/hr' : '₹40 (2hr), +₹20/hr'}
+                        <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                          ₹700 / माह
                         </span>
                       </div>
 
-                      {/* Vehicle Category Selector */}
+                      {/* Category Selector */}
                       <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                         <button
                           type="button"
-                          onClick={() => setEntryVehicleType('bike')}
+                          onClick={() => setNewVehicleType('bike')}
                           className={`py-2 px-3 rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                            entryVehicleType === 'bike'
+                            newVehicleType === 'bike'
                               ? 'bg-cyan-950/60 text-cyan-200 border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]'
                               : 'text-[#94A3B8] hover:text-white border border-transparent'
                           }`}
@@ -1389,9 +1442,9 @@ ${elecLine}
 
                         <button
                           type="button"
-                          onClick={() => setEntryVehicleType('car')}
+                          onClick={() => setNewVehicleType('car')}
                           className={`py-2 px-3 rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                            entryVehicleType === 'car'
+                            newVehicleType === 'car'
                               ? 'bg-amber-950/60 text-amber-200 border border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
                               : 'text-[#94A3B8] hover:text-white border border-transparent'
                           }`}
@@ -1402,38 +1455,54 @@ ${elecLine}
                         </button>
                       </div>
 
-                      {/* Input & Check-in Button */}
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={vehicleNumberInput}
-                            onChange={(e) => setVehicleNumberInput(e.target.value.toUpperCase())}
-                            placeholder="UK 06 AB 1234"
-                            className="flex-1 bg-white/[0.04] border border-white/[0.1] focus:border-cyan-500/70 rounded-xl px-3.5 py-2.5 font-mono text-sm font-bold text-[#EDEDED] uppercase tracking-wider focus:outline-none placeholder:text-white/20"
-                          />
-                          <button
-                            type="button"
-                            disabled={isCurrentCategoryFull || vehicleNumberInput.trim().length < 3}
-                            onClick={handleCheckInVehicle}
-                            className={`py-2.5 px-4 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md ${
-                              !isCurrentCategoryFull && vehicleNumberInput.trim().length >= 3
-                                ? 'bg-emerald-500 hover:bg-emerald-400 text-[#06080C] border border-emerald-300/40 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer'
-                                : 'bg-white/[0.04] text-[#64748B] border border-white/[0.06] cursor-not-allowed opacity-50'
-                            }`}
-                          >
-                            <Plus className="w-4 h-4" />
-                            <span>पर्ची बनाएं</span>
-                          </button>
-                        </div>
-
-                        {isCurrentCategoryFull && (
-                          <p className="text-[11px] font-mono text-rose-400 flex items-center gap-1 pt-0.5">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            <span>{entryVehicleType === 'bike' ? '2-Wheeler (बाइक)' : '4-Wheeler (कार)'} पार्किंग फुल है! प्रवेश बंद है।</span>
-                          </p>
-                        )}
+                      {/* Inputs: Vehicle Number, Owner Name, Phone */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={newVehicleNumber}
+                          onChange={(e) => setNewVehicleNumber(e.target.value.toUpperCase())}
+                          placeholder="वाहन नंबर (UK 06 AB 1234)"
+                          className="w-full bg-white/[0.04] border border-white/[0.1] focus:border-cyan-500/70 rounded-xl px-3 py-2 font-mono text-xs font-bold text-[#EDEDED] uppercase tracking-wider focus:outline-none placeholder:text-white/20"
+                        />
+                        <input
+                          type="text"
+                          value={newOwnerName}
+                          onChange={(e) => setNewOwnerName(e.target.value)}
+                          placeholder="धारक का नाम (Owner)"
+                          className="w-full bg-white/[0.04] border border-white/[0.1] focus:border-cyan-500/70 rounded-xl px-3 py-2 font-mono text-xs text-[#EDEDED] focus:outline-none placeholder:text-white/20"
+                        />
                       </div>
+
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={newPhone}
+                          onChange={(e) => setNewPhone(e.target.value)}
+                          placeholder="फ़ोन नंबर (वैकल्पिक)"
+                          className="flex-1 bg-white/[0.04] border border-white/[0.1] focus:border-cyan-500/70 rounded-xl px-3 py-2 font-mono text-xs text-[#EDEDED] focus:outline-none placeholder:text-white/20"
+                        />
+
+                        <button
+                          type="button"
+                          disabled={isSelectedCategoryFull || newVehicleNumber.trim().length < 3 || !newOwnerName.trim()}
+                          onClick={handleIssueNewPass}
+                          className={`py-2 px-3.5 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md shrink-0 ${
+                            !isSelectedCategoryFull && newVehicleNumber.trim().length >= 3 && newOwnerName.trim()
+                              ? 'bg-emerald-500 hover:bg-emerald-400 text-[#06080C] border border-emerald-300/40 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer'
+                              : 'bg-white/[0.04] text-[#64748B] border border-white/[0.06] cursor-not-allowed opacity-50'
+                          }`}
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>पास बनाएं (₹700)</span>
+                        </button>
+                      </div>
+
+                      {isSelectedCategoryFull && (
+                        <p className="text-[11px] font-mono text-rose-400 flex items-center gap-1 pt-0.5">
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          <span>{newVehicleType === 'bike' ? '2-Wheeler (बाइक)' : '4-Wheeler (कार)'} स्लॉट फुल है! नया पास जारी नहीं हो सकता।</span>
+                        </p>
+                      )}
                     </div>
 
                     {/* SEARCH BAR */}
@@ -1443,7 +1512,7 @@ ${elecLine}
                         type="text"
                         value={parkingSearchQuery}
                         onChange={(e) => setParkingSearchQuery(e.target.value)}
-                        placeholder="वाहन नंबर से खोजें (Search number / digits)..."
+                        placeholder="वाहन नंबर, धारक नाम या फ़ोन से खोजें..."
                         className="w-full bg-white/[0.03] border border-white/[0.07] focus:border-[#D4AF37]/50 rounded-xl pl-9 pr-3.5 py-2 text-xs font-mono text-[#EDEDED] focus:outline-none placeholder:text-[#64748B]"
                       />
                       {parkingSearchQuery && (
@@ -1457,67 +1526,99 @@ ${elecLine}
                       )}
                     </div>
 
-                    {/* ACTIVE PARKED VEHICLES LIST */}
+                    {/* MONTHLY SUBSCRIBERS LIST */}
                     <div className="flex flex-col gap-2 pb-4">
                       <div className="flex items-center justify-between px-1">
                         <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-[#94A3B8]">
-                          सक्रिय पार्क वाहन ({filteredParkedVehicles.length})
+                          मासिक ग्राहक सूची (Subscribers: {filteredSubscribers.length})
                         </span>
                         <span className="text-[10px] font-mono text-[#64748B]">
-                          निकास के लिए टैप करें
+                          नवीनीकरण हेतु टैप करें
                         </span>
                       </div>
 
-                      {filteredParkedVehicles.length === 0 ? (
+                      {filteredSubscribers.length === 0 ? (
                         <div className="p-8 text-center rounded-2xl bg-white/[0.02] border border-white/[0.05]">
-                          <p className="text-xs font-mono text-[#64748B]">कोई वाहन पार्क नहीं मिला</p>
+                          <p className="text-xs font-mono text-[#64748B]">कोई मासिक पास रिकॉर्ड नहीं मिला</p>
                         </div>
                       ) : (
-                        filteredParkedVehicles.map((v) => {
-                          const durationMinutes = Math.max(1, Math.floor((currentTimeTick - v.entryTimestamp) / 60000));
-                          const durationStr = formatDurationHindi(durationMinutes);
-                          const { fare } = calculateParkingFare(v.type, durationMinutes);
+                        filteredSubscribers.map((sub) => {
+                          const isDue = sub.passStatus === 'due';
 
                           return (
                             <div
-                              key={v.id}
-                              onClick={() => setSelectedVehicleForExit(v)}
-                              className="p-3 rounded-2xl bg-[#0A0D14] border border-white/[0.08] hover:border-white/[0.18] transition-all cursor-pointer flex items-center justify-between group active:scale-98 shadow-md"
+                              key={sub.id}
+                              onClick={() => setSelectedSubForRenewal(sub)}
+                              className={`p-3 rounded-2xl bg-[#0A0D14] border transition-all cursor-pointer flex items-center justify-between group active:scale-98 shadow-md ${
+                                isDue
+                                  ? 'border-amber-500/40 hover:border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.12)]'
+                                  : 'border-white/[0.08] hover:border-white/[0.18]'
+                              }`}
                             >
                               <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
-                                  v.type === 'bike'
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
+                                  sub.type === 'bike'
                                     ? 'bg-cyan-950/40 border border-cyan-500/30 text-cyan-300'
                                     : 'bg-amber-950/40 border border-amber-500/30 text-amber-300'
                                 }`}>
-                                  {v.type === 'bike' ? <Bike className="w-5 h-5" /> : <Car className="w-5 h-5" />}
+                                  {sub.type === 'bike' ? <Bike className="w-5 h-5" /> : <Car className="w-5 h-5" />}
                                 </div>
 
                                 <div>
                                   <div className="flex items-center gap-2">
-                                    <span className="text-sm font-mono font-bold text-[#EDEDED] tracking-wider">
-                                      {v.vehicleNumber}
+                                    <span className="text-sm font-mono font-bold text-[#EDEDED] tracking-wider group-hover:text-[#D4AF37] transition-colors">
+                                      {sub.vehicleNumber}
                                     </span>
-                                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-white/[0.05] border border-white/[0.08] text-[#94A3B8]">
-                                      {v.type === 'bike' ? 'बाइक' : 'कार'}
+                                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-md bg-white/[0.05] border border-white/[0.08] text-[#94A3B8]">
+                                      {sub.type === 'bike' ? 'बाइक' : 'कार'}
                                     </span>
                                   </div>
-                                  <div className="text-[10px] font-mono text-[#64748B] flex items-center gap-1 mt-0.5">
-                                    <Clock className="w-3 h-3 text-[#64748B]" />
-                                    <span>प्रवेश: {v.entryTimeFormatted}</span>
-                                    <span className="text-white/20">•</span>
-                                    <span className="text-emerald-400 font-semibold">₹{fare} देय</span>
+
+                                  <div className="text-[11px] font-mono text-[#CBD5E1] flex items-center gap-1.5 mt-0.5">
+                                    <span>{sub.ownerName}</span>
+                                    {sub.phone && (
+                                      <>
+                                        <span className="text-white/20">•</span>
+                                        <span className="text-[#94A3B8] text-[10px]">{sub.phone}</span>
+                                      </>
+                                    )}
+                                  </div>
+
+                                  {/* Status Pill */}
+                                  <div className="mt-1.5 flex items-center gap-2">
+                                    {isDue ? (
+                                      <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-semibold flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#FBBF24] animate-pulse" />
+                                        ⚠️ नवीनीकरण देय (₹700 Due)
+                                      </span>
+                                    ) : (
+                                      <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34D399]" />
+                                        ✓ वैध (वैधता: {sub.validTillDate})
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               </div>
 
-                              <div className="flex flex-col items-end gap-1">
-                                <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 flex items-center gap-1">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22D3EE] animate-pulse" />
-                                  {durationStr}
-                                </span>
+                              {/* Right: Tactile 1-Tap Field Presence Toggle (अंदर vs बाहर) */}
+                              <div className="flex flex-col items-end gap-2 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleTogglePresence(sub.id, e)}
+                                  title="क्लिक करके अंदर/बाहर स्थिति बदलें"
+                                  className={`px-2.5 py-1 rounded-xl text-[10px] font-mono font-bold flex items-center gap-1.5 border transition-all active:scale-90 ${
+                                    sub.isParkedInside
+                                      ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.25)]'
+                                      : 'bg-white/[0.04] border-white/[0.08] text-[#94A3B8] hover:text-white'
+                                  }`}
+                                >
+                                  <span className={`w-1.5 h-1.5 rounded-full ${sub.isParkedInside ? 'bg-emerald-400 animate-pulse' : 'bg-[#64748B]'}`} />
+                                  <span>{sub.isParkedInside ? 'अंदर' : 'बाहर'}</span>
+                                </button>
+
                                 <span className="text-[10px] font-mono text-[#D4AF37] group-hover:underline flex items-center gap-0.5">
-                                  निकास / Exit ➜
+                                  पास विवरण ➜
                                 </span>
                               </div>
                             </div>
@@ -1529,7 +1630,7 @@ ${elecLine}
                 </>
               )}
 
-              {/* PINNED BOTTOM NAVIGATION DOCK (ESTATE UNITS & PARKING GATE) */}
+              {/* PINNED BOTTOM NAVIGATION DOCK (ESTATE UNITS & PARKING GATE) */}{/* PINNED BOTTOM NAVIGATION DOCK (ESTATE UNITS & PARKING GATE) */}
               <div className="shrink-0 w-full z-30 px-4 py-2 border-t border-white/[0.08] bg-[#06080C]/95 backdrop-blur-xl flex items-center justify-around pb-[max(10px,env(safe-area-inset-bottom,10px))]">
                 <button
                   type="button"
@@ -1556,7 +1657,7 @@ ${elecLine}
                   <Car className="w-4 h-4 text-cyan-400" />
                   <span>Parking Gate</span>
                   <span className="px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold">
-                    {parkedVehicles.length}
+                    {subscribers.length}
                   </span>
                 </button>
               </div></motion.div>
@@ -2017,22 +2118,22 @@ ${elecLine}
           )}
         </AnimatePresence>
 
-        {/* ================= COMMERCIAL PARKING EXIT SETTLEMENT DRAWER ================= */}
+        {/* ================= 1-TAP PASS RENEWAL & CASH SPLIT DRAWER ================= */}
         <AnimatePresence>
-          {selectedVehicleForExit && (
+          {selectedSubForRenewal && (
             <>
               <motion.div
-                key="parking-exit-backdrop"
+                key="parking-renewal-backdrop"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                onClick={() => setSelectedVehicleForExit(null)}
+                onClick={() => setSelectedSubForRenewal(null)}
                 className="absolute inset-0 bg-black/70 backdrop-blur-md z-40 cursor-pointer"
               />
 
               <motion.div
-                key="parking-exit-sheet"
+                key="parking-renewal-sheet"
                 initial={{ y: '100%' }}
                 animate={{ y: 0 }}
                 exit={{ y: '100%' }}
@@ -2046,16 +2147,21 @@ ${elecLine}
                 <div className="flex items-center justify-between pb-3 border-b border-white/[0.07]">
                   <div className="flex items-center gap-2.5">
                     <span className="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-white/[0.1] font-mono font-bold text-sm text-[#EDEDED]">
-                      {selectedVehicleForExit.vehicleNumber}
+                      {selectedSubForRenewal.vehicleNumber}
                     </span>
-                    <span className="text-xs font-mono text-[#94A3B8]">
-                      {selectedVehicleForExit.type === 'bike' ? '🛵 2-Wheeler (बाइक)' : '🚗 4-Wheeler (कार)'}
-                    </span>
+                    <div>
+                      <h3 className="text-sm font-semibold text-[#EDEDED]">
+                        {selectedSubForRenewal.ownerName}
+                      </h3>
+                      <span className="text-[10px] font-mono text-[#94A3B8]">
+                        {selectedSubForRenewal.type === 'bike' ? '🛵 2-Wheeler (बाइक)' : '🚗 4-Wheeler (कार)'} // मासिक पास
+                      </span>
+                    </div>
                   </div>
 
                   <button
                     type="button"
-                    onClick={() => setSelectedVehicleForExit(null)}
+                    onClick={() => setSelectedSubForRenewal(null)}
                     aria-label="Close drawer"
                     className="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white transition-colors cursor-pointer border border-white/[0.08]"
                   >
@@ -2063,138 +2169,70 @@ ${elecLine}
                   </button>
                 </div>
 
-                {/* Exit Fare HUD & Summary */}
-                {(() => {
-                  const now = new Date();
-                  const durationMinutes = Math.max(1, Math.floor((now.getTime() - selectedVehicleForExit.entryTimestamp) / 60000));
-                  const durationStr = formatDurationHindi(durationMinutes);
-                  const { fare, rateDescription } = calculateParkingFare(selectedVehicleForExit.type, durationMinutes);
-                  const outTimeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                {/* Renewal & Split Details */}
+                <div className="flex flex-col gap-3.5 pt-3">
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div className="p-3 rounded-xl bg-[#06080C] border border-white/[0.06] flex flex-col">
+                      <span className="text-[10px] font-mono text-[#64748B] uppercase">पिछला भुगतान</span>
+                      <span className="text-xs font-mono font-bold text-[#EDEDED] mt-0.5">{selectedSubForRenewal.lastPaidDate}</span>
+                    </div>
 
-                  return (
-                    <div className="flex flex-col gap-3.5 pt-3">
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <div className="p-3 rounded-xl bg-[#06080C] border border-white/[0.06] flex flex-col">
-                          <span className="text-[10px] font-mono text-[#64748B] uppercase">प्रवेश समय (In)</span>
-                          <span className="text-sm font-mono font-bold text-[#EDEDED] mt-0.5">{selectedVehicleForExit.entryTimeFormatted}</span>
-                        </div>
+                    <div className="p-3 rounded-xl bg-[#06080C] border border-white/[0.06] flex flex-col">
+                      <span className="text-[10px] font-mono text-[#64748B] uppercase">वर्तमान वैधता</span>
+                      <span className={`text-xs font-mono font-bold mt-0.5 ${selectedSubForRenewal.passStatus === 'due' ? 'text-amber-400' : 'text-emerald-400'}`}>
+                        {selectedSubForRenewal.validTillDate}
+                      </span>
+                    </div>
+                  </div>
 
-                        <div className="p-3 rounded-xl bg-[#06080C] border border-white/[0.06] flex flex-col">
-                          <span className="text-[10px] font-mono text-[#64748B] uppercase">निकास समय (Out)</span>
-                          <span className="text-sm font-mono font-bold text-cyan-300 mt-0.5">{outTimeFormatted}</span>
-                        </div>
-                      </div>
-
-                      {/* Duration & Tariff description */}
-                      <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs font-mono">
-                        <span className="text-[#94A3B8]">कुल अवधि (Duration):</span>
-                        <span className="text-[#EDEDED] font-bold">{durationStr}</span>
-                      </div>
-
-                      <div className="px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[10px] font-mono text-[#94A3B8] text-center">
-                        {rateDescription}
-                      </div>
-
-                      {/* Total Fare Card */}
-                      <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-[#06080C] to-emerald-950/30 border border-emerald-500/40 shadow-inner flex items-center justify-between">
-                        <div>
-                          <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-300 font-semibold block">
-                            कुल देय पार्किंग शुल्क
-                          </span>
-                          <span className="text-[10px] font-mono text-[#94A3B8]">नकद भुगतान (Cash)</span>
-                        </div>
-                        <span className="text-2xl font-mono font-bold text-emerald-400">
-                          ₹{fare}
+                  {/* AUTOMATED FINANCIAL SPLIT DISPLAY (₹500 / ₹200) */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-[#D4AF37]/10 via-[#06080C] to-cyan-950/30 border border-[#D4AF37]/40 shadow-inner flex flex-col gap-2.5">
+                    <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                      <div>
+                        <span className="text-xs font-mono font-bold text-[#FFF4C2] uppercase tracking-wider block">
+                          मासिक पार्किंग नवीनीकरण (Monthly Split)
                         </span>
+                        <span className="text-[10px] font-mono text-[#94A3B8]">30 दिनों की नई वैधता</span>
+                      </div>
+                      <span className="text-2xl font-mono font-bold text-[#FFF4C2]">
+                        ₹700
+                      </span>
+                    </div>
+
+                    {/* Split Breakdown */}
+                    <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-1">
+                      <div className="p-2.5 rounded-xl bg-[#0D1117] border border-[#D4AF37]/30 flex flex-col">
+                        <span className="text-[9px] text-[#D4AF37] uppercase font-semibold">मालिक हिस्सा (Master)</span>
+                        <span className="text-base font-bold text-[#EDEDED] mt-0.5">₹500</span>
+                        <span className="text-[9px] text-[#64748B] mt-0.5">एस्टेट खाता</span>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="grid grid-cols-2 gap-3 pt-1">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedVehicleForExit(null)}
-                          className="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#94A3B8] hover:text-white text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center"
-                        >
-                          रद्द करें (Cancel)
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={handleExitVehicle}
-                          className="py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 bg-emerald-500 hover:bg-emerald-400 text-[#06080C] border border-emerald-300/40 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
-                        >
-                          <Check className="w-4 h-4" />
-                          <span>नकद प्राप्त व निकास</span>
-                        </button>
+                      <div className="p-2.5 rounded-xl bg-[#0D1117] border border-cyan-500/30 flex flex-col">
+                        <span className="text-[9px] text-cyan-400 uppercase font-semibold">रितिन कमीशन (Cut)</span>
+                        <span className="text-base font-bold text-cyan-300 mt-0.5">₹200</span>
+                        <span className="text-[9px] text-[#64748B] mt-0.5">मैनेजर शिफ्ट</span>
                       </div>
                     </div>
-                  );
-                })()}
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
-        {/* ================= ENTRY SLIP MODAL (NON-BLOCKING) ================= */}
-        <AnimatePresence>
-          {activeEntrySlip && (
-            <>
-              <motion.div
-                key="entry-slip-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setActiveEntrySlip(null)}
-                className="absolute inset-0 bg-black/75 backdrop-blur-md z-50 cursor-pointer"
-              />
-              <motion.div
-                key="entry-slip-modal"
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                transition={{ duration: 0.2 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-[#0A0D14] border border-emerald-500/40 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-50 flex flex-col gap-3 font-mono"
-              >
-                <div className="flex items-center gap-2.5 pb-2 border-b border-white/[0.08]">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                   </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-[#EDEDED]">प्रवेश पर्ची तैयार</h3>
-                    <span className="text-[10px] text-[#94A3B8]">Entry Slip Generated</span>
-                  </div>
-                </div>
 
-                <div className="p-3.5 rounded-2xl bg-[#06080C] border border-white/[0.08] text-[11px] leading-relaxed text-[#CBD5E1] whitespace-pre-wrap select-text">
-                  {activeEntrySlip.rawText}
-                </div>
-
-                {/* Strictly non-blocking actions */}
-                <div className="flex flex-col gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setActiveEntrySlip(null)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-98 transition-all"
-                  >
-                    <Check className="w-4 h-4" />
-                    <span>बाद में / Done (Skip)</span>
-                  </button>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <a
-                      href={activeEntrySlip.whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="py-2 px-3 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+                  {/* Action Buttons */}
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSubForRenewal(null)}
+                      className="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#94A3B8] hover:text-white text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center"
                     >
-                      <span>🟢 WhatsApp</span>
-                    </a>
-                    <a
-                      href={activeEntrySlip.smsUrl}
-                      className="py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+                      रद्द करें (Cancel)
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleRenewPass}
+                      className="py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] border border-[#FFF4C2]/40 shadow-[0_0_20px_rgba(212,175,55,0.3)]"
                     >
-                      <span>💬 SMS पर्ची</span>
-                    </a>
+                      <Check className="w-4 h-4" />
+                      <span>₹700 नकद प्राप्त दर्ज करें</span>
+                    </button>
                   </div>
                 </div>
               </motion.div>
@@ -2202,46 +2240,51 @@ ${elecLine}
           )}
         </AnimatePresence>
 
-        {/* ================= EXIT RECEIPT MODAL (NON-BLOCKING) ================= */}
+        {/* ================= MONTHLY PASS DIGITAL RECEIPT MODAL (NON-BLOCKING) ================= */}
         <AnimatePresence>
-          {activeExitReceipt && (
+          {activeMonthlyReceipt && (
             <>
               <motion.div
-                key="exit-receipt-backdrop"
+                key="monthly-receipt-backdrop"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setActiveExitReceipt(null)}
+                onClick={() => setActiveMonthlyReceipt(null)}
                 className="absolute inset-0 bg-black/75 backdrop-blur-md z-50 cursor-pointer"
               />
               <motion.div
-                key="exit-receipt-modal"
+                key="monthly-receipt-modal"
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-[#0A0D14] border border-cyan-500/40 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-50 flex flex-col gap-3 font-mono"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-[#0A0D14] border border-[#D4AF37]/40 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-50 flex flex-col gap-3 font-mono"
               >
                 <div className="flex items-center gap-2.5 pb-2 border-b border-white/[0.08]">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-5 h-5 text-cyan-400" />
+                  <div className="w-8 h-8 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5 text-[#D4AF37]" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-[#EDEDED]">निकास रसीद (Exit Receipt)</h3>
-                    <span className="text-[10px] text-emerald-400 font-bold">शुल्क प्राप्त: ₹{activeExitReceipt.fare}</span>
+                    <h3 className="text-sm font-semibold text-[#EDEDED]">मासिक पार्किंग रसीद (Monthly Pass)</h3>
+                    <span className="text-[10px] text-emerald-400 font-bold">₹700 नकद प्राप्त दर्ज (सफल)</span>
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-[#06080C] border border-white/[0.08] text-[11px] leading-relaxed text-[#CBD5E1] whitespace-pre-wrap select-text">
-                  {activeExitReceipt.rawText}
+                  {activeMonthlyReceipt.rawText}
+                </div>
+
+                {/* Split Note */}
+                <div className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[10px] text-center text-[#94A3B8]">
+                  मालिक नेट: <strong className="text-[#D4AF37]">₹500</strong> | रितिन कमीशन: <strong className="text-cyan-300">₹200</strong>
                 </div>
 
                 {/* Strictly non-blocking actions */}
                 <div className="flex flex-col gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={() => setActiveExitReceipt(null)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.3)] active:scale-98 transition-all"
+                    onClick={() => setActiveMonthlyReceipt(null)}
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(212,175,55,0.3)] active:scale-98 transition-all"
                   >
                     <Check className="w-4 h-4" />
                     <span>संपन्न / Done (Skip)</span>
@@ -2249,17 +2292,19 @@ ${elecLine}
 
                   <div className="grid grid-cols-2 gap-2">
                     <a
-                      href={activeExitReceipt.whatsappUrl}
+                      href={activeMonthlyReceipt.whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="py-2 px-3 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
                     >
+                      <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
                       <span>🟢 WhatsApp</span>
                     </a>
                     <a
-                      href={activeExitReceipt.smsUrl}
+                      href={activeMonthlyReceipt.smsUrl}
                       className="py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
                     >
+                      <MessageSquare className="w-3.5 h-3.5 text-cyan-300" />
                       <span>💬 SMS रसीद</span>
                     </a>
                   </div>
