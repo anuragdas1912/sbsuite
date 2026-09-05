@@ -102,30 +102,30 @@ const INITIAL_SUBSCRIBERS: MonthlySubscriber[] = [];
 
 const STATIC_UNITS: UnitItem[] = [
   // 14 ROOMS (Clean Zero-State Inventory)
-  { id: 'r-101', name: 'R-101', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-102', name: 'R-102', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-103', name: 'R-103', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-104', name: 'R-104', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-105', name: 'R-105', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-106', name: 'R-106', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-107', name: 'R-107', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-108', name: 'R-108', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-109', name: 'R-109', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-110', name: 'R-110', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-111', name: 'R-111', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-112', name: 'R-112', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-113', name: 'R-113', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 'r-114', name: 'R-114', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-101', name: 'R-101', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-102', name: 'R-102', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-103', name: 'R-103', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-104', name: 'R-104', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-105', name: 'R-105', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-106', name: 'R-106', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-107', name: 'R-107', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-108', name: 'R-108', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-109', name: 'R-109', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-110', name: 'R-110', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-111', name: 'R-111', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-112', name: 'R-112', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-113', name: 'R-113', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-114', name: 'R-114', type: 'room', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
 
   // 8 SHOPS (Clean Zero-State Inventory)
-  { id: 's-01', name: 'S-01', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 18000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 's-02', name: 'S-02', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 16500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 's-03', name: 'S-03', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 14000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 's-04', name: 'S-04', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 12500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 's-05', name: 'S-05', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 15000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 's-06', name: 'S-06', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 15000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 's-07', name: 'S-07', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 13000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
-  { id: 's-08', name: 'S-08', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 22000, rentDueAmount: 0, lastReading: 0, isReadingPending: false }
+  { id: 's-01', name: 'S-01', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-02', name: 'S-02', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-03', name: 'S-03', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-04', name: 'S-04', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-05', name: 'S-05', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-06', name: 'S-06', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-07', name: 'S-07', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-08', name: 'S-08', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 0, rentDueAmount: 0, lastReading: 0, isReadingPending: false }
 ];
 
 function VolumetricMonolith({ className = 'w-36 h-36' }: { className?: string }) {
@@ -300,6 +300,14 @@ const DICTIONARY = {
     renewMonthlyPass: 'Renew Pass & Collect Cash',
     passRenewedSuccess: 'Monthly Pass Successfully Renewed!',
     submeterTogglePrompt: '⚡ Add Dedicated EV Charger Sub-Meter',
+    assignTenant: 'Assign Tenant',
+    assignTenantTitle: 'Assign New Tenant',
+    tenantBusinessName: 'Tenant / Business Name *',
+    tenantNamePlaceholder: 'e.g. Sunil Verma / Sharma General Store',
+    agreedBaseRent: 'Agreed Monthly Base Rent (₹) *',
+    initialMeterReading: '⚡ Initial Electricity Sub-Meter Reading (kWh)',
+    startingBenchmarkNote: 'Starting benchmark for monthly billing cycles',
+    assignAndActivateBtn: 'Assign Tenant & Activate Unit',
   },
   hi: {
     brandEstate: 'श्री बालाजी एस्टेट',
@@ -393,6 +401,14 @@ const DICTIONARY = {
     renewMonthlyPass: 'नकद प्राप्त व नवीनीकरण',
     passRenewedSuccess: 'मासिक पास सफलतापूर्वक नवीनीकृत!',
     submeterTogglePrompt: '⚡ EV चार्जर सब-मीटर सुविधा जोड़ें',
+    assignTenant: 'किराएदार जोड़ें',
+    assignTenantTitle: 'नया किराएदार दर्ज करें',
+    tenantBusinessName: 'किराएदार / व्यापार का नाम *',
+    tenantNamePlaceholder: 'उदा. सुनील वर्मा / शर्मा जनरल स्टोर',
+    agreedBaseRent: 'तय मासिक मूल किराया (₹) *',
+    initialMeterReading: '⚡ प्रारंभिक बिजली सब-मीटर रीडिंग (kWh)',
+    startingBenchmarkNote: 'मासिक बिलिंग चक्र के लिए प्रारंभिक रीडिंग',
+    assignAndActivateBtn: 'किराएदार दर्ज करें & यूनिट चालू करें',
   }
 };
 
@@ -436,6 +452,12 @@ export default function Home() {
 
   // Dynamic units state
   const [units, setUnits] = useState<UnitItem[]>(STATIC_UNITS);
+
+  // Assign Tenant Drawer state (Vacant Rooms & Shops)
+  const [activeAssignUnit, setActiveAssignUnit] = useState<UnitItem | null>(null);
+  const [assignTenantName, setAssignTenantName] = useState<string>('');
+  const [assignRentInput, setAssignRentInput] = useState<string>('');
+  const [assignMeterInput, setAssignMeterInput] = useState<string>('0');
 
   // Sub-Meter Reading & Dual-Wallet Drawer state (Rooms & Shops)
   const [selectedUnit, setSelectedUnit] = useState<UnitItem | null>(null);
@@ -1148,6 +1170,85 @@ export default function Home() {
   const remainingRentDue = Math.max(0, effectiveRentDue - rentPaidNum);
   const totalCashCollected = rentPaidNum + elecPaidNum;
 
+  const handleOpenAssignTenant = (unit: UnitItem) => {
+    if (unit.isOccupied) return;
+    setActiveAssignUnit(unit);
+    setAssignTenantName('');
+    setAssignRentInput(unit.rentAmount > 0 ? String(unit.rentAmount) : '');
+    setAssignMeterInput(String(unit.lastReading || 0));
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([14]);
+    }
+  };
+
+  const handleCloseAssignTenant = () => {
+    setActiveAssignUnit(null);
+    setAssignTenantName('');
+    setAssignRentInput('');
+    setAssignMeterInput('0');
+  };
+
+  const handleConfirmAssignTenant = () => {
+    if (!activeAssignUnit) return;
+    const name = assignTenantName.trim();
+    const rent = parseInt(assignRentInput || '0', 10);
+    const reading = parseInt(assignMeterInput || '0', 10);
+
+    if (!name) {
+      alert(lang === 'en' ? 'Please enter tenant / business name' : 'कृपया किराएदार या व्यापार का नाम दर्ज करें');
+      return;
+    }
+    if (isNaN(rent) || rent <= 0) {
+      alert(lang === 'en' ? 'Please enter a valid agreed monthly rent' : 'कृपया तय मासिक मूल किराया दर्ज करें');
+      return;
+    }
+    if (isNaN(reading) || reading < 0) {
+      alert(lang === 'en' ? 'Please enter a valid starting meter reading' : 'कृपया मान्य प्रारंभिक मीटर रीडिंग दर्ज करें');
+      return;
+    }
+
+    // 1. Update React State
+    setUnits((prev) =>
+      prev.map((u) =>
+        u.id === activeAssignUnit.id
+          ? {
+              ...u,
+              isOccupied: true,
+              tenantName: name,
+              rentAmount: rent,
+              lastReading: reading,
+              rentDueAmount: rent,
+              isReadingPending: false,
+            }
+          : u
+      )
+    );
+
+    // 2. Persist to Supabase
+    if (supabase) {
+      supabase
+        .from('estate_units')
+        .update({
+          is_occupied: true,
+          tenant_name: name,
+          base_rent: rent,
+          last_reading: reading,
+          rent_due_amount: rent,
+          is_reading_pending: false,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', activeAssignUnit.id)
+        .then(({ error }) => {
+          if (error) console.error('Error assigning tenant in DB:', error);
+        });
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([16, 24, 16]);
+    }
+    handleCloseAssignTenant();
+  };
+
   const handleUnitClick = (unit: UnitItem) => {
     if (!unit.isOccupied) return;
     setSelectedUnit(unit);
@@ -1423,6 +1524,7 @@ ${elecLine}--------------------------------
       navigator.vibrate([16]);
     }
     handleCloseDrawer();
+    handleCloseAssignTenant();
     setSelectedSubForRenewal(null);
     setActiveMonthlyReceipt(null);
     setIsMasterOverrideOpen(false);
@@ -1864,14 +1966,20 @@ ${elecLine}--------------------------------
                       {filteredUnits.map((unit) => {
                         if (!unit.isOccupied) {
                           return (
-                            <div key={unit.id} className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.04] opacity-50 flex flex-col justify-between min-h-[115px]">
+                            <div
+                              key={unit.id}
+                              onClick={() => handleOpenAssignTenant(unit)}
+                              className="p-3.5 rounded-2xl bg-white/[0.02] border border-dashed border-white/[0.12] hover:border-[#D4AF37]/50 flex flex-col justify-between min-h-[115px] cursor-pointer active:scale-98 transition-all group shadow-sm hover:shadow-[0_0_15px_rgba(212,175,55,0.12)]"
+                            >
                               <div className="flex items-center justify-between">
-                                <span className="font-mono font-bold text-sm text-[#94A3B8]">{unit.name}</span>
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.04] text-[#64748B]">{t('vacant')}</span>
+                                <span className="font-mono font-bold text-sm text-[#EDEDED] group-hover:text-[#D4AF37] transition-colors">{unit.name}</span>
+                                <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/[0.04] text-[#94A3B8] border border-white/[0.08]">{t('vacant')}</span>
                               </div>
-                              <div className="mt-4 flex items-baseline justify-between text-xs font-mono">
-                                <span className="text-[#64748B]">{t('baseRent')}:</span>
-                                <span className="text-[#94A3B8]">₹{unit.rentAmount.toLocaleString('en-IN')}</span>
+                              <div className="mt-3 flex items-center justify-between">
+                                <span className="text-[10.5px] font-mono text-[#D4AF37] font-semibold flex items-center gap-1 group-hover:underline">
+                                  <span>+</span> <span>{t('assignTenant')}</span>
+                                </span>
+                                <span className="text-[9px] font-mono text-[#64748B]">{unit.rentAmount > 0 ? `₹${unit.rentAmount.toLocaleString('en-IN')}` : ''}</span>
                               </div>
                             </div>
                           );
@@ -2267,6 +2375,120 @@ ${elecLine}--------------------------------
                 </div>
               </nav>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ================= ASSIGN TENANT DRAWER (VACANT ROOMS/SHOPS) ================= */}
+        <AnimatePresence>
+          {activeAssignUnit && (
+            <>
+              <motion.div
+                key="assign-tenant-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={handleCloseAssignTenant}
+                className="absolute inset-0 bg-black/70 backdrop-blur-md z-40 cursor-pointer"
+              />
+
+              <motion.div
+                key="assign-tenant-sheet"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+                className="absolute bottom-0 inset-x-0 bg-[#0A0D14] border-t border-[#D4AF37]/40 rounded-t-[32px] p-5 pb-[max(24px,env(safe-area-inset-bottom,24px))] shadow-[0_-20px_50px_rgba(0,0,0,0.9)] z-50 gpu-layer flex flex-col select-none max-h-[85vh] overflow-y-auto deck-scrollbar"
+              >
+                <div className="w-10 h-1 rounded-full bg-white/20 mb-3 mx-auto shrink-0" />
+
+                <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2.5 py-1 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 font-mono font-bold text-sm text-[#D4AF37]">
+                      {activeAssignUnit.name}
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-semibold text-[#EDEDED]">{t('assignTenantTitle')}</h3>
+                      <span className="text-[10px] font-mono text-[#94A3B8]">
+                        {lang === 'en'
+                          ? (activeAssignUnit.type === 'room' ? 'Room // Vacant' : 'Shop // Vacant')
+                          : (activeAssignUnit.type === 'room' ? 'कमरा // रिक्त' : 'दुकान // रिक्त')}
+                      </span>
+                    </div>
+                  </div>
+                  <button onClick={handleCloseAssignTenant} className="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-3.5 font-mono">
+                  {/* Tenant Name */}
+                  <div>
+                    <label className="block text-[10px] text-[#94A3B8] uppercase font-bold tracking-wider mb-1.5">
+                      {t('tenantBusinessName')}
+                    </label>
+                    <input
+                      type="text"
+                      value={assignTenantName}
+                      onChange={(e) => setAssignTenantName(e.target.value)}
+                      placeholder={t('tenantNamePlaceholder')}
+                      className="w-full py-2.5 px-3 rounded-xl bg-[#06080C] border border-white/[0.12] focus:border-[#D4AF37]/60 text-xs text-[#EDEDED] placeholder-[#64748B] focus:outline-none transition-all"
+                    />
+                  </div>
+
+                  {/* Agreed Monthly Rent */}
+                  <div>
+                    <label className="block text-[10px] text-[#94A3B8] uppercase font-bold tracking-wider mb-1.5">
+                      {t('agreedBaseRent')}
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-xs text-[#D4AF37] font-bold">₹</span>
+                      <input
+                        type="number"
+                        value={assignRentInput}
+                        onChange={(e) => setAssignRentInput(e.target.value)}
+                        placeholder="0"
+                        className="w-full py-2.5 pl-8 pr-3 rounded-xl bg-[#06080C] border border-white/[0.12] focus:border-[#D4AF37]/60 text-xs font-bold text-[#EDEDED] placeholder-[#64748B] focus:outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Initial Electricity Sub-meter Reading */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-[10px] text-cyan-400 uppercase font-bold tracking-wider">
+                        {t('initialMeterReading')}
+                      </label>
+                      <span className="text-[10px] text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/30">
+                        @ ₹{(activeAssignUnit.type === 'room' ? tariffs.room : tariffs.shop).toFixed(1)} {t('perUnit')}
+                      </span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={assignMeterInput}
+                        onChange={(e) => setAssignMeterInput(e.target.value)}
+                        placeholder="0"
+                        className="w-full py-2.5 px-3 rounded-xl bg-[#06080C] border border-cyan-500/30 focus:border-cyan-400 text-xs font-bold text-cyan-300 placeholder-[#64748B] focus:outline-none transition-all"
+                      />
+                      <span className="absolute right-3 top-2.5 text-[11px] text-[#64748B]">kWh</span>
+                    </div>
+                    <span className="text-[9.5px] text-[#64748B] mt-1 block">
+                      {t('startingBenchmarkNote')}
+                    </span>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="button"
+                    onClick={handleConfirmAssignTenant}
+                    className="w-full py-3.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(212,175,55,0.35)] active:scale-98 transition-all mt-2"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>{t('assignAndActivateBtn')}</span>
+                  </button>
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
 
