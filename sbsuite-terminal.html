@@ -168,7 +168,6 @@
 
     <!-- ================= SCREEN 1: TOUCH / SWIPE-UP TO ENTER WELCOME SPLASH ================= -->
     <div id="screen-splash" style="padding-top: max(16px, env(safe-area-inset-top, 16px)); padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));" class="screen-fade absolute inset-0 flex flex-col justify-between items-center px-6 cursor-pointer select-none z-20 gpu-accel opacity-100">
-      <!-- Top Cockpit Status Line -->
       <div class="w-full flex items-center justify-between opacity-80 pt-2 pointer-events-none">
         <div class="flex items-center gap-2">
           <div class="w-1.5 h-1.5 rounded-full bg-[#D4AF37] shadow-[0_0_6px_rgba(212,175,55,0.8)]"></div>
@@ -182,17 +181,14 @@
         </div>
       </div>
 
-      <!-- Center Hero Visual: Monolith with 3D Gyro Tilt Parallax -->
       <div class="flex flex-col items-center justify-center text-center -mt-4 pointer-events-none">
         <div id="monolith-hero" class="relative mb-7 shadow-[0_25px_60px_rgba(0,0,0,0.85)] rounded-[36px] flex items-center justify-center transition-transform duration-100 ease-out" style="transform-style: preserve-3d; perspective: 1000px;">
           
-          <!-- Organic Slow Ambient Luminescence -->
           <div
             class="absolute w-36 h-36 rounded-full pointer-events-none animate-ambient-glow"
             style="background: radial-gradient(circle, rgba(212, 175, 55, 0.3) 0%, rgba(212, 175, 55, 0.08) 45%, transparent 70%); filter: blur(20px);"
           ></div>
 
-          <!-- Volumetric Monolith SVG (144x144, w-36 h-36) -->
           <svg viewBox="0 0 144 144" class="w-36 h-36 relative z-10" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="goldChamferBevel" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -252,9 +248,8 @@
         </div>
       </div>
 
-      <!-- Bottom Call-to-Action: Tap or Swipe-Up to Enter -->
       <div class="w-full flex flex-col items-center pb-2 pointer-events-none">
-        <div class="relative overflow-hidden inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-white/[0.04] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.15)] text-xs font-mono font-semibold tracking-wider text-[#F1F5F9]">
+        <div class="relative overflow-hidden inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-white/[0.04] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.6)] text-xs font-mono font-semibold tracking-wider text-[#F1F5F9]">
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.14] to-transparent -translate-x-full animate-shimmer pointer-events-none"></div>
           <span class="w-2 h-2 rounded-full bg-[#D4AF37] shadow-[0_0_8px_#D4AF37] animate-pulse"></span>
           <span>TAP OR SWIPE UP TO ENTER</span>
@@ -265,10 +260,9 @@
       </div>
     </div>
 
-    <!-- ================= SCREEN 2: VOLUMETRIC GLASS PEBBLE PIN GATEWAY ================= -->
+    <!-- ================= SCREEN 2: PIN GATEWAY ================= -->
     <div id="screen-pin" style="display: none; padding-top: max(16px, env(safe-area-inset-top, 16px)); padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));" class="screen-fade relative w-full h-full flex flex-col justify-between px-6 z-10 gpu-accel opacity-0">
       
-      <!-- Balanced Clean Header without Back Button -->
       <div class="w-full flex items-center justify-between pt-2 pb-1">
         <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.4)]">
           <div class="w-1.5 h-1.5 rounded-full bg-[#D4AF37] shadow-[0_0_6px_rgba(212,175,55,0.8)]"></div>
@@ -277,14 +271,12 @@
           </span>
         </div>
 
-        <!-- Sleek Green Security Indicator Dot -->
         <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-[0_4px_16px_rgba(0,0,0,0.4)]">
           <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981] animate-pulse"></span>
           <span class="text-[10px] font-mono font-medium text-[#94A3B8]">GATEWAY SECURED</span>
         </div>
       </div>
 
-      <!-- Title & The 4 PIN Wells -->
       <div class="flex flex-col items-center text-center my-auto py-2">
         <div id="pin-lock-icon" class="w-11 h-11 rounded-2xl bg-[#0D1117] border border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_16px_rgba(0,0,0,0.4)] flex items-center justify-center mb-3 transition-colors duration-200">
           <svg class="w-4 h-4 text-[#D4AF37]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -300,12 +292,10 @@
           Enter 4-digit terminal access code
         </p>
 
-        <!-- Status Micro-Badge -->
         <div id="pin-feedback" class="h-7 mt-3 flex items-center justify-center text-[11px] font-mono text-[#475569] tracking-wider uppercase">
           Authorized Personnel Only
         </div>
 
-        <!-- THE 4 PIN WELLS: Sunken Concave Glass Capsules with Shockwave Halo Ring -->
         <div class="relative mt-2">
           <div id="halo-shockwave" class="absolute -inset-4 rounded-full border border-[#D4AF37] pointer-events-none opacity-0"></div>
           <div id="pin-dots-container" class="flex items-center gap-4 transition-transform duration-150">
@@ -317,7 +307,7 @@
         </div>
       </div>
 
-      <!-- KEYPAD: 3x4 Grid of Tactile Obsidian Glass Pebbles -->
+      <!-- Keypad -->
       <div class="w-full pb-2 select-none">
         <div class="grid grid-cols-3 gap-y-3.5 gap-x-4 max-w-[280px] mx-auto place-items-center">
           <button onclick="pressDigit('1')" class="w-20 h-20 rounded-[26px] glass-pebble flex flex-col items-center justify-center text-[#F1F5F9] cursor-pointer select-none gpu-accel touch-manipulation">
@@ -380,10 +370,8 @@
       
       <!-- VIEW 1: ESTATE UNITS VIEW -->
       <div id="units-deck-view" class="flex-1 w-full min-h-0 flex flex-col overflow-hidden">
-        <!-- Pinned Sticky Header -->
         <header class="shrink-0 w-full z-20 px-5 pt-[max(12px,env(safe-area-inset-top,12px))] pb-3 border-b border-white/[0.06] bg-[#06080C]/95 backdrop-blur-xl">
           <div class="flex items-center justify-between">
-            <!-- Left: Monogram & Title -->
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-xl bg-[#0D1117] border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] font-bold text-xs shadow-[0_2px_10px_rgba(212,175,55,0.18)]">
                 SB
@@ -399,7 +387,6 @@
               </div>
             </div>
 
-            <!-- Right Controls: Master Override (Owner Only) & Lock -->
             <div class="flex items-center gap-2">
               <button id="btn-master-override-units" onclick="openMasterOverrideModal()" style="display: none;" class="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -415,7 +402,7 @@
             </div>
           </div>
 
-          <!-- SEGMENTED VAULT TABS -->
+          <!-- Tabs -->
           <div class="mt-3.5 grid grid-cols-2 gap-2 p-1 rounded-2xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-md">
             <button id="tab-rooms-btn" type="button" onclick="switchDeckTab('rooms')" class="py-2 px-3 rounded-xl text-xs font-medium font-mono flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/40 shadow-[0_2px_12px_rgba(212,175,55,0.18)]">
               <span>🛏️ Rooms</span>
@@ -428,7 +415,7 @@
             </button>
           </div>
 
-          <!-- STATS RIBBON -->
+          <!-- Stats -->
           <div class="mt-3 grid grid-cols-3 gap-2 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center">
             <div class="flex flex-col items-center">
               <span class="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">Occupancy</span>
@@ -455,7 +442,6 @@
           </div>
         </header>
 
-        <!-- Grid Deck Container -->
         <main class="flex-1 w-full min-h-0 overflow-y-auto overscroll-contain px-4 pt-3 pb-[max(24px,env(safe-area-inset-bottom,24px))] deck-scrollbar">
           <div id="units-grid-container" class="grid grid-cols-2 gap-2.5 pb-6"></div>
         </main>
@@ -463,7 +449,6 @@
 
       <!-- VIEW 2: COMMERCIAL PARKING GATE VIEW -->
       <div id="parking-gate-view" class="flex-1 w-full min-h-0 flex flex-col overflow-hidden" style="display: none;">
-        <!-- Parking Header -->
         <header class="shrink-0 w-full z-20 px-5 pt-[max(12px,env(safe-area-inset-top,12px))] pb-3 border-b border-white/[0.06] bg-[#06080C]/95 backdrop-blur-xl">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -481,7 +466,6 @@
               </div>
             </div>
 
-            <!-- Right Controls: Master Override & Lock -->
             <div class="flex items-center gap-2">
               <button id="btn-master-override-parking" onclick="openMasterOverrideModal()" style="display: none;" class="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -497,7 +481,7 @@
             </div>
           </div>
 
-          <!-- 4 Category Telemetry Strip -->
+          <!-- Telemetry Strip -->
           <div class="mt-3 grid grid-cols-4 gap-1.5">
             <div class="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center border font-mono bg-white/[0.03] border-white/[0.06] text-[#CBD5E1]">
               <span class="text-[8.5px] text-[#94A3B8] uppercase truncate">🚗 Small</span>
@@ -517,10 +501,10 @@
             </div>
           </div>
 
-          <!-- Financial Cash Bar (Total / Owner Net / Ritin Cut) -->
+          <!-- Cash Bar -->
           <div class="mt-2.5 p-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37]/10 via-[#0A0D14] to-cyan-950/20 border border-[#D4AF37]/30 flex items-center justify-between font-mono text-xs">
             <div class="flex flex-col">
-              <span class="text-[9px] text-[#94A3B8] uppercase">कुल शिफ्ट संग्रह (Total Cash)</span>
+              <span class="text-[9px] text-[#94A3B8] uppercase">कुल शिफ्ट संग्रह</span>
               <span id="parking-shift-total" class="text-sm font-bold text-[#EDEDED] mt-0.5">₹0</span>
             </div>
             <div class="flex items-center gap-3 text-right">
@@ -536,7 +520,6 @@
           </div>
         </header>
 
-        <!-- Scrollable Parking Main -->
         <main class="flex-1 w-full min-h-0 overflow-y-auto overscroll-contain px-4 pt-3 pb-4 deck-scrollbar flex flex-col gap-3.5">
           <!-- Fast Monthly Pass Issuance Card -->
           <div class="p-3.5 rounded-2xl bg-[#0A0D14] border border-white/[0.08] shadow-lg flex flex-col gap-3">
@@ -605,14 +588,14 @@
               </button>
             </div>
 
-            <!-- Tuk-Tuk Dedicated EV Charger Sub-Meter Toggle & Initial Reading -->
+            <!-- Tuk-Tuk Dedicated EV Charger Sub-Meter Toggle -->
             <div id="new-tuktuk-ev-toggle-container" class="p-2.5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 flex flex-col gap-2" style="display: none;">
               <label class="flex items-center justify-between cursor-pointer">
                 <span class="text-[11px] font-mono font-semibold text-cyan-300 flex items-center gap-1.5">
                   <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                   ⚡ EV चार्जर सब-मीटर सुविधा जोड़ें
                 </span>
-                <input type="checkbox" id="new-pass-ev-toggle" onchange="toggleNewPassEvFacility()" class="w-4 h-4 rounded border-cyan-500/50 text-cyan-500 focus:ring-0 focus:ring-offset-0 bg-[#06080C] cursor-pointer">
+                <input type="checkbox" id="new-pass-ev-toggle" onchange="toggleNewPassEvFacility()" class="w-4 h-4 rounded border-cyan-500/50 text-cyan-500 focus:ring-0 bg-[#06080C] cursor-pointer">
               </label>
 
               <div id="new-pass-ev-reading-box" class="flex items-center gap-2 pt-1 border-t border-cyan-500/20" style="display: none;">
@@ -664,7 +647,6 @@
               />
             </div>
 
-            <!-- Issue Pass Button (No Hardcoded Lockouts!) -->
             <button
               type="button"
               id="btn-issue-pass"
@@ -688,7 +670,6 @@
             <svg class="w-4 h-4 text-[#64748B] absolute left-3 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           </div>
 
-          <!-- Active Subscribers Deck List -->
           <div class="flex items-center justify-between px-1">
             <span class="text-xs font-mono font-semibold text-[#EDEDED]">
               पंजीकृत मासिक ग्राहक (<span id="parking-active-count">0</span>)
@@ -698,13 +679,11 @@
             </span>
           </div>
 
-          <div id="parking-subscribers-list" class="flex flex-col gap-2 pb-6">
-            <!-- Dynamically Rendered -->
-          </div>
+          <div id="parking-subscribers-list" class="flex flex-col gap-2 pb-6"></div>
         </main>
       </div>
 
-      <!-- BOTTOM DOCK: SWITCH BETWEEN UNITS DECK & PARKING GATE -->
+      <!-- Bottom Dock Navigation -->
       <nav class="shrink-0 w-full z-30 px-5 pt-2 pb-[max(12px,env(safe-area-inset-bottom,12px))] border-t border-white/[0.08] bg-[#06080C]/95 backdrop-blur-xl">
         <div class="grid grid-cols-2 gap-3 max-w-[340px] mx-auto">
           <button
@@ -737,19 +716,14 @@
     <div id="drawer-sheet" class="absolute bottom-0 inset-x-0 bg-[#0A0D14] border-t border-white/[0.12] rounded-t-[32px] p-5 pb-[max(24px,env(safe-area-inset-bottom,24px))] shadow-[0_-20px_50px_rgba(0,0,0,0.9)] z-50 gpu-accel flex flex-col select-none transition-transform duration-300 ease-out max-h-[85vh] overflow-y-auto deck-scrollbar translate-y-full" style="display: none;">
       <div class="w-10 h-1 rounded-full bg-white/20 mb-3 mx-auto shrink-0"></div>
 
-      <!-- Top Bar inside Sheet -->
       <div class="flex items-center justify-between pb-3 border-b border-white/[0.07]">
         <div class="flex items-center gap-2.5">
           <span id="drawer-unit-badge" class="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-white/[0.1] font-mono font-bold text-sm text-[#EDEDED]">
             R-102
           </span>
           <div>
-            <h3 id="drawer-tenant-name" class="text-sm font-semibold text-[#EDEDED]">
-              Amit Sharma
-            </h3>
-            <span id="drawer-tariff-badge" class="text-[10px] font-mono text-cyan-400">
-              बिजली दर: ₹9.0 / यूनिट
-            </span>
+            <h3 id="drawer-tenant-name" class="text-sm font-semibold text-[#EDEDED]">Amit Sharma</h3>
+            <span id="drawer-tariff-badge" class="text-[10px] font-mono text-cyan-400">बिजली दर: ₹9.0 / यूनिट</span>
           </div>
         </div>
 
@@ -758,7 +732,6 @@
         </button>
       </div>
 
-      <!-- Drawer Tabs: Sub-Meter Reading vs Collect Payment -->
       <div class="mt-3 grid grid-cols-2 gap-2 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
         <button id="drawer-tab-meter-btn" onclick="switchDrawerTab('meter')" type="button" class="py-1.5 px-3 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/30 shadow-sm">
           <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -770,7 +743,7 @@
         </button>
       </div>
 
-      <!-- Content Section 1: Twin-Gauge Sub-Meter Flow -->
+      <!-- Sub-Meter Reading -->
       <div id="drawer-section-meter" class="flex flex-col gap-3.5 pt-3">
         <div class="grid grid-cols-2 gap-2.5">
           <div class="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col justify-between">
@@ -804,7 +777,6 @@
           </div>
         </div>
 
-        <!-- Live Math Telemetry Ribbon -->
         <div class="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/30 via-[#0A0D14] to-[#D4AF37]/10 border border-cyan-500/20 flex items-center justify-between font-mono">
           <div class="flex flex-col">
             <span class="text-[9px] text-[#94A3B8] uppercase">खपत (Units Consumed)</span>
@@ -840,9 +812,8 @@
         </div>
       </div>
 
-      <!-- Content Section 2: Dual-Wallet Cash Split Flow -->
+      <!-- Payment Section -->
       <div id="drawer-section-pay" class="flex flex-col gap-3.5 pt-3" style="display: none;">
-        <!-- Rent Vault Box -->
         <div class="p-3.5 rounded-2xl bg-[#06080C] border border-[#D4AF37]/40 flex flex-col gap-2">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5">
@@ -866,7 +837,6 @@
           </span>
         </div>
 
-        <!-- Electricity Vault Box -->
         <div class="p-3.5 rounded-2xl bg-[#06080C] border border-cyan-500/40 flex flex-col gap-2">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5">
@@ -890,7 +860,6 @@
           </span>
         </div>
 
-        <!-- Total Cash Action Button -->
         <button
           type="button"
           id="drawer-confirm-pay-btn"
@@ -903,7 +872,7 @@
       </div>
     </div>
 
-    <!-- ================= UNIT PAYMENT RECEIPT MODAL (ROOMS & SHOPS) ================= -->
+    <!-- ================= UNIT PAYMENT RECEIPT MODAL ================= -->
     <div id="modal-receipt" style="display: none;" class="absolute inset-0 z-50 flex items-center justify-center p-4">
       <div onclick="closeReceiptModal()" class="absolute inset-0 bg-black/75 backdrop-blur-md cursor-pointer"></div>
       <div class="relative w-full max-w-sm bg-[#0A0D14] border border-[#D4AF37]/40 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-10 flex flex-col gap-3 font-mono">
@@ -956,7 +925,6 @@
     <div id="parking-renewal-sheet" class="absolute bottom-0 inset-x-0 bg-[#0A0D14] border-t border-white/[0.12] rounded-t-[32px] p-5 pb-[max(24px,env(safe-area-inset-bottom,24px))] shadow-[0_-20px_50px_rgba(0,0,0,0.9)] z-50 gpu-accel flex flex-col select-none transition-transform duration-300 ease-out max-h-[85vh] overflow-y-auto deck-scrollbar translate-y-full" style="display: none;">
       <div class="w-10 h-1 rounded-full bg-white/20 mb-3 mx-auto shrink-0"></div>
 
-      <!-- Header inside Sheet -->
       <div class="flex items-center justify-between pb-3 border-b border-white/[0.07]">
         <div class="flex items-center gap-2.5">
           <span id="renewal-vehicle-num-badge" class="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-white/[0.1] font-mono font-bold text-sm text-[#EDEDED]">
@@ -984,7 +952,6 @@
         />
       </div>
 
-      <!-- Standard Renewal Section -->
       <div class="flex flex-col gap-3.5 pt-3">
         <div class="grid grid-cols-2 gap-2.5">
           <div class="p-3 rounded-xl bg-[#06080C] border border-white/[0.06] flex flex-col">
@@ -1025,7 +992,7 @@
           </div>
         </div>
 
-        <!-- TUK-TUK DEDICATED EV SUB-METER SECTION (IF HAS EV FACILITY) -->
+        <!-- TUK-TUK DEDICATED EV SUB-METER SECTION -->
         <div id="renewal-ev-submeter-container" class="p-3.5 rounded-2xl bg-[#06080C] border border-cyan-500/40 flex flex-col gap-2.5" style="display: none;">
           <div class="flex items-center justify-between pb-1 border-b border-cyan-500/20">
             <div class="flex items-center gap-1.5">
@@ -1059,13 +1026,11 @@
             </div>
           </div>
 
-          <!-- EV Math Telemetry -->
           <div class="p-2 rounded-xl bg-cyan-950/30 border border-cyan-500/20 flex items-center justify-between text-xs font-mono">
             <span class="text-[#94A3B8]">खपत: <strong id="renewal-ev-units" class="text-cyan-300">0</strong> यूनिट | कुल बिल:</span>
             <span id="renewal-ev-bill-total" class="font-bold text-[#FFF4C2]">₹0</span>
           </div>
 
-          <!-- Flexible EV Cash Collection & Arrears -->
           <div class="flex flex-col gap-1 pt-1">
             <div class="flex items-center gap-2">
               <span class="text-xs font-mono text-cyan-300">चार्जिंग नकद जमा: ₹</span>
@@ -1083,7 +1048,6 @@
           </div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="grid grid-cols-2 gap-3 pt-1">
           <button
             type="button"
@@ -1114,7 +1078,7 @@
             <svg class="w-5 h-5 text-[#D4AF37]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
           </div>
           <div>
-            <h3 class="text-sm font-semibold text-[#EDEDED]">मासिक पार्किंग रसीद (Monthly Pass)</h3>
+            <h3 id="monthly-receipt-modal-title" class="text-sm font-semibold text-[#EDEDED]">मासिक पार्किंग रसीद (Monthly Pass)</h3>
             <span class="text-[10px] text-emerald-400 font-bold">नकद प्राप्त दर्ज (सफल)</span>
           </div>
         </div>
@@ -1202,7 +1166,6 @@
             🅿️ पार्किंग श्रेणी शुल्क व कमीशन (Fees & Splits)
           </span>
 
-          <!-- Car Small -->
           <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1 text-[11px]">
             <span class="font-bold text-sky-300">🚗 Car: Small (हैचबैक)</span>
             <div class="grid grid-cols-3 gap-1.5 text-[10px]">
@@ -1212,7 +1175,6 @@
             </div>
           </div>
 
-          <!-- Car Large -->
           <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1 text-[11px]">
             <span class="font-bold text-amber-300">🚙 Car: Large / SUV</span>
             <div class="grid grid-cols-3 gap-1.5 text-[10px]">
@@ -1222,7 +1184,6 @@
             </div>
           </div>
 
-          <!-- Heavy -->
           <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1 text-[11px]">
             <span class="font-bold text-purple-300">🛻 Pickup / Loader</span>
             <div class="grid grid-cols-3 gap-1.5 text-[10px]">
@@ -1232,7 +1193,6 @@
             </div>
           </div>
 
-          <!-- Tuk-Tuk -->
           <div class="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1 text-[11px]">
             <span class="font-bold text-emerald-300">🛺 E-Rickshaw / Tuk-Tuk</span>
             <div class="grid grid-cols-3 gap-1.5 text-[10px]">
@@ -1247,7 +1207,6 @@
         <div class="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
           <span class="text-xs font-bold text-[#EDEDED] uppercase">🏢 यूनिट किराया व बकाया समायोजन</span>
           <select id="override-unit-select" onchange="onSelectUnitForOverride()" class="w-full py-1.5 px-2 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none">
-            <!-- Dynamically populated -->
           </select>
           <div class="grid grid-cols-2 gap-2 text-xs">
             <div>
@@ -1265,7 +1224,6 @@
         <div class="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
           <span class="text-xs font-bold text-[#EDEDED] uppercase">🅿️ पार्किंग ग्राहक व स्लॉट समायोजन</span>
           <select id="override-sub-select" onchange="onSelectSubForOverride()" class="w-full py-1.5 px-2 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none">
-            <!-- Dynamically populated -->
           </select>
           <div class="grid grid-cols-2 gap-2 text-xs">
             <div>
@@ -1347,7 +1305,7 @@
       { id: 's-08', name: 'S-08', type: 'shop', isOccupied: true, tenantName: 'Om Sweet & Snacks', rentAmount: 22000, rentDueAmount: 0, lastReading: 5620, isReadingPending: false }
     ];
 
-    // 4. COMMERCIAL PARKING SUBSCRIBERS (FLEXIBLE SLOTS & 4 CATEGORIES)
+    // 4. COMMERCIAL PARKING SUBSCRIBERS
     let parkingSubscribers = [
       // Car Small (₹500: ₹400 / ₹100)
       { id: 'sub-1', vehicleNumber: 'UK 06 AB 1912', ownerName: 'राजेश कुमार', phone: '98371-20411', category: 'car_small', slot: 'P-01', passStatus: 'active', validTillDate: '30/09/2026', isParkedInside: true, lastPaidDate: '01/09/2026' },
@@ -1633,7 +1591,6 @@
       const container = document.getElementById('units-grid-container');
       const filteredUnits = estateUnits.filter(u => u.type === (currentDeckTab === 'rooms' ? 'room' : 'shop'));
 
-      // Calculate operational stats
       const totalUnits = filteredUnits.length;
       const occupiedUnits = filteredUnits.filter(u => u.isOccupied).length;
       const totalRentDue = filteredUnits.reduce((sum, u) => sum + (u.rentDueAmount > 0 ? u.rentDueAmount : (u.isOccupied ? u.rentAmount : 0)), 0);
@@ -1853,14 +1810,12 @@
       const totalDueRent = activeDrawerUnit.rentDueAmount > 0 ? activeDrawerUnit.rentDueAmount : activeDrawerUnit.rentAmount;
       const remainingRent = Math.max(0, totalDueRent - rentPaid);
 
-      // Update unit state
       activeDrawerUnit.rentDueAmount = remainingRent;
       if (hasValidReading) {
         activeDrawerUnit.lastReading = currNum;
         activeDrawerUnit.isReadingPending = false;
       }
 
-      // Generate receipt
       const today = new Date();
       const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
       let elecLine = '';
@@ -1918,7 +1873,6 @@ ${elecLine}--------------------------------
       document.getElementById('new-pass-rate-badge').textContent = `₹${pricing.fee} / माह`;
       document.getElementById('btn-issue-pass-text').textContent = `₹${pricing.fee} नकद प्राप्त & पास जारी करें`;
 
-      // Show EV Charger Sub-Meter toggle only for Tuk-Tuk
       const evToggleContainer = document.getElementById('new-tuktuk-ev-toggle-container');
       if (cat === 'tuktuk') {
         evToggleContainer.style.display = 'flex';
@@ -2001,12 +1955,11 @@ ${elecLine}--------------------------------
 मालिक हिस्सा: ₹${pricing.owner} | रितिन कमीशन: ₹${pricing.ritin}
 धन्यवाद। श्री बालाजी पार्किंग।`;
 
-      showMonthlyReceiptModal(receiptText, pricing.owner, pricing.ritin);
+      showMonthlyReceiptModal(receiptText, pricing.owner, pricing.ritin, 'मासिक पार्किंग रसीद (Monthly Pass)');
       renderParkingGate();
     }
 
     function renderParkingGate() {
-      // Telemetry Counts (Active Vehicles currently parked inside)
       const countSmall = parkingSubscribers.filter(s => s.category === 'car_small' && s.isParkedInside).length;
       const countLarge = parkingSubscribers.filter(s => s.category === 'car_large' && s.isParkedInside).length;
       const countHeavy = parkingSubscribers.filter(s => s.category === 'heavy' && s.isParkedInside).length;
@@ -2019,7 +1972,6 @@ ${elecLine}--------------------------------
       document.getElementById('telemetry-count-tuktuk').textContent = `${countTukTuk} Active`;
       document.getElementById('dock-parking-badge').textContent = totalInside;
 
-      // Cash Bar
       document.getElementById('parking-shift-total').textContent = `₹${shiftParkingCashTotal.toLocaleString('en-IN')}`;
       document.getElementById('parking-shift-owner').textContent = `₹${shiftParkingOwnerNet.toLocaleString('en-IN')}`;
       document.getElementById('parking-shift-ritin').textContent = `₹${shiftParkingRitinCut.toLocaleString('en-IN')}`;
@@ -2061,7 +2013,6 @@ ${elecLine}--------------------------------
                 </span>
               </div>
 
-              <!-- Field Presence Toggle (1-Tap Inside / Outside) -->
               <button
                 type="button"
                 onclick="toggleFieldPresence('${sub.id}', event)"
@@ -2133,7 +2084,6 @@ ${elecLine}--------------------------------
       document.getElementById('renewal-ritin-cut-display').textContent = `₹${pricing.ritin}`;
       document.getElementById('renewal-pass-paid-input').value = pricing.fee;
 
-      // Handle EV Sub-meter section if Tuk-Tuk has EV facility
       const evSec = document.getElementById('renewal-ev-submeter-container');
       if (sub.hasEvFacility) {
         evSec.style.display = 'flex';
@@ -2174,31 +2124,45 @@ ${elecLine}--------------------------------
       }, 300);
     }
 
+    // SANITIZED RECALC RENEWAL TOTAL
     function recalcRenewalTotal() {
       if (!activeSelectedSubscriber) return;
-      const passPaid = parseInt(document.getElementById('renewal-pass-paid-input').value || '0', 10);
+      const passPaidRaw = parseInt(document.getElementById('renewal-pass-paid-input').value, 10);
+      const passPaid = isNaN(passPaidRaw) ? 0 : Math.max(0, passPaidRaw);
       let totalCash = passPaid;
 
       if (activeSelectedSubscriber.hasEvFacility) {
         const prev = activeSelectedSubscriber.lastEvReading || 0;
-        const currVal = document.getElementById('renewal-ev-curr-reading-input').value.trim();
+        const currVal = (document.getElementById('renewal-ev-curr-reading-input').value || '').trim();
         const currNum = parseInt(currVal, 10);
         let currentEvCharge = 0;
+        let units = 0;
 
-        if (!isNaN(currNum) && currNum >= prev) {
-          const units = currNum - prev;
+        // Gracefully calculate delta: if empty or invalid or less than prev, zero charge added without NaN
+        if (currVal !== '' && !isNaN(currNum) && currNum >= prev) {
+          units = currNum - prev;
           currentEvCharge = units * electricityTariffs.tuktuk;
           document.getElementById('renewal-ev-units').textContent = units;
         } else {
           document.getElementById('renewal-ev-units').textContent = '0';
         }
 
-        const totalEvDue = currentEvCharge + (activeSelectedSubscriber.evDueAmount || 0);
+        const carriedArrears = activeSelectedSubscriber.evDueAmount || 0;
+        const totalEvDue = currentEvCharge + carriedArrears;
         document.getElementById('renewal-ev-bill-total').textContent = `₹${totalEvDue.toLocaleString('en-IN')}`;
 
-        const evPaid = parseInt(document.getElementById('renewal-ev-paid-input').value || '0', 10);
+        const evPaidRaw = parseInt(document.getElementById('renewal-ev-paid-input').value, 10);
+        const evPaid = isNaN(evPaidRaw) ? 0 : Math.max(0, evPaidRaw);
         const remainingEvArrears = Math.max(0, totalEvDue - evPaid);
-        document.getElementById('renewal-ev-arrears-hint').textContent = `बकाया आगे जुड़ेगा: ₹${remainingEvArrears.toLocaleString('en-IN')}`;
+        
+        const hintEl = document.getElementById('renewal-ev-arrears-hint');
+        if (currVal !== '' && !isNaN(currNum) && currNum < prev) {
+          hintEl.textContent = `चेतावनी: वर्तमान रीडिंग (${currNum}) पिछली रीडिंग (${prev}) से कम है!`;
+          hintEl.className = 'text-[10px] font-mono text-rose-400 font-bold';
+        } else {
+          hintEl.textContent = `बकाया आगे जुड़ेगा: ₹${remainingEvArrears.toLocaleString('en-IN')}`;
+          hintEl.className = 'text-[10px] font-mono text-amber-400/90';
+        }
 
         totalCash += evPaid;
       }
@@ -2206,6 +2170,7 @@ ${elecLine}--------------------------------
       document.getElementById('renewal-confirm-btn-text').textContent = `₹${totalCash.toLocaleString('en-IN')} नकद प्राप्त दर्ज करें`;
     }
 
+    // POLISHED CONFIRM PASS RENEWAL (EV-ONLY RECEIPT POLISH)
     function confirmPassRenewal() {
       if (!activeSelectedSubscriber) return;
       const sub = activeSelectedSubscriber;
@@ -2214,32 +2179,44 @@ ${elecLine}--------------------------------
       const newSlot = document.getElementById('renewal-slot-input').value.trim() || sub.slot;
       sub.slot = newSlot;
 
-      const passPaid = parseInt(document.getElementById('renewal-pass-paid-input').value || '0', 10);
-      const evPaid = sub.hasEvFacility ? parseInt(document.getElementById('renewal-ev-paid-input').value || '0', 10) : 0;
+      const passPaidRaw = parseInt(document.getElementById('renewal-pass-paid-input').value, 10);
+      const passPaid = isNaN(passPaidRaw) ? 0 : Math.max(0, passPaidRaw);
+
+      const evPaidRaw = sub.hasEvFacility ? parseInt(document.getElementById('renewal-ev-paid-input').value, 10) : 0;
+      const evPaid = isNaN(evPaidRaw) ? 0 : Math.max(0, evPaidRaw);
+
+      const totalReceived = passPaid + evPaid;
+      if (totalReceived <= 0) {
+        alert('कृपया प्राप्त राशि दर्ज करें');
+        return;
+      }
 
       const today = new Date();
       const expiry = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
       const dateText = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
       const expiryText = `${String(expiry.getDate()).padStart(2, '0')}/${String(expiry.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
 
-      // Update Subscriber Pass
-      sub.passStatus = 'active';
-      sub.lastPaidDate = dateText;
-      sub.validTillDate = expiryText;
+      // Update pass dates only if pass fee was paid
+      if (passPaid > 0) {
+        sub.passStatus = 'active';
+        sub.lastPaidDate = dateText;
+        sub.validTillDate = expiryText;
+      }
 
       let evReceiptLines = '';
       if (sub.hasEvFacility) {
         const prev = sub.lastEvReading || 0;
-        const currVal = document.getElementById('renewal-ev-curr-reading-input').value.trim();
+        const currVal = (document.getElementById('renewal-ev-curr-reading-input').value || '').trim();
         const currNum = parseInt(currVal, 10);
         let currentEvCharge = 0;
         let units = 0;
 
-        if (!isNaN(currNum) && currNum >= prev) {
+        if (currVal !== '' && !isNaN(currNum) && currNum >= prev) {
           units = currNum - prev;
           currentEvCharge = units * electricityTariffs.tuktuk;
           sub.lastEvReading = currNum;
         }
+
         const totalEvDue = currentEvCharge + (sub.evDueAmount || 0);
         const remainingEvArrears = Math.max(0, totalEvDue - evPaid);
         sub.evDueAmount = remainingEvArrears;
@@ -2250,14 +2227,44 @@ ${elecLine}--------------------------------
 `;
       }
 
-      // Financial Ledger additions
-      shiftParkingCashTotal += (passPaid + evPaid);
-      shiftParkingOwnerNet += (pricing.owner + (evPaid)); // EV cash goes to estate/owner
-      shiftParkingRitinCut += pricing.ritin;
+      const isEvOnly = (passPaid === 0 && evPaid > 0 && sub.hasEvFacility);
+      const isCombined = (passPaid > 0 && evPaid > 0);
 
-      const totalReceived = passPaid + evPaid;
-      const receiptText = `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
-मासिक पास नवीनीकरण रसीद
+      let splitOwnerNet = 0;
+      let splitRitinCut = 0;
+      let modalTitle = '';
+      let receiptText = '';
+
+      if (isEvOnly) {
+        modalTitle = 'ई-रिक्शा चार्जिंग रसीद (EV Charging)';
+        splitOwnerNet = evPaid;
+        splitRitinCut = 0;
+        shiftParkingCashTotal += evPaid;
+        shiftParkingOwnerNet += evPaid;
+
+        receiptText = `श्री बालाजी पार्किंग (ई-रिक्शा चार्जिंग रसीद)
+(ट्रांजिट कैंप, रुद्रपुर)
+
+वाहन नंबर: [${sub.vehicleNumber}] (${pricing.label})
+स्लॉट: [${sub.slot}]
+धारक: [${sub.ownerName}]
+तारीख: [${dateText}]
+--------------------------------
+${evReceiptLines}--------------------------------
+कुल नकद प्राप्त: ₹${totalReceived} (बिजली बिल)
+मालिक हिस्सा (बिजली फंड): ₹${evPaid} | रितिन कमीशन: ₹0
+--------------------------------
+धन्यवाद। श्री बालाजी पार्किंग।`;
+      } else if (isCombined) {
+        modalTitle = 'मासिक पास एवं ई-रिक्शा चार्जिंग रसीद';
+        splitOwnerNet = pricing.owner + evPaid;
+        splitRitinCut = pricing.ritin;
+        shiftParkingCashTotal += totalReceived;
+        shiftParkingOwnerNet += splitOwnerNet;
+        shiftParkingRitinCut += splitRitinCut;
+
+        receiptText = `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
+मासिक पास एवं ई-रिक्शा चार्जिंग रसीद
 
 वाहन नंबर: [${sub.vehicleNumber}] (${pricing.label})
 स्लॉट: [${sub.slot}]
@@ -2267,16 +2274,41 @@ ${elecLine}--------------------------------
 मासिक पार्किंग पास: ₹${passPaid} (वैध: ${dateText} से ${expiryText})
 ${evReceiptLines}--------------------------------
 कुल नकद प्राप्त: ₹${totalReceived}
-मालिक हिस्सा: ₹${pricing.owner} | रितिन कमीशन: ₹${pricing.ritin}
+मालिक हिस्सा: ₹${splitOwnerNet} | रितिन कमीशन: ₹${splitRitinCut}
+--------------------------------
 धन्यवाद। श्री बालाजी पार्किंग।`;
+      } else {
+        modalTitle = 'मासिक पार्किंग रसीद (Monthly Pass)';
+        splitOwnerNet = pricing.owner;
+        splitRitinCut = pricing.ritin;
+        shiftParkingCashTotal += totalReceived;
+        shiftParkingOwnerNet += splitOwnerNet;
+        shiftParkingRitinCut += splitRitinCut;
+
+        receiptText = `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
+मासिक पार्किंग पास रसीद
+
+वाहन नंबर: [${sub.vehicleNumber}] (${pricing.label})
+स्लॉट: [${sub.slot}]
+धारक: [${sub.ownerName}]
+तारीख: [${dateText}]
+--------------------------------
+मासिक पार्किंग पास: ₹${passPaid} (वैध: ${dateText} से ${expiryText})
+--------------------------------
+कुल नकद प्राप्त: ₹${totalReceived}
+मालिक हिस्सा: ₹${splitOwnerNet} | रितिन कमीशन: ₹${splitRitinCut}
+--------------------------------
+धन्यवाद। श्री बालाजी पार्किंग।`;
+      }
 
       closeRenewalDrawer();
-      showMonthlyReceiptModal(receiptText, pricing.owner, pricing.ritin);
+      showMonthlyReceiptModal(receiptText, splitOwnerNet, splitRitinCut, modalTitle);
       renderParkingGate();
     }
 
-    function showMonthlyReceiptModal(receiptText, ownerNet, ritinCut) {
+    function showMonthlyReceiptModal(receiptText, ownerNet, ritinCut, title) {
       const encoded = encodeURIComponent(receiptText);
+      document.getElementById('monthly-receipt-modal-title').textContent = title || 'मासिक पार्किंग रसीद (Monthly Pass)';
       document.getElementById('monthly-receipt-preview-text').textContent = receiptText;
       document.getElementById('monthly-receipt-split-summary').innerHTML = `मालिक नेट: <strong class="text-[#D4AF37]">₹${ownerNet}</strong> | रितिन कमीशन: <strong class="text-cyan-300">₹${ritinCut}</strong>`;
       document.getElementById('monthly-receipt-whatsapp-btn').href = `https://wa.me/?text=${encoded}`;
@@ -2294,24 +2326,20 @@ ${evReceiptLines}--------------------------------
       if (currentUserRole !== 'owner') return;
       if (navigator.vibrate) navigator.vibrate([16]);
 
-      // Populate tariffs
       document.getElementById('override-tariff-room').value = electricityTariffs.room;
       document.getElementById('override-tariff-shop').value = electricityTariffs.shop;
       document.getElementById('override-tariff-tuktuk').value = electricityTariffs.tuktuk;
 
-      // Populate parking fees
       ['car_small', 'car_large', 'heavy', 'tuktuk'].forEach(cat => {
         document.getElementById(`override-fee-${cat}`).value = categoryPricing[cat].fee;
         document.getElementById(`override-owner-${cat}`).value = categoryPricing[cat].owner;
         document.getElementById(`override-ritin-${cat}`).value = categoryPricing[cat].ritin;
       });
 
-      // Populate Units selector
       const unitSelect = document.getElementById('override-unit-select');
       unitSelect.innerHTML = estateUnits.map(u => `<option value="${u.id}">${u.name} - ${u.isOccupied ? u.tenantName : '(रिक्त)'}</option>`).join('');
       onSelectUnitForOverride();
 
-      // Populate Subscribers selector
       const subSelect = document.getElementById('override-sub-select');
       subSelect.innerHTML = parkingSubscribers.map(s => `<option value="${s.id}">${s.vehicleNumber} - ${s.ownerName} (${s.slot})</option>`).join('');
       onSelectSubForOverride();
@@ -2342,19 +2370,16 @@ ${evReceiptLines}--------------------------------
     function applyMasterOverrides() {
       if (currentUserRole !== 'owner') return;
 
-      // 1. Tariffs
       electricityTariffs.room = parseFloat(document.getElementById('override-tariff-room').value) || 9.0;
       electricityTariffs.shop = parseFloat(document.getElementById('override-tariff-shop').value) || 11.0;
       electricityTariffs.tuktuk = parseFloat(document.getElementById('override-tariff-tuktuk').value) || 9.0;
 
-      // 2. Parking Pricing
       ['car_small', 'car_large', 'heavy', 'tuktuk'].forEach(cat => {
         categoryPricing[cat].fee = parseInt(document.getElementById(`override-fee-${cat}`).value, 10) || categoryPricing[cat].fee;
         categoryPricing[cat].owner = parseInt(document.getElementById(`override-owner-${cat}`).value, 10) || categoryPricing[cat].owner;
         categoryPricing[cat].ritin = parseInt(document.getElementById(`override-ritin-${cat}`).value, 10) || categoryPricing[cat].ritin;
       });
 
-      // 3. Current Unit Adjustment
       const unitId = document.getElementById('override-unit-select').value;
       const unit = estateUnits.find(u => u.id === unitId);
       if (unit) {
@@ -2362,7 +2387,6 @@ ${evReceiptLines}--------------------------------
         unit.rentDueAmount = parseInt(document.getElementById('override-unit-due').value, 10) || 0;
       }
 
-      // 4. Current Subscriber Adjustment
       const subId = document.getElementById('override-sub-select').value;
       const sub = parkingSubscribers.find(s => s.id === subId);
       if (sub) {
