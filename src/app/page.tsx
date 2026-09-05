@@ -205,7 +205,224 @@ function formatDbDate(dateStr: string | null | undefined): string {
   return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 }
 
+type Language = 'en' | 'hi';
+
+const DICTIONARY = {
+  en: {
+    brandEstate: 'Shree Balaji Estate',
+    brandParking: 'Shree Balaji Parking',
+    ownerTelemetry: '👑 Owner Telemetry',
+    managerShift: '👤 Manager Shift (Ritin)',
+    controlBtn: '⚙️ Control',
+    rooms: '🛏️ Rooms',
+    shops: '🏪 Shops',
+    occupancy: 'Occupancy',
+    rentDue: 'Rent Due',
+    metersDue: 'Meters Due',
+    vacant: 'Vacant',
+    tenant: 'Tenant',
+    readingPending: 'Reading Pending',
+    baseRent: 'Base',
+    paid: '(Paid)',
+    dueLabel: 'Due',
+    shiftCash: 'Shift Cash',
+    ownerShare: 'Owner',
+    ritinCut: 'Ritin',
+    moduleUnits: '🏢 Units Deck',
+    moduleParking: '🅿️ Parking Gate',
+    smallCar: '🚗 Small',
+    largeCar: '🚙 SUV',
+    heavyVehicle: '🛻 Heavy',
+    tukTuk: '🛺 TukTuk',
+    activeVehicles: 'Active',
+    issueNewPass: 'Issue New Monthly Pass',
+    platePlaceholder: 'e.g. UK 06 AB 1234',
+    namePlaceholder: "Driver / Owner's Name",
+    phonePlaceholder: 'Mobile Number (Optional)',
+    slotPlaceholder: 'Slot / Location (e.g. P-04 / Open Yard)',
+    enableEvFacility: '⚡ EV Charger Sub-Meter Facility',
+    initialReadingPlaceholder: 'Initial Reading (kWh)',
+    issuePassBtn: 'Issue Pass & Collect Cash',
+    registeredSubscribers: 'Registered Monthly Subscribers',
+    tapToRenew: 'Tap: Renew Pass / EV Sub-Meter',
+    noSubscribersFound: 'No registered subscribers found. Issue a new pass above.',
+    inside: 'Inside',
+    outside: 'Outside',
+    passActive: 'Active',
+    passDue: '⚠️ Pass Due',
+    validTill: 'Valid till',
+    evDues: 'Due',
+    searchPlaceholder: 'Search plates, names, slots, phone...',
+    masterControlTitle: '⚙️ Owner Master Override',
+    ownerPrivilege: 'Owner exclusive administrative panel',
+    electricityTariffs: '⚡ Electricity Tariffs (₹/Unit)',
+    tariffRoom: 'Rooms',
+    tariffShop: 'Shops',
+    tariffEv: 'EV Tuk-Tuk',
+    parkingPricing: '🅿️ Parking Fees & Commission Splits (4 Categories)',
+    unitRentAdjustment: '🏢 Unit Rent & Arrears Adjustment',
+    unitSelectLabel: 'Select Unit',
+    unitRentLabel: 'Base Rent (₹)',
+    unitDueLabel: 'Rent Due / Arrears (₹)',
+    parkingSubAdjustment: '🅿️ Parking Subscriber & Slot Adjustment',
+    noSubsToAdjust: 'No registered subscribers available',
+    slotYard: 'Slot / Location',
+    evArrears: 'EV Due (₹)',
+    saveChanges: 'Save Changes Immediately',
+    parkingSub: 'Transit Camp // Monthly Fleet',
+    perMonth: '/ Mo',
+    initialReading: 'Initial Meter Reading (kWh):',
+    lockTerminal: 'Lock Terminal',
+    unitRate: 'Rate',
+    perUnit: '/unit',
+    submeterReadingTab: '1. Sub-Meter Reading',
+    cashCollectionTab: '2. Cash Collection (Split)',
+    prevReading: 'Previous Reading',
+    currentReading: 'Current Reading',
+    consumption: 'Consumption',
+    unitsLabel: 'units',
+    dueBill: 'Due Bill',
+    saveReadingOnly: 'Save Reading Only',
+    proceedToPayment: 'Collect Cash & Split',
+    rentDueTitle: 'Rent Due',
+    elecDueTitle: 'Electricity Due',
+    totalDueTitle: 'Total Due',
+    rentPaymentLabel: 'Rent Payment (₹)',
+    elecPaymentLabel: 'Electricity Payment (₹)',
+    totalCashReceived: 'Total Cash Received',
+    ownerNetSplit: 'Owner Net Split',
+    ritinSplitCut: 'Ritin Commission Cut',
+    recordPaymentBtn: 'Record Payment & Generate Slip',
+    paymentSuccessTitle: 'Payment Successfully Recorded!',
+    totalCashPrefix: 'Total Cash',
+    doneSkip: 'Done / Completed',
+    renewPassTitle: 'Monthly Pass Renewal',
+    renewMonthlyPass: 'Renew Pass & Collect Cash',
+    passRenewedSuccess: 'Monthly Pass Successfully Renewed!',
+    submeterTogglePrompt: '⚡ Add Dedicated EV Charger Sub-Meter',
+  },
+  hi: {
+    brandEstate: 'श्री बालाजी एस्टेट',
+    brandParking: 'श्री बालाजी पार्किंग',
+    ownerTelemetry: '👑 मालिक टेलीमेट्री',
+    managerShift: '👤 मैनेजर शिफ्ट (रितिन)',
+    controlBtn: '⚙️ कंट्रोल',
+    rooms: '🛏️ कमरे',
+    shops: '🏪 दुकानें',
+    occupancy: 'कुल आवास',
+    rentDue: 'बकाया किराया',
+    metersDue: 'मीटर रीडिंग बाकी',
+    vacant: 'रिक्त',
+    tenant: 'किराएदार',
+    readingPending: 'रीडिंग बाकी',
+    baseRent: 'किराया',
+    paid: '(चुकता)',
+    dueLabel: 'बकाया',
+    shiftCash: 'शिफ्ट नकद',
+    ownerShare: 'मालिक',
+    ritinCut: 'रितिन',
+    moduleUnits: '🏢 यूनिट्स डेक',
+    moduleParking: '🅿️ पार्किंग गेट',
+    smallCar: '🚗 छोटी कार',
+    largeCar: '🚙 SUV',
+    heavyVehicle: '🛻 लोडर',
+    tukTuk: '🛺 टुक-टुक',
+    activeVehicles: 'सक्रिय',
+    issueNewPass: 'नया मासिक पास जारी करें',
+    platePlaceholder: 'गाड़ी नंबर (उदा. UK 06 AB 1234)',
+    namePlaceholder: 'चालक / मालिक का नाम',
+    phonePlaceholder: 'मोबाइल नंबर (वैकल्पिक)',
+    slotPlaceholder: 'स्लॉट / स्थान (उदा. P-04 / खुला प्रांगण)',
+    enableEvFacility: '⚡ ई-रिक्शा सब-मीटर सुविधा',
+    initialReadingPlaceholder: 'प्रारंभिक रीडिंग (kWh)',
+    issuePassBtn: 'पास जारी करें व नकद प्राप्त करें',
+    registeredSubscribers: 'पंजीकृत मासिक ग्राहक',
+    tapToRenew: 'टैप करें: नवीनीकरण / EV मीटर',
+    noSubscribersFound: 'कोई पंजीकृत मासिक ग्राहक नहीं है। नया पास जारी करें।',
+    inside: 'अंदर',
+    outside: 'बाहर',
+    passActive: 'सक्रिय',
+    passDue: '⚠️ पास देय',
+    validTill: 'वैध',
+    evDues: 'बकाया',
+    searchPlaceholder: 'नंबर, नाम या स्लॉट खोजें...',
+    masterControlTitle: '⚙️ मालिक मास्टर ओवरराइड',
+    ownerPrivilege: 'मालिक विशेष प्रशासनिक नियंत्रण',
+    electricityTariffs: '⚡ बिजली दरें (₹/यूनिट)',
+    tariffRoom: 'कमरा',
+    tariffShop: 'दुकान',
+    tariffEv: 'ई-रिक्शा',
+    parkingPricing: '🅿️ पार्किंग शुल्क व कमीशन (4 श्रेणियां)',
+    unitRentAdjustment: '🏢 यूनिट किराया व बकाया समायोजन',
+    unitSelectLabel: 'यूनिट चुनें',
+    unitRentLabel: 'मासिक किराया (₹)',
+    unitDueLabel: 'बकाया किराया (₹)',
+    parkingSubAdjustment: '🅿️ पार्किंग ग्राहक व स्लॉट समायोजन',
+    noSubsToAdjust: 'कोई पंजीकृत ग्राहक नहीं है',
+    slotYard: 'स्लॉट / स्थान',
+    evArrears: 'EV बकाया (₹)',
+    saveChanges: 'परिवर्तन तुरंत लागू करें',
+    parkingSub: 'ट्रांजिट कैंप // मासिक फ्लीट',
+    perMonth: '/ माह',
+    initialReading: 'प्रारंभिक मीटर रीडिंग (kWh):',
+    lockTerminal: 'टर्मिनल लॉक करें',
+    unitRate: 'दर',
+    perUnit: '/यूनिट',
+    submeterReadingTab: '1. सब-मीटर रीडिंग',
+    cashCollectionTab: '2. नकद वसूली (Split)',
+    prevReading: 'पिछली रीडिंग',
+    currentReading: 'वर्तमान रीडिंग',
+    consumption: 'खपत',
+    unitsLabel: 'यूनिट',
+    dueBill: 'देय बिल',
+    saveReadingOnly: 'केवल रीडिंग सेव करें',
+    proceedToPayment: 'नकद वसूली दर्ज करें',
+    rentDueTitle: 'बकाया किराया',
+    elecDueTitle: 'बिजली बिल',
+    totalDueTitle: 'कुल देय',
+    rentPaymentLabel: 'किराया भुगतान (₹)',
+    elecPaymentLabel: 'बिजली भुगतान (₹)',
+    totalCashReceived: 'कुल नकद प्राप्त',
+    ownerNetSplit: 'मालिक नेट हिस्सा',
+    ritinSplitCut: 'रितिन कमीशन कट',
+    recordPaymentBtn: 'भुगतान दर्ज करें व रसीद बनाएं',
+    paymentSuccessTitle: 'भुगतान सफलतापूर्वक दर्ज!',
+    totalCashPrefix: 'कुल नकद',
+    doneSkip: 'संपन्न',
+    renewPassTitle: 'मासिक पास नवीनीकरण',
+    renewMonthlyPass: 'नकद प्राप्त व नवीनीकरण',
+    passRenewedSuccess: 'मासिक पास सफलतापूर्वक नवीनीकृत!',
+    submeterTogglePrompt: '⚡ EV चार्जर सब-मीटर सुविधा जोड़ें',
+  }
+};
+
 export default function Home() {
+  const [lang, setLang] = useState<Language>('en');
+  const toggleLanguage = () => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([10]);
+    }
+    setLang((prev) => (prev === 'en' ? 'hi' : 'en'));
+  };
+  const t = (key: keyof typeof DICTIONARY['en']) => DICTIONARY[lang][key] || DICTIONARY['en'][key];
+
+  const getCategoryLabels = (cat: VehicleCategory) => {
+    if (lang === 'hi') {
+      switch (cat) {
+        case 'car_small': return { label: 'छोटी कार', subLabel: 'हैचबैक / कॉम्पैक्ट' };
+        case 'car_large': return { label: 'बड़ी कार', subLabel: 'SUV / बड़ी गाड़ियां' };
+        case 'heavy':     return { label: 'पिकअप / लोडर', subLabel: 'कमर्शियल / लोडर' };
+        case 'tuktuk':    return { label: 'ई-रिक्शा', subLabel: 'टुक-टुक (+EV मीटर)' };
+      }
+    }
+    switch (cat) {
+      case 'car_small': return { label: 'Car: Small', subLabel: 'Hatchback / Compact' };
+      case 'car_large': return { label: 'Car: Large', subLabel: 'SUV / Large Cars' };
+      case 'heavy':     return { label: 'Pickup / Loader', subLabel: 'Heavy / Commercial' };
+      case 'tuktuk':    return { label: 'E-Rickshaw', subLabel: 'Tuk-Tuk (+EV Meter)' };
+    }
+  };
+
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('splash');
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [activeTab, setActiveTab] = useState<'rooms' | 'shops'>('rooms');
@@ -1545,16 +1762,16 @@ ${elecLine}--------------------------------
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <h2 className="text-sm font-semibold text-[#EDEDED] tracking-tight">Shree Balaji Estate</h2>
+                            <h2 className="text-sm font-semibold text-[#EDEDED] tracking-tight">{t('brandEstate')}</h2>
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34D399] animate-pulse" />
                           </div>
                           <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-[#D4AF37]/90 tracking-wide uppercase">
-                            {userRole === 'owner' ? '👑 Owner Telemetry' : '👤 Manager Shift (Ritin)'}
+                            {userRole === 'owner' ? t('ownerTelemetry') : t('managerShift')}
                           </span>
                         </div>
                       </div>
 
-                      {/* Right Controls: Master Override (Owner Only) & Lock */}
+                      {/* Right Controls: Master Override (Owner Only), Language Toggle & Lock */}
                       <div className="flex items-center gap-2">
                         {userRole === 'owner' && (
                           <button
@@ -1563,15 +1780,26 @@ ${elecLine}--------------------------------
                             className="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]"
                           >
                             <Sliders className="w-3.5 h-3.5" />
-                            <span>⚙️ Control</span>
+                            <span>{t('controlBtn')}</span>
                           </button>
                         )}
+
+                        <button
+                          type="button"
+                          onClick={toggleLanguage}
+                          className="px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.12] text-[#EDEDED] font-mono font-bold text-[11px] flex items-center gap-1 cursor-pointer active:scale-95 transition-all"
+                          title={lang === 'en' ? 'हिन्दी में बदलें' : 'Switch to English'}
+                        >
+                          <span className={lang === 'en' ? 'text-amber-300 font-extrabold' : 'text-[#94A3B8]'}>EN</span>
+                          <span className="text-[#64748B]">/</span>
+                          <span className={lang === 'hi' ? 'text-amber-300 font-extrabold' : 'text-[#94A3B8]'}>हि</span>
+                        </button>
 
                         <button
                           onClick={handleLockTerminal}
                           aria-label="Lock terminal"
                           className="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] text-[#94A3B8] hover:text-white active:scale-95 transition-all duration-100 cursor-pointer shadow-sm hover:border-[#D4AF37]/30"
-                          title="Lock Terminal"
+                          title={lang === 'en' ? 'Lock Terminal' : 'टर्मिनल लॉक करें'}
                         >
                           <Lock className="w-4 h-4" />
                         </button>
@@ -1589,7 +1817,7 @@ ${elecLine}--------------------------------
                             : 'text-[#94A3B8] hover:text-white border border-transparent'
                         }`}
                       >
-                        <span>🛏️ Rooms</span>
+                        <span>{t('rooms')}</span>
                         <span className="text-[11px] opacity-75">(14)</span>
                       </button>
 
@@ -1602,7 +1830,7 @@ ${elecLine}--------------------------------
                             : 'text-[#94A3B8] hover:text-white border border-transparent'
                         }`}
                       >
-                        <span>🏪 Shops</span>
+                        <span>{t('shops')}</span>
                         <span className="text-[11px] opacity-75">(8)</span>
                       </button>
                     </div>
@@ -1610,18 +1838,18 @@ ${elecLine}--------------------------------
                     {/* Quick Stats Ribbon */}
                     <div className="mt-3 grid grid-cols-3 gap-2 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center">
                       <div className="flex flex-col items-center">
-                        <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">Occupancy</span>
+                        <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">{t('occupancy')}</span>
                         <div className="flex items-center gap-1 mt-0.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                           <span className="text-xs font-mono font-semibold text-[#EDEDED]">{occupiedCount}/{totalFiltered}</span>
                         </div>
                       </div>
                       <div className="flex flex-col items-center border-x border-white/[0.06] px-1">
-                        <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">Rent Due</span>
+                        <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">{t('rentDue')}</span>
                         <span className="text-xs font-mono font-semibold mt-0.5 text-amber-400">₹{totalRentDue.toLocaleString('en-IN')}</span>
                       </div>
                       <div className="flex flex-col items-center">
-                        <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">Meters Due</span>
+                        <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider">{t('metersDue')}</span>
                         <div className="flex items-center gap-1 mt-0.5">
                           <Zap className="w-2.5 h-2.5 text-cyan-400 fill-cyan-400" />
                           <span className="text-xs font-mono font-semibold text-cyan-400">{pendingMetersCount}</span>
@@ -1639,10 +1867,10 @@ ${elecLine}--------------------------------
                             <div key={unit.id} className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.04] opacity-50 flex flex-col justify-between min-h-[115px]">
                               <div className="flex items-center justify-between">
                                 <span className="font-mono font-bold text-sm text-[#94A3B8]">{unit.name}</span>
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.04] text-[#64748B]">रिक्त</span>
+                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.04] text-[#64748B]">{t('vacant')}</span>
                               </div>
                               <div className="mt-4 flex items-baseline justify-between text-xs font-mono">
-                                <span className="text-[#64748B]">किराया:</span>
+                                <span className="text-[#64748B]">{t('baseRent')}:</span>
                                 <span className="text-[#94A3B8]">₹{unit.rentAmount.toLocaleString('en-IN')}</span>
                               </div>
                             </div>
@@ -1664,14 +1892,17 @@ ${elecLine}--------------------------------
                                 {isMeterPending && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />}
                               </span>
                               <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-950/40 border border-emerald-500/30 text-emerald-400">
-                                किराएदार
+                                {t('tenant')}
                               </span>
                             </div>
                             <span className="text-xs text-[#CBD5E1] truncate mt-1">{unit.tenantName}</span>
                             <div className="mt-2.5 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono">
-                              <span className="text-amber-400 font-bold">₹{dueAmount.toLocaleString('en-IN')}</span>
+                              <span className={dueAmount > 0 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}>
+                                ₹{dueAmount.toLocaleString('en-IN')}
+                                {dueAmount === 0 && <span className="text-[9px] text-emerald-400/80 font-normal"> {t('paid')}</span>}
+                              </span>
                               {isMeterPending ? (
-                                <span className="text-[9px] text-cyan-300 bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/30">⚡ रीडिंग बाकी</span>
+                                <span className="text-[9px] text-cyan-300 bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/30">⚡ {t('readingPending')}</span>
                               ) : (
                                 <span className="text-[9px] text-[#64748B]">{unit.lastReading} kWh</span>
                               )}
@@ -1693,16 +1924,16 @@ ${elecLine}--------------------------------
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <h2 className="text-sm font-semibold text-[#EDEDED] tracking-tight">Shree Balaji Parking</h2>
+                            <h2 className="text-sm font-semibold text-[#EDEDED] tracking-tight">{t('brandParking')}</h2>
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34D399] animate-pulse" />
                           </div>
                           <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-cyan-400/90 tracking-wide uppercase">
-                            Transit Camp // Monthly Fleet
+                            {t('parkingSub')}
                           </span>
                         </div>
                       </div>
 
-                      {/* Right Controls: Master Override & Lock */}
+                      {/* Right Controls: Master Override, Language Toggle & Lock */}
                       <div className="flex items-center gap-2">
                         {userRole === 'owner' && (
                           <button
@@ -1711,15 +1942,26 @@ ${elecLine}--------------------------------
                             className="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]"
                           >
                             <Sliders className="w-3.5 h-3.5" />
-                            <span>⚙️ Control</span>
+                            <span>{t('controlBtn')}</span>
                           </button>
                         )}
+
+                        <button
+                          type="button"
+                          onClick={toggleLanguage}
+                          className="px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.12] text-[#EDEDED] font-mono font-bold text-[11px] flex items-center gap-1 cursor-pointer active:scale-95 transition-all"
+                          title={lang === 'en' ? 'हिन्दी में बदलें' : 'Switch to English'}
+                        >
+                          <span className={lang === 'en' ? 'text-amber-300 font-extrabold' : 'text-[#94A3B8]'}>EN</span>
+                          <span className="text-[#64748B]">/</span>
+                          <span className={lang === 'hi' ? 'text-amber-300 font-extrabold' : 'text-[#94A3B8]'}>हि</span>
+                        </button>
 
                         <button
                           onClick={handleLockTerminal}
                           aria-label="Lock terminal"
                           className="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] text-[#94A3B8] hover:text-white active:scale-95 transition-all duration-100 cursor-pointer shadow-sm hover:border-[#D4AF37]/30"
-                          title="Lock Terminal"
+                          title={lang === 'en' ? 'Lock Terminal' : 'टर्मिनल लॉक करें'}
                         >
                           <Lock className="w-4 h-4" />
                         </button>
@@ -1729,36 +1971,36 @@ ${elecLine}--------------------------------
                     {/* 4 Category Telemetry Strip */}
                     <div className="mt-3 grid grid-cols-4 gap-1.5">
                       <div className="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center border font-mono bg-white/[0.03] border-white/[0.06] text-[#CBD5E1]">
-                        <span className="text-[8.5px] text-[#94A3B8] uppercase truncate">🚗 Small</span>
-                        <span className="text-xs font-bold text-sky-400 mt-0.5">{countSmall} Active</span>
+                        <span className="text-[8.5px] text-[#94A3B8] uppercase truncate">{t('smallCar')}</span>
+                        <span className="text-xs font-bold text-sky-400 mt-0.5">{countSmall} {t('activeVehicles')}</span>
                       </div>
                       <div className="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center border font-mono bg-white/[0.03] border-white/[0.06] text-[#CBD5E1]">
-                        <span className="text-[8.5px] text-[#94A3B8] uppercase truncate">🚙 SUV</span>
-                        <span className="text-xs font-bold text-amber-300 mt-0.5">{countLarge} Active</span>
+                        <span className="text-[8.5px] text-[#94A3B8] uppercase truncate">{t('largeCar')}</span>
+                        <span className="text-xs font-bold text-amber-300 mt-0.5">{countLarge} {t('activeVehicles')}</span>
                       </div>
                       <div className="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center border font-mono bg-white/[0.03] border-white/[0.06] text-[#CBD5E1]">
-                        <span className="text-[8.5px] text-[#94A3B8] uppercase truncate">🛻 Heavy</span>
-                        <span className="text-xs font-bold text-purple-300 mt-0.5">{countHeavy} Active</span>
+                        <span className="text-[8.5px] text-[#94A3B8] uppercase truncate">{t('heavyVehicle')}</span>
+                        <span className="text-xs font-bold text-purple-300 mt-0.5">{countHeavy} {t('activeVehicles')}</span>
                       </div>
                       <div className="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center border font-mono bg-white/[0.03] border-white/[0.06] text-[#CBD5E1]">
-                        <span className="text-[8.5px] text-[#94A3B8] uppercase truncate">🛺 TukTuk</span>
-                        <span className="text-xs font-bold text-emerald-400 mt-0.5">{countTukTuk} Active</span>
+                        <span className="text-[8.5px] text-[#94A3B8] uppercase truncate">{t('tukTuk')}</span>
+                        <span className="text-xs font-bold text-emerald-400 mt-0.5">{countTukTuk} {t('activeVehicles')}</span>
                       </div>
                     </div>
 
                     {/* Shift Cash Bar */}
                     <div className="mt-2.5 p-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37]/10 via-[#0A0D14] to-cyan-950/20 border border-[#D4AF37]/30 flex items-center justify-between font-mono text-xs">
                       <div className="flex flex-col">
-                        <span className="text-[9px] text-[#94A3B8] uppercase">कुल शिफ्ट संग्रह</span>
+                        <span className="text-[9px] text-[#94A3B8] uppercase">{t('shiftCash')}</span>
                         <span className="text-sm font-bold text-[#EDEDED] mt-0.5">₹{totalParkingCollected.toLocaleString('en-IN')}</span>
                       </div>
                       <div className="flex items-center gap-3 text-right">
                         <div className="flex flex-col">
-                          <span className="text-[9px] text-[#D4AF37] uppercase">मालिक नेट</span>
+                          <span className="text-[9px] text-[#D4AF37] uppercase">{t('ownerShare')}</span>
                           <span className="text-xs font-bold text-[#FFF4C2]">₹{ownerParkingShare.toLocaleString('en-IN')}</span>
                         </div>
                         <div className="flex flex-col border-l border-white/[0.1] pl-3">
-                          <span className="text-[9px] text-cyan-400 uppercase">रितिन कमीशन</span>
+                          <span className="text-[9px] text-cyan-400 uppercase">{t('ritinCut')}</span>
                           <span className="text-xs font-bold text-cyan-300">₹{ritinParkingCut.toLocaleString('en-IN')}</span>
                         </div>
                       </div>
@@ -1772,10 +2014,10 @@ ${elecLine}--------------------------------
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-mono font-bold text-[#EDEDED] uppercase tracking-wider flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22D3EE]" />
-                          मासिक पास जारी करें (New Monthly Pass)
+                          {t('issueNewPass')}
                         </span>
                         <span className="text-[10px] font-mono text-[#D4AF37] bg-[#D4AF37]/10 border border-[#D4AF37]/30 px-2 py-0.5 rounded-md">
-                          ₹{pricing[newCategory].fee} / माह
+                          ₹{pricing[newCategory].fee} {t('perMonth')}
                         </span>
                       </div>
 
@@ -1783,6 +2025,7 @@ ${elecLine}--------------------------------
                       <div className="grid grid-cols-2 gap-2">
                         {(['car_small', 'car_large', 'heavy', 'tuktuk'] as VehicleCategory[]).map((cat) => {
                           const p = pricing[cat];
+                          const catLabels = getCategoryLabels(cat);
                           const isSelected = newCategory === cat;
                           return (
                             <button
@@ -1796,10 +2039,10 @@ ${elecLine}--------------------------------
                               }`}
                             >
                               <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold">{p.label}</span>
+                                <span className="text-xs font-bold">{catLabels.label}</span>
                                 <span className="text-[10px] text-[#D4AF37]">₹{p.fee}</span>
                               </div>
-                              <span className="text-[9px] text-[#94A3B8]">{p.subLabel}</span>
+                              <span className="text-[9px] text-[#94A3B8]">{catLabels.subLabel}</span>
                             </button>
                           );
                         })}
@@ -1811,7 +2054,7 @@ ${elecLine}--------------------------------
                           <label className="flex items-center justify-between cursor-pointer">
                             <span className="text-[11px] font-mono font-semibold text-cyan-300 flex items-center gap-1.5">
                               <Zap className="w-3.5 h-3.5 text-cyan-400" />
-                              ⚡ EV चार्जर सब-मीटर सुविधा जोड़ें
+                              {t('submeterTogglePrompt')}
                             </span>
                             <input
                               type="checkbox"
@@ -1823,7 +2066,7 @@ ${elecLine}--------------------------------
 
                           {newHasEvFacility && (
                             <div className="flex items-center gap-2 pt-1 border-t border-cyan-500/20">
-                              <span className="text-[10px] font-mono text-[#94A3B8] whitespace-nowrap">प्रारंभिक मीटर रीडिंग (kWh):</span>
+                              <span className="text-[10px] font-mono text-[#94A3B8] whitespace-nowrap">{t('initialReading')}</span>
                               <input
                                 type="number"
                                 value={newInitialEvReading}
@@ -1839,7 +2082,7 @@ ${elecLine}--------------------------------
                       {/* Manual Slot Assignment & Vehicle Plate */}
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-[10px] font-mono text-[#94A3B8] uppercase mb-1">📍 स्लॉट / स्थान (Editable)</label>
+                          <label className="block text-[10px] font-mono text-[#94A3B8] uppercase mb-1">{t('slotPlaceholder')}</label>
                           <input
                             type="text"
                             value={newSlot}
@@ -1849,7 +2092,7 @@ ${elecLine}--------------------------------
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-mono text-[#94A3B8] uppercase mb-1">गाड़ी नंबर (Plate)</label>
+                          <label className="block text-[10px] font-mono text-[#94A3B8] uppercase mb-1">{t('platePlaceholder')}</label>
                           <input
                             type="text"
                             value={newVehicleNumber}
@@ -1866,14 +2109,14 @@ ${elecLine}--------------------------------
                           type="text"
                           value={newOwnerName}
                           onChange={(e) => setNewOwnerName(e.target.value)}
-                          placeholder="मालिक / ड्राइवर का नाम"
+                          placeholder={t('namePlaceholder')}
                           className="w-full py-2 px-3 rounded-xl bg-[#06080C] border border-white/[0.08] text-xs font-mono text-[#EDEDED] placeholder-[#64748B] focus:outline-none focus:border-[#D4AF37]"
                         />
                         <input
                           type="tel"
                           value={newPhone}
                           onChange={(e) => setNewPhone(e.target.value)}
-                          placeholder="मोबाइल नंबर (WhatsApp)"
+                          placeholder={t('phonePlaceholder')}
                           className="w-full py-2 px-3 rounded-xl bg-[#06080C] border border-white/[0.08] text-xs font-mono text-[#EDEDED] placeholder-[#64748B] focus:outline-none focus:border-[#D4AF37]"
                         />
                       </div>
@@ -1889,7 +2132,7 @@ ${elecLine}--------------------------------
                         }`}
                       >
                         <Plus className="w-4 h-4" />
-                        <span>₹{pricing[newCategory].fee} नकद प्राप्त & पास जारी करें</span>
+                        <span>₹{pricing[newCategory].fee} {t('issuePassBtn')}</span>
                       </button>
                     </div>
 
@@ -1900,7 +2143,7 @@ ${elecLine}--------------------------------
                         type="text"
                         value={parkingSearchQuery}
                         onChange={(e) => setParkingSearchQuery(e.target.value)}
-                        placeholder="नंबर, नाम या स्लॉट खोजें..."
+                        placeholder={t('searchPlaceholder')}
                         className="w-full py-2 pl-9 pr-3 rounded-xl bg-[#0A0D14] border border-white/[0.08] text-xs font-mono text-[#EDEDED] placeholder-[#64748B] focus:outline-none focus:border-[#D4AF37]"
                       />
                     </div>
@@ -1908,10 +2151,10 @@ ${elecLine}--------------------------------
                     {/* Active Subscribers Deck List */}
                     <div className="flex items-center justify-between px-1">
                       <span className="text-xs font-mono font-semibold text-[#EDEDED]">
-                        पंजीकृत मासिक ग्राहक ({filteredSubscribers.length})
+                        {t('registeredSubscribers')} ({filteredSubscribers.length})
                       </span>
                       <span className="text-[10px] font-mono text-[#94A3B8]">
-                        टैप करें: नवीनीकरण / EV मीटर
+                        {t('tapToRenew')}
                       </span>
                     </div>
 
@@ -1920,12 +2163,13 @@ ${elecLine}--------------------------------
                         <div className="py-12 px-4 rounded-2xl bg-[#0A0D14]/60 border border-white/[0.06] flex flex-col items-center justify-center text-center gap-2.5">
                           <span className="text-3xl opacity-40">🅿️</span>
                           <p className="text-xs font-mono text-[#94A3B8]">
-                            कोई पंजीकृत मासिक ग्राहक नहीं है। नया पास जारी करें।
+                            {t('noSubscribersFound')}
                           </p>
                         </div>
                       ) : (
                         filteredSubscribers.map((sub) => {
                           const p = pricing[sub.category] || pricing.car_small;
+                          const catLabels = getCategoryLabels(sub.category);
                           const isDue = sub.passStatus === 'due';
                           const hasEv = sub.hasEvFacility;
 
@@ -1941,7 +2185,7 @@ ${elecLine}--------------------------------
                                     {sub.vehicleNumber}
                                   </span>
                                   <span className="text-[10px] font-mono text-[#94A3B8]">
-                                    {p.label}
+                                    {catLabels.label}
                                   </span>
                                 </div>
 
@@ -1956,7 +2200,7 @@ ${elecLine}--------------------------------
                                   }`}
                                 >
                                   <span className={`w-1.5 h-1.5 rounded-full ${sub.isParkedInside ? 'bg-emerald-400 animate-pulse' : 'bg-[#64748B]'}`} />
-                                  <span>{sub.isParkedInside ? 'अंदर (Inside)' : 'बाहर (Outside)'}</span>
+                                  <span>{sub.isParkedInside ? t('inside') : t('outside')}</span>
                                 </button>
                               </div>
 
@@ -1969,15 +2213,15 @@ ${elecLine}--------------------------------
 
                               <div className="pt-2 border-t border-white/[0.05] flex items-center justify-between text-[10px] font-mono">
                                 <span className={isDue ? 'text-rose-400 font-bold' : 'text-emerald-400'}>
-                                  {isDue ? '⚠️ पास देय (Due)' : `सक्रिय (वैध: ${sub.validTillDate})`}
+                                  {isDue ? t('passDue') : `${t('passActive')} (${t('validTill')}: ${sub.validTillDate})`}
                                 </span>
 
                                 {hasEv ? (
                                   <span className="text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/30 flex items-center gap-1">
-                                    ⚡ EV: {sub.lastEvReading} kWh {sub.evDueAmount && sub.evDueAmount > 0 ? `| बकाया ₹${sub.evDueAmount}` : ''}
+                                    ⚡ EV: {sub.lastEvReading} kWh {sub.evDueAmount && sub.evDueAmount > 0 ? `| ${t('evDues')} ₹${sub.evDueAmount}` : ''}
                                   </span>
                                 ) : (
-                                  <span className="text-[#64748B]">मासिक: ₹{p.fee}</span>
+                                  <span className="text-[#64748B]">{lang === 'en' ? 'Monthly' : 'मासिक'}: ₹{p.fee}</span>
                                 )}
                               </div>
                             </div>
@@ -2002,7 +2246,7 @@ ${elecLine}--------------------------------
                     }`}
                   >
                     <Building2 className="w-4 h-4 text-[#D4AF37]" />
-                    <span>एस्टेट यूनिट्स (22)</span>
+                    <span>{t('moduleUnits')} (22)</span>
                   </button>
 
                   <button
@@ -2015,7 +2259,7 @@ ${elecLine}--------------------------------
                     }`}
                   >
                     <Car className="w-4 h-4 text-cyan-400" />
-                    <span>पार्किंग गेट</span>
+                    <span>{t('moduleParking')}</span>
                     <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
                       {totalInside}
                     </span>
@@ -2057,7 +2301,7 @@ ${elecLine}--------------------------------
                     <div>
                       <h3 className="text-sm font-semibold text-[#EDEDED]">{selectedUnit.tenantName}</h3>
                       <span className="text-[10px] font-mono text-cyan-400">
-                        दर: ₹{(selectedUnit.type === 'room' ? tariffs.room : tariffs.shop).toFixed(1)}/यूनिट
+                        {t('unitRate')}: ₹{(selectedUnit.type === 'room' ? tariffs.room : tariffs.shop).toFixed(1)}{t('perUnit')}
                       </span>
                     </div>
                   </div>
@@ -2073,9 +2317,9 @@ ${elecLine}--------------------------------
                         <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-semibold text-[#EDEDED]">भुगतान सफलतापूर्वक दर्ज!</h3>
+                        <h3 className="text-sm font-semibold text-[#EDEDED]">{t('paymentSuccessTitle')}</h3>
                         <p className="text-[11px] font-mono text-[#94A3B8]">
-                          कुल नकद: ₹{receiptData.totalCash.toLocaleString('en-IN')} // {receiptData.unitName}
+                          {t('totalCashPrefix')}: ₹{receiptData.totalCash.toLocaleString('en-IN')} // {receiptData.unitName}
                         </p>
                       </div>
                     </div>
@@ -2091,7 +2335,7 @@ ${elecLine}--------------------------------
                         className="w-full py-3 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(212,175,55,0.3)] active:scale-98 transition-all"
                       >
                         <Check className="w-4 h-4" />
-                        <span>संपन्न / Done (Skip)</span>
+                        <span>{t('doneSkip')}</span>
                       </button>
 
                       <div className="grid grid-cols-2 gap-2.5">
@@ -2109,7 +2353,7 @@ ${elecLine}--------------------------------
                           className="py-2.5 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
                         >
                           <MessageSquare className="w-4 h-4 text-cyan-300 shrink-0" />
-                          <span>💬 SMS रसीद</span>
+                          <span>💬 SMS {lang === 'en' ? 'Slip' : 'रसीद'}</span>
                         </a>
                       </div>
                     </div>
@@ -2127,7 +2371,7 @@ ${elecLine}--------------------------------
                         }`}
                       >
                         <Zap className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>1. सब-मीटर रीडिंग</span>
+                        <span>{t('submeterReadingTab')}</span>
                       </button>
                       <button
                         type="button"
@@ -2139,7 +2383,7 @@ ${elecLine}--------------------------------
                         }`}
                       >
                         <Wallet className="w-3.5 h-3.5 text-[#D4AF37]" />
-                        <span>2. नकद वसूली (Split)</span>
+                        <span>{t('cashCollectionTab')}</span>
                       </button>
                     </div>
 
@@ -2147,7 +2391,7 @@ ${elecLine}--------------------------------
                       <div className="flex flex-col gap-3 pt-3">
                         <div className="grid grid-cols-2 gap-2.5">
                           <div className="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col justify-between">
-                            <span className="text-[10px] font-mono text-[#64748B] uppercase">पिछली रीडिंग</span>
+                            <span className="text-[10px] font-mono text-[#64748B] uppercase">{t('prevReading')}</span>
                             <div className="mt-2 flex items-baseline gap-1">
                               <span className="text-2xl font-mono font-bold text-[#CBD5E1]">{selectedUnit.lastReading}</span>
                               <span className="text-xs font-mono text-[#64748B]">kWh</span>
@@ -2157,7 +2401,7 @@ ${elecLine}--------------------------------
                           <div className={`p-3 rounded-2xl bg-white/[0.04] border flex flex-col justify-between ${
                             isLowerThanPrev ? 'border-rose-500/80' : 'border-[#D4AF37]/50'
                           }`}>
-                            <span className="text-[10px] font-mono text-cyan-400 uppercase">वर्तमान रीडिंग</span>
+                            <span className="text-[10px] font-mono text-cyan-400 uppercase">{t('currentReading')}</span>
                             <div className="mt-1 flex items-baseline gap-1">
                               <input
                                 type="number"
@@ -2172,8 +2416,8 @@ ${elecLine}--------------------------------
                         </div>
 
                         <div className="p-3 rounded-2xl bg-gradient-to-r from-cyan-950/30 via-[#0A0D14] to-[#D4AF37]/10 border border-cyan-500/20 flex items-center justify-between font-mono">
-                          <span className="text-xs text-[#94A3B8]">खपत: <strong className="text-cyan-300">{unitsConsumed}</strong> यूनिट</span>
-                          <span className="text-sm font-bold text-[#FFF4C2]">देय बिल: ₹{electricityDue.toLocaleString('en-IN')}</span>
+                          <span className="text-xs text-[#94A3B8]">{t('consumption')}: <strong className="text-cyan-300">{unitsConsumed}</strong> {t('unitsLabel')}</span>
+                          <span className="text-sm font-bold text-[#FFF4C2]">{t('dueBill')}: ₹{electricityDue.toLocaleString('en-IN')}</span>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2.5 pt-1">
@@ -2187,7 +2431,7 @@ ${elecLine}--------------------------------
                                 : 'bg-white/[0.04] text-[#64748B] border border-white/[0.08] cursor-not-allowed'
                             }`}
                           >
-                            केवल रीडिंग सेव करें
+                            {t('saveReadingOnly')}
                           </button>
                           <button
                             type="button"
@@ -2197,7 +2441,7 @@ ${elecLine}--------------------------------
                             }}
                             className="py-3 px-3 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(212,175,55,0.3)] active:scale-98 transition-all"
                           >
-                            <span>भुगतान दर्ज करें &rarr;</span>
+                            <span>{t('proceedToPayment')} &rarr;</span>
                           </button>
                         </div>
                       </div>
@@ -2205,11 +2449,11 @@ ${elecLine}--------------------------------
                       <div className="flex flex-col gap-3 pt-3">
                         <div className="p-3 rounded-2xl bg-[#06080C] border border-[#D4AF37]/40 flex flex-col gap-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-mono font-bold text-[#FFF4C2]">किराया (Rent Box)</span>
-                            <span className="text-xs font-mono text-amber-400 font-bold">बकाया: ₹{effectiveRentDue.toLocaleString('en-IN')}</span>
+                            <span className="text-xs font-mono font-bold text-[#FFF4C2]">{t('rentPaymentLabel')}</span>
+                            <span className="text-xs font-mono text-amber-400 font-bold">{t('dueLabel')}: ₹{effectiveRentDue.toLocaleString('en-IN')}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono text-[#94A3B8]">जमा: ₹</span>
+                            <span className="text-xs font-mono text-[#94A3B8]">{lang === 'en' ? 'Paid: ₹' : 'जमा: ₹'}</span>
                             <input
                               type="number"
                               value={rentPaidInput}
@@ -2221,11 +2465,11 @@ ${elecLine}--------------------------------
 
                         <div className="p-3 rounded-2xl bg-[#06080C] border border-cyan-500/40 flex flex-col gap-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-mono font-bold text-cyan-300">बिजली बिल (Electricity Box)</span>
-                            <span className="text-xs font-mono text-cyan-300 font-bold">देय: ₹{electricityDue.toLocaleString('en-IN')}</span>
+                            <span className="text-xs font-mono font-bold text-cyan-300">{t('elecPaymentLabel')}</span>
+                            <span className="text-xs font-mono text-cyan-300 font-bold">{t('dueLabel')}: ₹{electricityDue.toLocaleString('en-IN')}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono text-[#94A3B8]">जमा: ₹</span>
+                            <span className="text-xs font-mono text-[#94A3B8]">{lang === 'en' ? 'Paid: ₹' : 'जमा: ₹'}</span>
                             <input
                               type="number"
                               value={elecPaidInput}
@@ -2246,7 +2490,7 @@ ${elecLine}--------------------------------
                           }`}
                         >
                           <Check className="w-4 h-4" />
-                          <span>₹{totalCashCollected.toLocaleString('en-IN')} नकद जमा दर्ज करें</span>
+                          <span>₹{totalCashCollected.toLocaleString('en-IN')} {t('recordPaymentBtn')}</span>
                         </button>
                       </div>
                     )}
@@ -2299,7 +2543,7 @@ ${elecLine}--------------------------------
 
                 {/* Editable Slot */}
                 <div className="pt-3 flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                  <span className="text-[10px] font-mono text-[#94A3B8] uppercase">📍 स्लॉट / स्थान (Editable):</span>
+                  <span className="text-[10px] font-mono text-[#94A3B8] uppercase">{t('slotPlaceholder')}:</span>
                   <input
                     type="text"
                     value={renewalSlot}
@@ -2311,11 +2555,11 @@ ${elecLine}--------------------------------
                 <div className="flex flex-col gap-3.5 pt-3">
                   <div className="grid grid-cols-2 gap-2.5">
                     <div className="p-3 rounded-xl bg-[#06080C] border border-white/[0.06] flex flex-col">
-                      <span className="text-[10px] font-mono text-[#64748B] uppercase">पिछला भुगतान</span>
+                      <span className="text-[10px] font-mono text-[#64748B] uppercase">{lang === 'en' ? 'Last Payment' : 'पिछला भुगतान'}</span>
                       <span className="text-xs font-mono font-bold text-[#EDEDED] mt-0.5">{selectedSubForRenewal.lastPaidDate}</span>
                     </div>
                     <div className="p-3 rounded-xl bg-[#06080C] border border-white/[0.06] flex flex-col">
-                      <span className="text-[10px] font-mono text-[#64748B] uppercase">वर्तमान वैधता</span>
+                      <span className="text-[10px] font-mono text-[#64748B] uppercase">{lang === 'en' ? 'Valid Till' : 'वर्तमान वैधता'}</span>
                       <span className="text-xs font-mono font-bold text-amber-400 mt-0.5">{selectedSubForRenewal.validTillDate}</span>
                     </div>
                   </div>
@@ -2326,21 +2570,21 @@ ${elecLine}--------------------------------
                     return (
                       <div className="p-3.5 rounded-2xl bg-[#06080C] border border-[#D4AF37]/40 flex flex-col gap-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-mono font-bold text-[#FFF4C2] uppercase">मासिक पास शुल्क (Monthly Pass)</span>
+                          <span className="text-xs font-mono font-bold text-[#FFF4C2] uppercase">{t('renewPassTitle')}</span>
                           <span className="text-base font-mono font-bold text-[#FFF4C2]">₹{catPrice.fee}</span>
                         </div>
                         <div className="grid grid-cols-2 gap-2 pt-1">
                           <div className="p-2 rounded-xl bg-[#0D1117] border border-[#D4AF37]/20 flex flex-col">
-                            <span className="text-[9px] text-[#D4AF37] uppercase font-semibold">मालिक हिस्सा (Master)</span>
+                            <span className="text-[9px] text-[#D4AF37] uppercase font-semibold">{t('ownerShare')}</span>
                             <span className="text-xs font-bold text-[#EDEDED] mt-0.5">₹{catPrice.owner}</span>
                           </div>
                           <div className="p-2 rounded-xl bg-[#0D1117] border border-cyan-500/20 flex flex-col">
-                            <span className="text-[9px] text-cyan-400 uppercase font-semibold">रितिन कमीशन (Cut)</span>
+                            <span className="text-[9px] text-cyan-400 uppercase font-semibold">{t('ritinCut')}</span>
                             <span className="text-xs font-bold text-cyan-300 mt-0.5">₹{catPrice.ritin}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 pt-1 border-t border-white/[0.06]">
-                          <span className="text-xs font-mono text-[#94A3B8]">पास राशि प्राप्त: ₹</span>
+                          <span className="text-xs font-mono text-[#94A3B8]">{lang === 'en' ? 'Pass Fee Paid: ₹' : 'पास राशि प्राप्त: ₹'}</span>
                           <input
                             type="number"
                             value={renewalPassPaid}
@@ -2358,18 +2602,18 @@ ${elecLine}--------------------------------
                       <div className="flex items-center justify-between pb-1 border-b border-cyan-500/20">
                         <span className="text-xs font-mono font-bold text-cyan-300 uppercase flex items-center gap-1.5">
                           <Zap className="w-3.5 h-3.5 text-cyan-400" />
-                          ⚡ ई-रिक्शा सब-मीटर रीडिंग
+                          {t('submeterTogglePrompt')}
                         </span>
-                        <span className="text-[10px] font-mono text-cyan-400">@ ₹{tariffs.tuktuk.toFixed(1)}/यूनिट</span>
+                        <span className="text-[10px] font-mono text-cyan-400">@ ₹{tariffs.tuktuk.toFixed(1)}{t('perUnit')}</span>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2">
                         <div className="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] flex flex-col">
-                          <span className="text-[9px] font-mono text-[#64748B] uppercase">पिछली रीडिंग</span>
+                          <span className="text-[9px] font-mono text-[#64748B] uppercase">{t('prevReading')}</span>
                           <span className="text-sm font-mono font-bold text-[#EDEDED] mt-0.5">{selectedSubForRenewal.lastEvReading || 0} kWh</span>
                         </div>
                         <div className="p-2.5 rounded-xl bg-[#0D1117] border border-cyan-500/30 flex flex-col">
-                          <span className="text-[9px] font-mono text-cyan-400 uppercase">वर्तमान रीडिंग</span>
+                          <span className="text-[9px] font-mono text-cyan-400 uppercase">{t('currentReading')}</span>
                           <input
                             type="number"
                             value={renewalEvCurrReading}
@@ -2382,7 +2626,7 @@ ${elecLine}--------------------------------
 
                       <div className="flex flex-col gap-1 pt-1 border-t border-cyan-500/20">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-cyan-300">चार्जिंग नकद जमा: ₹</span>
+                          <span className="text-xs font-mono text-cyan-300">{lang === 'en' ? 'Charging Cash Paid: ₹' : 'चार्जिंग नकद जमा: ₹'}</span>
                           <input
                             type="number"
                             value={renewalEvPaid}
@@ -2392,7 +2636,7 @@ ${elecLine}--------------------------------
                           />
                         </div>
                         <span className="text-[10px] font-mono text-amber-400">
-                          पिछला बकाया: ₹{selectedSubForRenewal.evDueAmount || 0} (आंशिक जमा संभव)
+                          {lang === 'en' ? `Previous Due: ₹${selectedSubForRenewal.evDueAmount || 0} (Partial allowed)` : `पिछला बकाया: ₹${selectedSubForRenewal.evDueAmount || 0} (आंशिक जमा संभव)`}
                         </span>
                       </div>
                     </div>
@@ -2404,7 +2648,7 @@ ${elecLine}--------------------------------
                       onClick={() => setSelectedSubForRenewal(null)}
                       className="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#94A3B8] hover:text-white text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all text-center"
                     >
-                      रद्द करें (Cancel)
+                      {lang === 'en' ? 'Cancel' : 'रद्द करें'}
                     </button>
                     <button
                       type="button"
@@ -2412,7 +2656,7 @@ ${elecLine}--------------------------------
                       className="py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-lg active:scale-98 bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] border border-[#FFF4C2]/40 shadow-[0_0_20px_rgba(212,175,55,0.3)]"
                     >
                       <Check className="w-4 h-4" />
-                      <span>नवीनीकरण दर्ज करें</span>
+                      <span>{t('renewMonthlyPass')}</span>
                     </button>
                   </div>
                 </div>
@@ -2446,8 +2690,8 @@ ${elecLine}--------------------------------
                     <CheckCircle2 className="w-5 h-5 text-[#D4AF37]" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-[#EDEDED]">मासिक पार्किंग रसीद (Monthly Pass)</h3>
-                    <span className="text-[10px] text-emerald-400 font-bold">नकद प्राप्त दर्ज (सफल)</span>
+                    <h3 className="text-sm font-semibold text-[#EDEDED]">{lang === 'en' ? 'Monthly Parking Slip' : 'मासिक पार्किंग रसीद'}</h3>
+                    <span className="text-[10px] text-emerald-400 font-bold">{lang === 'en' ? 'Cash Received (Success)' : 'नकद प्राप्त दर्ज (सफल)'}</span>
                   </div>
                 </div>
 
@@ -2456,7 +2700,7 @@ ${elecLine}--------------------------------
                 </div>
 
                 <div className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[10px] text-center text-[#94A3B8]">
-                  मालिक नेट: <strong className="text-[#D4AF37]">₹{activeMonthlyReceipt.ownerNet}</strong> | रितिन कमीशन: <strong className="text-cyan-300">₹{activeMonthlyReceipt.ritinCut}</strong>
+                  {t('ownerShare')}: <strong className="text-[#D4AF37]">₹{activeMonthlyReceipt.ownerNet}</strong> | {t('ritinCut')}: <strong className="text-cyan-300">₹{activeMonthlyReceipt.ritinCut}</strong>
                 </div>
 
                 <div className="flex flex-col gap-2 pt-1">
@@ -2466,7 +2710,7 @@ ${elecLine}--------------------------------
                     className="w-full py-2.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(212,175,55,0.3)] active:scale-98 transition-all"
                   >
                     <Check className="w-4 h-4" />
-                    <span>संपन्न / Done (Skip)</span>
+                    <span>{t('doneSkip')}</span>
                   </button>
                   <div className="grid grid-cols-2 gap-2">
                     <a
@@ -2483,7 +2727,7 @@ ${elecLine}--------------------------------
                       className="py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
                     >
                       <MessageSquare className="w-3.5 h-3.5 text-cyan-300" />
-                      <span>💬 SMS रसीद</span>
+                      <span>💬 SMS {lang === 'en' ? 'Slip' : 'रसीद'}</span>
                     </a>
                   </div>
                 </div>
@@ -2518,8 +2762,8 @@ ${elecLine}--------------------------------
                       ⚙️
                     </span>
                     <div>
-                      <h3 className="text-sm font-bold text-[#FFF4C2]">Master Control Panel</h3>
-                      <span className="text-[10px] text-[#D4AF37]">मालिक विशेष अधिकार (PIN: 1912)</span>
+                      <h3 className="text-sm font-bold text-[#FFF4C2]">{lang === 'en' ? 'Master Control Panel' : 'मास्टर कंट्रोल पैनल'}</h3>
+                      <span className="text-[10px] text-[#D4AF37]">{t('ownerPrivilege')} (PIN: 1912)</span>
                     </div>
                   </div>
                   <button onClick={() => setIsMasterOverrideOpen(false)} className="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white">
@@ -2530,11 +2774,11 @@ ${elecLine}--------------------------------
                 {/* 1. Electricity Tariffs */}
                 <div className="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
                   <span className="text-xs font-bold text-cyan-300 uppercase flex items-center gap-1">
-                    ⚡ बिजली दरें (Tariffs ₹/यूनिट)
+                    {t('electricityTariffs')}
                   </span>
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div>
-                      <label className="block text-[9px] text-[#94A3B8]">कमरा (Rooms)</label>
+                      <label className="block text-[9px] text-[#94A3B8]">{t('tariffRoom')}</label>
                       <input
                         type="number"
                         step="0.5"
@@ -2544,7 +2788,7 @@ ${elecLine}--------------------------------
                       />
                     </div>
                     <div>
-                      <label className="block text-[9px] text-[#94A3B8]">दुकान (Shops)</label>
+                      <label className="block text-[9px] text-[#94A3B8]">{t('tariffShop')}</label>
                       <input
                         type="number"
                         step="0.5"
@@ -2554,7 +2798,7 @@ ${elecLine}--------------------------------
                       />
                     </div>
                     <div>
-                      <label className="block text-[9px] text-[#94A3B8]">ई-रिक्शा (EV)</label>
+                      <label className="block text-[9px] text-[#94A3B8]">{t('tariffEv')}</label>
                       <input
                         type="number"
                         step="0.5"
@@ -2569,16 +2813,17 @@ ${elecLine}--------------------------------
                 {/* 2. Category Fees & Splits */}
                 <div className="p-3 rounded-2xl bg-[#06080C] border border-[#D4AF37]/30 flex flex-col gap-2.5">
                   <span className="text-xs font-bold text-[#FFF4C2] uppercase flex items-center gap-1">
-                    🅿️ पार्किंग शुल्क व कमीशन (4 Categories)
+                    {t('parkingPricing')}
                   </span>
                   {(['car_small', 'car_large', 'heavy', 'tuktuk'] as VehicleCategory[]).map((cat) => {
                     const p = pricing[cat];
+                    const catLabels = getCategoryLabels(cat);
                     return (
                       <div key={cat} className="p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] flex flex-col gap-1 text-[11px]">
-                        <span className="font-bold text-[#EDEDED]">{p.label}</span>
+                        <span className="font-bold text-[#EDEDED]">{catLabels.label}</span>
                         <div className="grid grid-cols-3 gap-1.5 text-[10px]">
                           <div>
-                            <span className="text-[#64748B]">मासिक: ₹</span>
+                            <span className="text-[#64748B]">{lang === 'en' ? 'Monthly: ₹' : 'मासिक: ₹'}</span>
                             <input
                               type="number"
                               value={p.fee}
@@ -2590,7 +2835,7 @@ ${elecLine}--------------------------------
                             />
                           </div>
                           <div>
-                            <span className="text-[#D4AF37]">मालिक: ₹</span>
+                            <span className="text-[#D4AF37]">{t('ownerShare')}: ₹</span>
                             <input
                               type="number"
                               value={p.owner}
@@ -2602,7 +2847,7 @@ ${elecLine}--------------------------------
                             />
                           </div>
                           <div>
-                            <span className="text-cyan-300">रितिन: ₹</span>
+                            <span className="text-cyan-300">{t('ritinCut')}: ₹</span>
                             <input
                               type="number"
                               value={p.ritin}
@@ -2621,7 +2866,7 @@ ${elecLine}--------------------------------
 
                 {/* 3. Unit Rent & Arrears Adjustment */}
                 <div className="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
-                  <span className="text-xs font-bold text-[#EDEDED] uppercase">🏢 यूनिट किराया व बकाया समायोजन</span>
+                  <span className="text-xs font-bold text-[#EDEDED] uppercase">{t('unitRentAdjustment')}</span>
                   <select
                     value={overrideSelectedUnitId}
                     onChange={(e) => {
@@ -2637,13 +2882,13 @@ ${elecLine}--------------------------------
                   >
                     {units.map((u) => (
                       <option key={u.id} value={u.id}>
-                        {u.name} - {u.isOccupied ? u.tenantName : '(रिक्त)'}
+                        {u.name} - {u.isOccupied ? u.tenantName : `(${t('vacant')})`}
                       </option>
                     ))}
                   </select>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <label className="block text-[9px] text-[#94A3B8]">मासिक किराया (₹)</label>
+                      <label className="block text-[9px] text-[#94A3B8]">{t('unitRentLabel')}</label>
                       <input
                         type="number"
                         value={overrideUnitRent}
@@ -2652,7 +2897,7 @@ ${elecLine}--------------------------------
                       />
                     </div>
                     <div>
-                      <label className="block text-[9px] text-[#94A3B8]">कुल बकाया (₹)</label>
+                      <label className="block text-[9px] text-[#94A3B8]">{t('unitDueLabel')}</label>
                       <input
                         type="number"
                         value={overrideUnitDue}
@@ -2665,10 +2910,10 @@ ${elecLine}--------------------------------
 
                 {/* 4. Parking Subscriber Balance & Slot Adjustment */}
                 <div className="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
-                  <span className="text-xs font-bold text-[#EDEDED] uppercase">🅿️ पार्किंग ग्राहक व स्लॉट समायोजन</span>
+                  <span className="text-xs font-bold text-[#EDEDED] uppercase">{t('parkingSubAdjustment')}</span>
                   {subscribers.length === 0 ? (
                     <div className="py-2.5 px-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[11px] font-mono text-[#94A3B8] text-center">
-                      कोई पंजीकृत ग्राहक नहीं है
+                      {t('noSubsToAdjust')}
                     </div>
                   ) : (
                     <select
@@ -2693,7 +2938,7 @@ ${elecLine}--------------------------------
                   )}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <label className="block text-[9px] text-[#94A3B8]">स्लॉट / स्थान</label>
+                      <label className="block text-[9px] text-[#94A3B8]">{t('slotYard')}</label>
                       <input
                         type="text"
                         value={overrideSubSlot}
@@ -2702,7 +2947,7 @@ ${elecLine}--------------------------------
                       />
                     </div>
                     <div>
-                      <label className="block text-[9px] text-[#94A3B8]">EV बकाया (₹)</label>
+                      <label className="block text-[9px] text-[#94A3B8]">{t('evArrears')}</label>
                       <input
                         type="number"
                         value={overrideSubEvDue}
@@ -2720,7 +2965,7 @@ ${elecLine}--------------------------------
                   className="w-full py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 cursor-pointer active:scale-98 transition-all bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] shadow-[0_0_20px_rgba(212,175,55,0.3)] mt-1"
                 >
                   <Check className="w-4 h-4" />
-                  <span>परिवर्तन तुरंत लागू करें (Save Changes)</span>
+                  <span>{t('saveChanges')}</span>
                 </button>
               </motion.div>
             </>

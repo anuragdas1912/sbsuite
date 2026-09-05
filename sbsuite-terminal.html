@@ -390,7 +390,13 @@
             <div class="flex items-center gap-2">
               <button id="btn-master-override-units" onclick="openMasterOverrideModal()" style="display: none;" class="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                <span>⚙️ Control</span>
+                <span id="label-control-btn-units">⚙️ Control</span>
+              </button>
+
+              <button id="btn-lang-toggle-units" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.12] text-[#EDEDED] font-mono font-bold text-[11px] flex items-center gap-1 cursor-pointer active:scale-95 transition-all" title="Toggle Language">
+                <span class="lang-label-en text-amber-300 font-extrabold">EN</span>
+                <span class="text-[#64748B]">/</span>
+                <span class="lang-label-hi text-[#94A3B8]">हि</span>
               </button>
 
               <button onclick="lockTerminal()" aria-label="Lock terminal" class="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] text-[#94A3B8] hover:text-white active:scale-95 transition-all duration-100 cursor-pointer shadow-sm hover:border-[#D4AF37]/30" title="Lock Terminal">
@@ -469,7 +475,13 @@
             <div class="flex items-center gap-2">
               <button id="btn-master-override-parking" onclick="openMasterOverrideModal()" style="display: none;" class="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                <span>⚙️ Control</span>
+                <span id="label-control-btn-parking">⚙️ Control</span>
+              </button>
+
+              <button id="btn-lang-toggle-parking" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.12] text-[#EDEDED] font-mono font-bold text-[11px] flex items-center gap-1 cursor-pointer active:scale-95 transition-all" title="Toggle Language">
+                <span class="lang-label-en text-amber-300 font-extrabold">EN</span>
+                <span class="text-[#64748B]">/</span>
+                <span class="lang-label-hi text-[#94A3B8]">हि</span>
               </button>
 
               <button onclick="lockTerminal()" aria-label="Lock terminal" class="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] text-[#94A3B8] hover:text-white active:scale-95 transition-all duration-100 cursor-pointer shadow-sm hover:border-[#D4AF37]/30" title="Lock Terminal">
@@ -526,10 +538,10 @@
             <div class="flex items-center justify-between">
               <span class="text-xs font-mono font-bold text-[#EDEDED] uppercase tracking-wider flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22D3EE]"></span>
-                मासिक पास जारी करें (New Monthly Pass)
+                <span id="new-pass-card-title">Issue New Monthly Pass</span>
               </span>
               <span id="new-pass-rate-badge" class="text-[10px] font-mono text-[#D4AF37] bg-[#D4AF37]/10 border border-[#D4AF37]/30 px-2 py-0.5 rounded-md">
-                ₹500 / माह
+                ₹500 / Mo
               </span>
             </div>
 
@@ -542,10 +554,10 @@
                 class="p-2 rounded-xl text-left border font-mono transition-all cursor-pointer bg-[#0D1117] border-[#D4AF37]/40 shadow-[0_0_10px_rgba(212,175,55,0.15)] text-[#EDEDED]"
               >
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold">🚗 Car: Small</span>
+                  <span class="text-xs font-bold cat-title">🚗 Car: Small</span>
                   <span class="text-[10px] text-[#D4AF37]">₹500</span>
                 </div>
-                <span class="text-[9px] text-[#94A3B8]">हैचबैक / कॉम्पैक्ट</span>
+                <span class="text-[9px] text-[#94A3B8] cat-sub">Hatchback / Compact</span>
               </button>
 
               <button
@@ -555,10 +567,10 @@
                 class="p-2 rounded-xl text-left border font-mono transition-all cursor-pointer bg-white/[0.02] border-white/[0.06] text-[#94A3B8] hover:text-white"
               >
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold">🚙 Car: Large</span>
+                  <span class="text-xs font-bold cat-title">🚙 Car: Large</span>
                   <span class="text-[10px] text-amber-300">₹700</span>
                 </div>
-                <span class="text-[9px] text-[#94A3B8]">SUV / बड़ी गाड़ियां</span>
+                <span class="text-[9px] text-[#94A3B8] cat-sub">SUV / Large Cars</span>
               </button>
 
               <button
@@ -568,10 +580,10 @@
                 class="p-2 rounded-xl text-left border font-mono transition-all cursor-pointer bg-white/[0.02] border-white/[0.06] text-[#94A3B8] hover:text-white"
               >
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold">🛻 Pickup / Loader</span>
+                  <span class="text-xs font-bold cat-title">🛻 Pickup / Loader</span>
                   <span class="text-[10px] text-purple-300">₹800</span>
                 </div>
-                <span class="text-[9px] text-[#94A3B8]">पिकअप / लोडर वाहन</span>
+                <span class="text-[9px] text-[#94A3B8] cat-sub">Pickup / Loader</span>
               </button>
 
               <button
@@ -581,25 +593,25 @@
                 class="p-2 rounded-xl text-left border font-mono transition-all cursor-pointer bg-white/[0.02] border-white/[0.06] text-[#94A3B8] hover:text-white"
               >
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold">🛺 E-Rickshaw</span>
+                  <span class="text-xs font-bold cat-title">🛺 E-Rickshaw</span>
                   <span class="text-[10px] text-emerald-300">₹500</span>
                 </div>
-                <span class="text-[9px] text-[#94A3B8]">टुक-टुक (+EV मीटर)</span>
+                <span class="text-[9px] text-[#94A3B8] cat-sub">Tuk-Tuk (+EV Meter)</span>
               </button>
             </div>
 
             <!-- Tuk-Tuk Dedicated EV Charger Sub-Meter Toggle -->
             <div id="new-tuktuk-ev-toggle-container" class="p-2.5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 flex flex-col gap-2" style="display: none;">
               <label class="flex items-center justify-between cursor-pointer">
-                <span class="text-[11px] font-mono font-semibold text-cyan-300 flex items-center gap-1.5">
+                <span id="new-pass-ev-toggle-label" class="text-[11px] font-mono font-semibold text-cyan-300 flex items-center gap-1.5">
                   <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                  ⚡ EV चार्जर सब-मीटर सुविधा जोड़ें
+                  ⚡ Add EV Charger Sub-Meter
                 </span>
                 <input type="checkbox" id="new-pass-ev-toggle" onchange="toggleNewPassEvFacility()" class="w-4 h-4 rounded border-cyan-500/50 text-cyan-500 focus:ring-0 bg-[#06080C] cursor-pointer">
               </label>
 
               <div id="new-pass-ev-reading-box" class="flex items-center gap-2 pt-1 border-t border-cyan-500/20" style="display: none;">
-                <span class="text-[10px] font-mono text-[#94A3B8] whitespace-nowrap">प्रारंभिक मीटर रीडिंग (kWh):</span>
+                <span id="new-pass-ev-reading-label" class="text-[10px] font-mono text-[#94A3B8] whitespace-nowrap">Initial Meter Reading (kWh):</span>
                 <input
                   type="number"
                   id="new-pass-initial-ev-reading"
@@ -612,7 +624,7 @@
             <!-- Manual Slot Assignment Input & Vehicle Plate -->
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-[10px] font-mono text-[#94A3B8] uppercase mb-1">📍 स्लॉट / स्थान (Editable)</label>
+                <label id="new-pass-slot-label" class="block text-[10px] font-mono text-[#94A3B8] uppercase mb-1">📍 Slot / Spot (Editable)</label>
                 <input
                   type="text"
                   id="new-pass-slot"
@@ -621,7 +633,7 @@
                 />
               </div>
               <div>
-                <label class="block text-[10px] font-mono text-[#94A3B8] uppercase mb-1">गाड़ी नंबर (Plate)</label>
+                <label id="new-pass-plate-label" class="block text-[10px] font-mono text-[#94A3B8] uppercase mb-1">Vehicle Number (Plate)</label>
                 <input
                   type="text"
                   id="new-pass-plate"
@@ -672,10 +684,10 @@
 
           <div class="flex items-center justify-between px-1">
             <span class="text-xs font-mono font-semibold text-[#EDEDED]">
-              पंजीकृत मासिक ग्राहक (<span id="parking-active-count">0</span>)
+              <span id="parking-subscribers-heading">Registered Monthly Subscribers</span> (<span id="parking-active-count">0</span>)
             </span>
-            <span class="text-[10px] font-mono text-[#94A3B8]">
-              टैप करें: नवीनीकरण / EV मीटर
+            <span id="parking-tap-hint" class="text-[10px] font-mono text-[#94A3B8]">
+              Tap: Renewal / EV Meter
             </span>
           </div>
 
@@ -723,7 +735,7 @@
           </span>
           <div>
             <h3 id="drawer-tenant-name" class="text-sm font-semibold text-[#EDEDED]">Amit Sharma</h3>
-            <span id="drawer-tariff-badge" class="text-[10px] font-mono text-cyan-400">बिजली दर: ₹9.0 / यूनिट</span>
+            <span id="drawer-tariff-badge" class="text-[10px] font-mono text-cyan-400">Power Tariff: ₹9.0 / unit</span>
           </div>
         </div>
 
@@ -735,11 +747,11 @@
       <div class="mt-3 grid grid-cols-2 gap-2 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
         <button id="drawer-tab-meter-btn" onclick="switchDrawerTab('meter')" type="button" class="py-1.5 px-3 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/30 shadow-sm">
           <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-          <span>1. सब-मीटर रीडिंग</span>
+          <span id="drawer-tab-meter-text">1. Sub-Meter Reading</span>
         </button>
         <button id="drawer-tab-pay-btn" onclick="switchDrawerTab('payment')" type="button" class="py-1.5 px-3 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all text-[#94A3B8] hover:text-white border border-transparent">
           <svg class="w-3.5 h-3.5 text-[#D4AF37]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-          <span>2. नकद वसूली (Split)</span>
+          <span id="drawer-tab-pay-text">2. Cash Split & Collection</span>
         </button>
       </div>
 
@@ -943,7 +955,7 @@
 
       <!-- Editable Slot Field -->
       <div class="pt-3 flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <span class="text-[10px] font-mono text-[#94A3B8] uppercase">📍 स्लॉट / स्थान (Editable):</span>
+        <span id="renewal-slot-label" class="text-[10px] font-mono text-[#94A3B8] uppercase">📍 Slot / Spot (Editable):</span>
         <input
           type="text"
           id="renewal-slot-input"
@@ -1259,6 +1271,363 @@
     let currentUserRole = null; // 'owner' | 'manager'
     let currentMainModule = 'units'; // 'units' | 'parking'
     let currentDeckTab = 'rooms'; // 'rooms' | 'shops'
+    let currentLanguage = 'en'; // 'en' | 'hi'
+
+    const translations = {
+      en: {
+        brandEstate: 'Shree Balaji Estate',
+        brandParking: 'Shree Balaji Parking',
+        ownerTelemetry: '👑 OWNER TELEMETRY',
+        managerShift: '👤 MANAGER SHIFT (RITIN)',
+        ownerFieldOverride: '👑 OWNER FIELD OVERRIDE',
+        controlBtn: '⚙️ Control',
+        roomsTab: '🛏️ Rooms',
+        shopsTab: '🏪 Shops',
+        occupancy: 'Occupancy',
+        rentDue: 'Rent Due',
+        metersDue: 'Meters Due',
+        vacant: 'Vacant',
+        tenant: 'Tenant',
+        readingPending: 'Reading Pending',
+        baseRent: 'Base',
+        paid: '(Paid)',
+        smallCar: '🚗 Small',
+        largeCar: '🚙 SUV',
+        heavyVehicle: '🛻 Heavy',
+        tukTuk: '🛺 TukTuk',
+        activeVehicles: 'Active',
+        shiftCash: 'Shift Cash',
+        ownerNet: 'Owner Net',
+        ritinCommission: 'Ritin Cut',
+        issueNewPass: 'Issue New Monthly Pass',
+        perMonth: '/ Mo',
+        addEvSubmeter: '⚡ Add EV Charger Sub-Meter',
+        initialReadingKwh: 'Initial Meter Reading (kWh):',
+        slotSpot: '📍 Slot / Spot (Editable)',
+        plateNumber: 'Vehicle Number (Plate)',
+        driverOwnerName: "Driver / Owner's Name",
+        phoneWhatsApp: 'Mobile Number (WhatsApp)',
+        issuePassAndCollectCash: 'Collect Cash & Issue Pass',
+        searchPlaceholder: 'Search plate, name, or slot...',
+        registeredSubscribers: 'Registered Monthly Subscribers',
+        tapToRenew: 'Tap: Renewal / EV Meter',
+        noSubscribers: 'No registered monthly subscribers found. Issue a new pass above.',
+        inside: 'Inside',
+        outside: 'Outside',
+        passDue: '⚠️ Pass Due',
+        passActive: 'Active',
+        validTill: 'Valid till',
+        monthly: 'Monthly',
+        due: 'Due',
+        dockUnits: 'Units Deck (22)',
+        dockParking: 'Parking Gate',
+        cancel: 'Cancel',
+        saveChanges: 'Save Changes Immediately',
+        powerTariff: 'Power Tariff',
+        perUnit: '/ unit',
+        submeterReading: '1. Sub-Meter Reading',
+        cashCollection: '2. Cash Collection (Split)',
+        prevReading: 'Previous Reading (Prev)',
+        currReading: 'Current Reading (Curr)',
+        enterNewReading: 'Enter new reading',
+        readingErrorLower: 'Error: Lower than previous reading!',
+        validReading: 'Valid reading',
+        unitsLabel: 'units',
+        unitsConsumed: 'Units Consumed',
+        electricityDue: 'Electricity Due',
+        saveReadingOnly: 'Save Reading Only',
+        recordPaymentProceed: 'Collect Cash & Split →',
+        rentBox: 'Rent (Rent Box)',
+        rentPaidHint: 'Rent fully paid (Zero Balance)',
+        rentArrearsHint: 'Arrears carried forward:',
+        electricityBox: 'Electricity (Electricity Box)',
+        elecHint: 'Credited to power fund according to unit usage',
+        recordCashReceived: 'Record Cash Deposit',
+        digitalReceipt: 'Digital Payment Receipt',
+        cashReceivedSuccess: 'Cash Received (Success)',
+        sendWhatsapp: 'Send WhatsApp Slip',
+        sendSms: 'Send SMS',
+        closeReceipt: 'Done / Close Receipt',
+        passRenewalReceipt: 'Monthly Pass Renewal Slip',
+      },
+      hi: {
+        brandEstate: 'श्री बालाजी एस्टेट',
+        brandParking: 'श्री बालाजी पार्किंग',
+        ownerTelemetry: '👑 मालिक टेलीमेट्री',
+        managerShift: '👤 मैनेजर शिफ्ट (रितिन)',
+        ownerFieldOverride: '👑 मालिक फील्ड ओवरराइड',
+        controlBtn: '⚙️ कंट्रोल',
+        roomsTab: '🛏️ कमरे',
+        shopsTab: '🏪 दुकानें',
+        occupancy: 'कुल आवास',
+        rentDue: 'बकाया किराया',
+        metersDue: 'मीटर बाकी',
+        vacant: 'रिक्त',
+        tenant: 'किराएदार',
+        readingPending: 'रीडिंग बाकी',
+        baseRent: 'किराया',
+        paid: '(चुकता)',
+        smallCar: '🚗 छोटी कार',
+        largeCar: '🚙 SUV',
+        heavyVehicle: '🛻 लोडर',
+        tukTuk: '🛺 टुक-टुक',
+        activeVehicles: 'सक्रिय',
+        shiftCash: 'कुल शिफ्ट संग्रह',
+        ownerNet: 'मालिक नेट',
+        ritinCommission: 'रितिन कमीशन',
+        issueNewPass: 'नया मासिक पास जारी करें',
+        perMonth: '/ माह',
+        addEvSubmeter: '⚡ EV चार्जर सब-मीटर सुविधा जोड़ें',
+        initialReadingKwh: 'प्रारंभिक मीटर रीडिंग (kWh):',
+        slotSpot: '📍 स्लॉट / स्थान',
+        plateNumber: 'गाड़ी नंबर',
+        driverOwnerName: 'मालिक / ड्राइवर का नाम',
+        phoneWhatsApp: 'मोबाइल नंबर (WhatsApp)',
+        issuePassAndCollectCash: 'नकद प्राप्त & पास जारी करें',
+        searchPlaceholder: 'नंबर, नाम या स्लॉट खोजें...',
+        registeredSubscribers: 'पंजीकृत मासिक ग्राहक',
+        tapToRenew: 'टैप करें: नवीनीकरण / EV मीटर',
+        noSubscribers: 'कोई पंजीकृत मासिक ग्राहक नहीं है। नया पास जारी करें।',
+        inside: 'अंदर',
+        outside: 'बाहर',
+        passDue: '⚠️ पास देय',
+        passActive: 'सक्रिय',
+        validTill: 'वैध',
+        monthly: 'मासिक',
+        due: 'बकाया',
+        dockUnits: 'एस्टेट यूनिट्स (22)',
+        dockParking: 'पार्किंग गेट',
+        cancel: 'रद्द करें',
+        saveChanges: 'परिवर्तन तुरंत लागू करें',
+        powerTariff: 'बिजली दर',
+        perUnit: '/ यूनिट',
+        submeterReading: '1. सब-मीटर रीडिंग',
+        cashCollection: '2. नकद वसूली (Split)',
+        prevReading: 'पिछली रीडिंग (Prev)',
+        currReading: 'वर्तमान रीडिंग (Curr)',
+        enterNewReading: 'नई रीडिंग दर्ज करें',
+        readingErrorLower: 'त्रुटि: पिछली रीडिंग से कम है!',
+        validReading: 'वैध रीडिंग',
+        unitsLabel: 'यूनिट',
+        unitsConsumed: 'खपत (Units Consumed)',
+        electricityDue: 'बिजली बिल',
+        saveReadingOnly: 'केवल रीडिंग सेव करें',
+        recordPaymentProceed: 'भुगतान दर्ज करें →',
+        rentBox: 'किराया (Rent Box)',
+        rentPaidHint: 'किराया पूर्ण चुकता (Zero Balance)',
+        rentArrearsHint: 'बकाया आगे जुड़ेगा:',
+        electricityBox: 'बिजली बिल (Electricity Box)',
+        elecHint: 'यूनिट खपत के अनुसार बिजली फंड में जमा',
+        recordCashReceived: 'नकद जमा दर्ज करें',
+        digitalReceipt: 'डिजिटल भुगतान रसीद',
+        cashReceivedSuccess: 'नकद प्राप्त दर्ज (सफल)',
+        sendWhatsapp: 'व्हाट्सएप रसीद भेजें',
+        sendSms: 'SMS भेजें',
+        closeReceipt: 'संपन्न / रसीद बंद करें',
+        passRenewalReceipt: 'मासिक पास नवीनीकरण रसीद',
+      }
+    };
+
+    function t(key) {
+      return (translations[currentLanguage] && translations[currentLanguage][key]) || translations['en'][key] || key;
+    }
+
+    function getCategoryLabel(cat) {
+      if (currentLanguage === 'en') {
+        switch (cat) {
+          case 'car_small': return 'Car: Small';
+          case 'car_large': return 'Car: Large / SUV';
+          case 'heavy':     return 'Pickup / Loader';
+          case 'tuktuk':    return 'E-Rickshaw';
+          default:          return cat;
+        }
+      } else {
+        switch (cat) {
+          case 'car_small': return 'छोटी कार';
+          case 'car_large': return 'बड़ी कार / SUV';
+          case 'heavy':     return 'पिकअप / लोडर';
+          case 'tuktuk':    return 'ई-रिक्शा';
+          default:          return cat;
+        }
+      }
+    }
+
+    function getCategorySubLabel(cat) {
+      if (currentLanguage === 'en') {
+        switch (cat) {
+          case 'car_small': return 'Hatchback / Compact';
+          case 'car_large': return 'SUV / Large Cars';
+          case 'heavy':     return 'Heavy / Commercial';
+          case 'tuktuk':    return 'Tuk-Tuk (+EV Meter)';
+          default:          return '';
+        }
+      } else {
+        switch (cat) {
+          case 'car_small': return 'हैचबैक / कॉम्पैक्ट';
+          case 'car_large': return 'SUV / बड़ी गाड़ियां';
+          case 'heavy':     return 'कमर्शियल / लोडर';
+          case 'tuktuk':    return 'टुक-टुक (+EV मीटर)';
+          default:          return '';
+        }
+      }
+    }
+
+    function toggleLanguage() {
+      if (navigator.vibrate) navigator.vibrate([10]);
+      currentLanguage = currentLanguage === 'en' ? 'hi' : 'en';
+
+      document.querySelectorAll('#btn-lang-toggle-units, #btn-lang-toggle-parking').forEach(btn => {
+        const enSpan = btn.querySelector('.lang-label-en');
+        const hiSpan = btn.querySelector('.lang-label-hi');
+        if (enSpan && hiSpan) {
+          if (currentLanguage === 'en') {
+            enSpan.className = 'lang-label-en text-amber-300 font-extrabold';
+            hiSpan.className = 'lang-label-hi text-[#94A3B8]';
+          } else {
+            enSpan.className = 'lang-label-en text-[#94A3B8]';
+            hiSpan.className = 'lang-label-hi text-amber-300 font-extrabold';
+          }
+        }
+      });
+
+      updateLanguageUI();
+
+      if (currentMainModule === 'units') {
+        renderUnitsDeck();
+      } else {
+        renderParkingGate();
+      }
+    }
+
+    function updateLanguageUI() {
+      const deckRoleBadge = document.getElementById('deck-role-badge');
+      if (deckRoleBadge) {
+        deckRoleBadge.textContent = currentUserRole === 'owner' ? t('ownerTelemetry') : t('managerShift');
+      }
+      const labelControlUnits = document.getElementById('label-control-btn-units');
+      if (labelControlUnits) labelControlUnits.textContent = t('controlBtn');
+      const labelControlParking = document.getElementById('label-control-btn-parking');
+      if (labelControlParking) labelControlParking.textContent = t('controlBtn');
+
+      const tabRoomsBtn = document.getElementById('tab-rooms-btn');
+      if (tabRoomsBtn) tabRoomsBtn.querySelector('span').textContent = t('roomsTab');
+      const tabShopsBtn = document.getElementById('tab-shops-btn');
+      if (tabShopsBtn) tabShopsBtn.querySelector('span').textContent = t('shopsTab');
+
+      const statRibbon = document.querySelector('#units-deck-view .grid.grid-cols-3');
+      if (statRibbon) {
+        const labels = statRibbon.querySelectorAll('span.text-\\[9px\\]');
+        if (labels.length >= 3) {
+          labels[0].textContent = t('occupancy');
+          labels[1].textContent = t('rentDue');
+          labels[2].textContent = t('metersDue');
+        }
+      }
+
+      const parkingRoleBadge = document.getElementById('parking-role-badge');
+      if (parkingRoleBadge) {
+        if (currentUserRole === 'owner') {
+          parkingRoleBadge.textContent = t('ownerFieldOverride');
+        } else {
+          parkingRoleBadge.textContent = currentLanguage === 'en' ? 'Transit Camp // Monthly Fleet' : 'ट्रांजिट कैंप // मासिक फ्लीट';
+        }
+      }
+
+      const teleStrip = document.querySelector('#parking-gate-view .grid.grid-cols-4');
+      if (teleStrip) {
+        const labels = teleStrip.querySelectorAll('span.text-\\[8\\.5px\\]');
+        if (labels.length >= 4) {
+          labels[0].textContent = t('smallCar');
+          labels[1].textContent = t('largeCar');
+          labels[2].textContent = t('heavyVehicle');
+          labels[3].textContent = t('tukTuk');
+        }
+      }
+
+      const cashBar = document.querySelector('#parking-gate-view .bg-gradient-to-r');
+      if (cashBar) {
+        const labels = cashBar.querySelectorAll('span.text-\\[9px\\]');
+        if (labels.length >= 3) {
+          labels[0].textContent = t('shiftCash');
+          labels[1].textContent = t('ownerNet');
+          labels[2].textContent = t('ritinCommission');
+        }
+      }
+
+      // New Pass Card Title
+      const newPassCardTitle = document.getElementById('new-pass-card-title');
+      if (newPassCardTitle) newPassCardTitle.textContent = t('issueNewPass');
+
+      const rateBadge = document.getElementById('new-pass-rate-badge');
+      if (rateBadge) {
+        rateBadge.textContent = `₹${categoryPricing[newPassCategory].fee} ${t('perMonth')}`;
+      }
+
+      // 4 Category Selector Pills
+      const pillKeys = ['car_small', 'car_large', 'heavy', 'tuktuk'];
+      pillKeys.forEach(p => {
+        const pillBtn = document.getElementById(`cat-pill-${p}`);
+        if (pillBtn) {
+          const title = pillBtn.querySelector('.cat-title');
+          const sub = pillBtn.querySelector('.cat-sub');
+          if (title) {
+            const icon = p === 'car_small' ? '🚗' : p === 'car_large' ? '🚙' : p === 'heavy' ? '🛻' : '🛺';
+            title.textContent = `${icon} ${getCategoryLabel(p)}`;
+          }
+          if (sub) sub.textContent = getCategorySubLabel(p);
+        }
+      });
+
+      const evToggleLabel = document.getElementById('new-pass-ev-toggle-label');
+      if (evToggleLabel) {
+        evToggleLabel.innerHTML = `
+          <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>${t('addEvSubmeter')}</span>
+        `;
+      }
+
+      const evReadingLabel = document.getElementById('new-pass-ev-reading-label');
+      if (evReadingLabel) evReadingLabel.textContent = t('initialReadingKwh');
+
+      const slotLabel = document.getElementById('new-pass-slot-label');
+      if (slotLabel) slotLabel.textContent = t('slotSpot');
+
+      const plateLabel = document.getElementById('new-pass-plate-label');
+      if (plateLabel) plateLabel.textContent = t('plateNumber');
+
+      const ownerInput = document.getElementById('new-pass-owner-name');
+      if (ownerInput) ownerInput.placeholder = t('driverOwnerName');
+
+      const phoneInput = document.getElementById('new-pass-phone');
+      if (phoneInput) phoneInput.placeholder = t('phoneWhatsApp');
+
+      const searchInput = document.getElementById('parking-search-input');
+      if (searchInput) searchInput.placeholder = t('searchPlaceholder');
+
+      const subHeading = document.getElementById('parking-subscribers-heading');
+      if (subHeading) subHeading.textContent = t('registeredSubscribers');
+
+      const tapHint = document.getElementById('parking-tap-hint');
+      if (tapHint) tapHint.textContent = t('tapToRenew');
+
+      const issueBtnText = document.getElementById('btn-issue-pass-text');
+      if (issueBtnText) {
+        issueBtnText.textContent = `₹${categoryPricing[newPassCategory].fee} ${t('issuePassAndCollectCash')}`;
+      }
+
+      const dockUnitsSpan = document.querySelector('#dock-btn-units span');
+      if (dockUnitsSpan) dockUnitsSpan.textContent = t('dockUnits');
+      const dockParkingSpan = document.querySelector('#dock-btn-parking span:first-of-type');
+      if (dockParkingSpan) dockParkingSpan.textContent = t('dockParking');
+
+      const tabMeterText = document.getElementById('drawer-tab-meter-text');
+      if (tabMeterText) tabMeterText.textContent = t('submeterReading');
+      const tabPayText = document.getElementById('drawer-tab-pay-text');
+      if (tabPayText) tabPayText.textContent = t('cashCollection');
+
+      const renewalSlotLabel = document.getElementById('renewal-slot-label');
+      if (renewalSlotLabel) renewalSlotLabel.textContent = t('slotSpot');
+    }
 
     // 2. TARIFFS & PASS RATES (LIVE OVERRIDABLE BY OWNER)
     let electricityTariffs = {
@@ -1586,10 +1955,10 @@
             <div class="p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.04] opacity-50 flex flex-col justify-between min-h-[115px]">
               <div class="flex items-center justify-between">
                 <span class="font-mono font-bold text-sm text-[#94A3B8]">${unit.name}</span>
-                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.04] text-[#64748B]">रिक्त / Vacant</span>
+                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.04] text-[#64748B]">${t('vacant')}</span>
               </div>
               <div class="mt-4 flex items-baseline justify-between text-xs font-mono">
-                <span class="text-[#64748B]">किराया:</span>
+                <span class="text-[#64748B]">${t('baseRent')}:</span>
                 <span class="text-[#94A3B8]">₹${unit.rentAmount.toLocaleString('en-IN')}</span>
               </div>
             </div>
@@ -1610,16 +1979,16 @@
                 ${isMeterPending ? '<span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>' : ''}
               </span>
               <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-950/40 border border-emerald-500/30 text-emerald-400">
-                किराएदार
+                ${t('tenant')}
               </span>
             </div>
 
             <span class="text-xs text-[#CBD5E1] truncate mt-1">${unit.tenantName}</span>
 
             <div class="mt-2.5 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono">
-              <span class="${dueAmount > 0 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}">₹${dueAmount.toLocaleString('en-IN')}${dueAmount === 0 ? ' <span class="text-[9px] text-emerald-400/80 font-normal">(चुकता)</span>' : ''}</span>
+              <span class="${dueAmount > 0 ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold'}">₹${dueAmount.toLocaleString('en-IN')}${dueAmount === 0 ? ` <span class="text-[9px] text-emerald-400/80 font-normal">${t('paid')}</span>` : ''}</span>
               ${isMeterPending
-                ? '<span class="text-[9px] text-cyan-300 bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/30">⚡ रीडिंग बाकी</span>'
+                ? `<span class="text-[9px] text-cyan-300 bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/30">⚡ ${t('readingPending')}</span>`
                 : `<span class="text-[9px] text-[#64748B]">${unit.lastReading} kWh</span>`
               }
             </div>
@@ -1638,7 +2007,7 @@
       document.getElementById('drawer-unit-badge').textContent = unit.name;
       document.getElementById('drawer-tenant-name').textContent = unit.tenantName;
       const rate = unit.type === 'room' ? electricityTariffs.room : electricityTariffs.shop;
-      document.getElementById('drawer-tariff-badge').textContent = `बिजली दर: ₹${rate.toFixed(1)} / यूनिट`;
+      document.getElementById('drawer-tariff-badge').textContent = `${t('powerTariff')}: ₹${rate.toFixed(1)} ${t('perUnit')}`;
       document.getElementById('drawer-prev-reading').textContent = unit.lastReading;
 
       document.getElementById('drawer-curr-input').value = '';
@@ -1646,10 +2015,10 @@
       document.getElementById('drawer-elec-due').textContent = '₹0';
 
       const totalRentDue = (unit.rentDueAmount !== undefined && unit.rentDueAmount !== null) ? unit.rentDueAmount : unit.rentAmount;
-      document.getElementById('drawer-pay-rent-due').textContent = `बकाया: ₹${totalRentDue.toLocaleString('en-IN')}`;
+      document.getElementById('drawer-pay-rent-due').textContent = `${t('due')}: ₹${totalRentDue.toLocaleString('en-IN')}`;
       document.getElementById('drawer-pay-rent-input').value = totalRentDue;
       document.getElementById('drawer-pay-elec-input').value = '0';
-      document.getElementById('drawer-pay-elec-due').textContent = 'देय: ₹0';
+      document.getElementById('drawer-pay-elec-due').textContent = `${t('due')}: ₹0`;
 
       switchDrawerTab(unit.isReadingPending ? 'meter' : 'payment');
 
@@ -1709,7 +2078,7 @@
       if (currVal === '' || isNaN(currNum)) {
         document.getElementById('drawer-units-consumed').textContent = '0';
         document.getElementById('drawer-elec-due').textContent = '₹0';
-        statusEl.textContent = 'नई रीडिंग दर्ज करें';
+        statusEl.textContent = t('enterNewReading');
         statusEl.className = 'text-[9px] font-mono text-[#64748B] mt-1';
         saveBtn.disabled = true;
         saveBtn.className = "py-3 px-3 rounded-xl bg-white/[0.04] text-[#64748B] border border-white/[0.08] text-xs font-mono font-semibold cursor-not-allowed transition-all text-center";
@@ -1720,7 +2089,7 @@
       if (currNum < prev) {
         document.getElementById('drawer-units-consumed').textContent = '0';
         document.getElementById('drawer-elec-due').textContent = '₹0';
-        statusEl.textContent = 'त्रुटि: पिछली रीडिंग से कम है!';
+        statusEl.textContent = t('readingErrorLower');
         statusEl.className = 'text-[9px] font-mono text-rose-400 font-bold mt-1';
         saveBtn.disabled = true;
         saveBtn.className = "py-3 px-3 rounded-xl bg-white/[0.04] text-[#64748B] border border-white/[0.08] text-xs font-mono font-semibold cursor-not-allowed transition-all text-center";
@@ -1734,10 +2103,10 @@
 
       document.getElementById('drawer-units-consumed').textContent = consumed;
       document.getElementById('drawer-elec-due').textContent = `₹${elecBill.toLocaleString('en-IN')}`;
-      document.getElementById('drawer-pay-elec-due').textContent = `देय: ₹${elecBill.toLocaleString('en-IN')}`;
+      document.getElementById('drawer-pay-elec-due').textContent = `${t('due')}: ₹${elecBill.toLocaleString('en-IN')}`;
       document.getElementById('drawer-pay-elec-input').value = elecBill;
 
-      statusEl.textContent = `वैध रीडिंग (${consumed} यूनिट खपत)`;
+      statusEl.textContent = `${t('validReading')} (${consumed} ${t('unitsLabel')})`;
       statusEl.className = 'text-[9px] font-mono text-emerald-400 font-bold mt-1';
       saveBtn.disabled = false;
       saveBtn.className = "py-3 px-3 rounded-xl bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 text-xs font-mono font-bold cursor-pointer transition-all text-center shadow-[0_0_12px_rgba(6,182,212,0.2)]";
@@ -1767,15 +2136,17 @@
       const hintEl = document.getElementById('drawer-pay-rent-arrears-hint');
 
       if (arrearsRemaining > 0) {
-        hintEl.textContent = `बकाया आगे जुड़ेगा: ₹${arrearsRemaining.toLocaleString('en-IN')}`;
+        hintEl.textContent = `${t('rentArrearsHint')} ₹${arrearsRemaining.toLocaleString('en-IN')}`;
         hintEl.className = 'text-[10px] font-mono text-amber-400 font-bold';
       } else {
-        hintEl.textContent = 'किराया पूर्ण चुकता (Zero Balance)';
+        hintEl.textContent = t('rentPaidHint');
         hintEl.className = 'text-[10px] font-mono text-emerald-400 font-bold';
       }
 
       const totalCash = rentPaid + elecPaid;
-      document.getElementById('drawer-confirm-pay-text').textContent = `₹${totalCash.toLocaleString('en-IN')} नकद जमा दर्ज करें`;
+      document.getElementById('drawer-confirm-pay-text').textContent = currentLanguage === 'en'
+        ? `Record Cash: ₹${totalCash.toLocaleString('en-IN')}`
+        : `₹${totalCash.toLocaleString('en-IN')} ${t('recordCashReceived')}`;
     }
 
     function recordPayment() {
@@ -1789,7 +2160,7 @@
       const elecPaid = parseInt(document.getElementById('drawer-pay-elec-input').value || '0', 10);
       const totalCash = rentPaid + elecPaid;
       if (totalCash <= 0 && !hasValidReading) {
-        alert('कृपया मान्य रीडिंग या भुगतान राशि दर्ज करें');
+        alert(currentLanguage === 'en' ? 'Please enter a valid meter reading or payment amount' : 'कृपया मान्य रीडिंग या भुगतान राशि दर्ज करें');
         return;
       }
       const totalDueRent = (activeDrawerUnit.rentDueAmount !== undefined && activeDrawerUnit.rentDueAmount !== null) ? activeDrawerUnit.rentDueAmount : activeDrawerUnit.rentAmount;
@@ -1803,17 +2174,20 @@
 
       const today = new Date();
       const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+      const isHi = currentLanguage === 'hi';
       let elecLine = '';
       if (hasValidReading) {
         const unitsConsumed = currNum - prevReading;
-        elecLine = `बिजली बिल जमा: ₹${elecPaid.toLocaleString('en-IN')} (रीडिंग: ${prevReading} -> ${currNum}, ${unitsConsumed} यूनिट)
-`;
+        elecLine = isHi
+          ? `बिजली बिल जमा: ₹${elecPaid.toLocaleString('en-IN')} (रीडिंग: ${prevReading} -> ${currNum}, ${unitsConsumed} यूनिट)\n`
+          : `Power Bill Received: ₹${elecPaid.toLocaleString('en-IN')} (Reading: ${prevReading} -> ${currNum}, ${unitsConsumed} units)\n`;
       } else if (elecPaid > 0) {
-        elecLine = `बिजली बिल जमा: ₹${elecPaid.toLocaleString('en-IN')}
-`;
+        elecLine = isHi
+          ? `बिजली बिल जमा: ₹${elecPaid.toLocaleString('en-IN')}\n`
+          : `Power Bill Received: ₹${elecPaid.toLocaleString('en-IN')}\n`;
       }
 
-      const receiptText = `श्री बालाजी एस्टेट (ट्रांजिट कैंप, रुद्रपुर)
+      const receiptText = isHi ? `श्री बालाजी एस्टेट (ट्रांजिट कैंप, रुद्रपुर)
 डिजिटल किराया एवं बिजली रसीद
 
 यूनिट: [${activeDrawerUnit.name}] (${activeDrawerUnit.type === 'room' ? 'कमरा' : 'दुकान'})
@@ -1823,7 +2197,17 @@
 किराया जमा: ₹${rentPaid.toLocaleString('en-IN')} (शेष बकाया: ₹${remainingRent.toLocaleString('en-IN')})
 ${elecLine}--------------------------------
 कुल नकद प्राप्त: ₹${(rentPaid + elecPaid).toLocaleString('en-IN')}
-धन्यवाद। श्री बालाजी एस्टेट।`;
+धन्यवाद। श्री बालाजी एस्टेट।` : `Shree Balaji Estate (Transit Camp, Rudrapur)
+Digital Rent & Utility Receipt
+
+Unit: [${activeDrawerUnit.name}] (${activeDrawerUnit.type === 'room' ? 'Room' : 'Shop'})
+Tenant: [${activeDrawerUnit.tenantName}]
+Date: [${dateStr}]
+--------------------------------
+Rent Paid: ₹${rentPaid.toLocaleString('en-IN')} (Remaining Arrears: ₹${remainingRent.toLocaleString('en-IN')})
+${elecLine}--------------------------------
+Total Cash Received: ₹${(rentPaid + elecPaid).toLocaleString('en-IN')}
+Thank you. Shree Balaji Estate.`;
 
       const encoded = encodeURIComponent(receiptText);
       document.getElementById('receipt-preview-text').textContent = receiptText;
@@ -1855,8 +2239,8 @@ ${elecLine}--------------------------------
       });
 
       const pricing = categoryPricing[cat];
-      document.getElementById('new-pass-rate-badge').textContent = `₹${pricing.fee} / माह`;
-      document.getElementById('btn-issue-pass-text').textContent = `₹${pricing.fee} नकद प्राप्त & पास जारी करें`;
+      document.getElementById('new-pass-rate-badge').textContent = `₹${pricing.fee} ${t('perMonth')}`;
+      document.getElementById('btn-issue-pass-text').textContent = `₹${pricing.fee} ${t('issuePassAndCollectCash')}`;
 
       const evToggleContainer = document.getElementById('new-tuktuk-ev-toggle-container');
       if (cat === 'tuktuk') {
@@ -1877,10 +2261,10 @@ ${elecLine}--------------------------------
       const plate = document.getElementById('new-pass-plate').value.trim().toUpperCase();
       const name = document.getElementById('new-pass-owner-name').value.trim();
       const phone = document.getElementById('new-pass-phone').value.trim();
-      const slot = document.getElementById('new-pass-slot').value.trim() || 'General';
+      const slot = document.getElementById('new-pass-slot').value.trim() || (currentLanguage === 'en' ? 'Open Yard' : 'खुला प्रांगण');
 
       if (!plate || plate.length < 3 || !name) {
-        alert('कृपया सही गाड़ी नंबर और नाम दर्ज करें');
+        alert(currentLanguage === 'en' ? 'Please enter valid vehicle plate and driver name' : 'कृपया सही गाड़ी नंबर और नाम दर्ज करें');
         return;
       }
 
@@ -1924,23 +2308,39 @@ ${elecLine}--------------------------------
       document.getElementById('new-pass-ev-reading-box').style.display = 'none';
 
       // Receipt Generation
-      const receiptText = `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
-मासिक पार्किंग रसीद (Monthly Pass)
+      const isHi = currentLanguage === 'hi';
+      const catLabel = getCategoryLabel(newPassCategory);
+      const receiptText = isHi ? `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
+मासिक पार्किंग रसीद
 
-वाहन नंबर: [${plate}] (${pricing.label})
+वाहन नंबर: [${plate}] (${catLabel})
 स्लॉट: [${slot}]
 धारक: [${name}]
 तारीख: [${dateText}]
 --------------------------------
 मासिक शुल्क: ₹${pricing.fee} (नकद प्राप्त)
 वैधता: [${dateText} से ${expiryText}]
-स्थिति: सक्रिय पास (Active)${hasEv ? `
+स्थिति: सक्रिय पास${hasEv ? `
 ई-रिक्शा सब-मीटर: चालू (प्रारंभिक ${initialReading} kWh)` : ''}
 --------------------------------
 मालिक हिस्सा: ₹${pricing.owner} | रितिन कमीशन: ₹${pricing.ritin}
-धन्यवाद। श्री बालाजी पार्किंग।`;
+धन्यवाद। श्री बालाजी पार्किंग।` : `Shree Balaji Parking (Transit Camp, Rudrapur)
+Monthly Parking Pass Slip
 
-      showMonthlyReceiptModal(receiptText, pricing.owner, pricing.ritin, 'मासिक पार्किंग रसीद (Monthly Pass)');
+Vehicle Number: [${plate}] (${catLabel})
+Slot: [${slot}]
+Holder: [${name}]
+Date: [${dateText}]
+--------------------------------
+Monthly Fee: ₹${pricing.fee} (Cash Received)
+Validity: [${dateText} to ${expiryText}]
+Status: Active Pass${hasEv ? `
+E-Rickshaw Sub-Meter: Active (Initial ${initialReading} kWh)` : ''}
+--------------------------------
+Owner Share: ₹${pricing.owner} | Ritin Cut: ₹${pricing.ritin}
+Thank you. Shree Balaji Parking.`;
+
+      showMonthlyReceiptModal(receiptText, pricing.owner, pricing.ritin, isHi ? 'मासिक पार्किंग रसीद' : 'Monthly Parking Pass Slip');
       renderParkingGate();
     }
 
@@ -1983,7 +2383,7 @@ ${elecLine}--------------------------------
           <div class="py-12 px-4 rounded-2xl bg-[#0A0D14]/60 border border-white/[0.06] flex flex-col items-center justify-center text-center gap-2.5">
             <span class="text-3xl opacity-40">🅿️</span>
             <p class="text-xs font-mono text-[#94A3B8]">
-              कोई पंजीकृत मासिक ग्राहक नहीं है। नया पास जारी करें।
+              ${t('noSubscribers')}
             </p>
           </div>
         `;
@@ -1994,6 +2394,7 @@ ${elecLine}--------------------------------
         const pricing = categoryPricing[sub.category] || categoryPricing.car_small;
         const isDue = sub.passStatus === 'due';
         const hasEv = sub.hasEvFacility;
+        const catLabel = getCategoryLabel(sub.category);
 
         return `
           <div
@@ -2006,7 +2407,7 @@ ${elecLine}--------------------------------
                   ${sub.vehicleNumber}
                 </span>
                 <span class="text-[10px] font-mono text-[#94A3B8]">
-                  ${pricing.label}
+                  ${catLabel}
                 </span>
               </div>
 
@@ -2020,30 +2421,30 @@ ${elecLine}--------------------------------
                 }"
               >
                 <span class="w-1.5 h-1.5 rounded-full ${sub.isParkedInside ? 'bg-emerald-400 animate-pulse' : 'bg-[#64748B]'}"></span>
-                <span>${sub.isParkedInside ? 'अंदर (Inside)' : 'बाहर (Outside)'}</span>
+                <span>${sub.isParkedInside ? t('inside') : t('outside')}</span>
               </button>
             </div>
 
             <div class="flex items-center justify-between text-xs font-mono">
               <span class="text-[#CBD5E1] font-medium">${sub.ownerName}</span>
               <span class="text-amber-300 font-bold bg-amber-950/30 px-2 py-0.5 rounded border border-amber-500/30">
-                📍 ${sub.slot || 'Open Yard'}
+                📍 ${sub.slot || (currentLanguage === 'en' ? 'Open Yard' : 'खुला प्रांगण')}
               </span>
             </div>
 
             <div class="pt-2 border-t border-white/[0.05] flex items-center justify-between text-[10px] font-mono">
               <div class="flex items-center gap-2">
                 <span class="${isDue ? 'text-rose-400 font-bold' : 'text-emerald-400'}">
-                  ${isDue ? '⚠️ पास देय (Due)' : `सक्रिय (वैध: ${sub.validTillDate})`}
+                  ${isDue ? t('passDue') : `${t('passActive')} (${t('validTill')}: ${sub.validTillDate})`}
                 </span>
               </div>
 
               ${hasEv ? `
                 <span class="text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/30 flex items-center gap-1">
-                  ⚡ EV: ${sub.lastEvReading} kWh ${sub.evDueAmount > 0 ? `| बकाया ₹${sub.evDueAmount}` : ''}
+                  ⚡ EV: ${sub.lastEvReading} kWh ${sub.evDueAmount > 0 ? `| ${t('due')} ₹${sub.evDueAmount}` : ''}
                 </span>
               ` : `
-                <span class="text-[#64748B]">मासिक: ₹${pricing.fee}</span>
+                <span class="text-[#64748B]">${t('monthly')}: ₹${pricing.fee}</span>
               `}
             </div>
           </div>
@@ -2071,8 +2472,8 @@ ${elecLine}--------------------------------
 
       document.getElementById('renewal-vehicle-num-badge').textContent = sub.vehicleNumber;
       document.getElementById('renewal-owner-name').textContent = sub.ownerName;
-      document.getElementById('renewal-category-badge').textContent = pricing.label;
-      document.getElementById('renewal-slot-input').value = sub.slot || 'Open Yard';
+      document.getElementById('renewal-category-badge').textContent = getCategoryLabel(sub.category);
+      document.getElementById('renewal-slot-input').value = sub.slot || (currentLanguage === 'en' ? 'Open Yard' : 'खुला प्रांगण');
       document.getElementById('renewal-last-paid').textContent = sub.lastPaidDate;
       document.getElementById('renewal-valid-till').textContent = sub.validTillDate;
 
@@ -2084,13 +2485,13 @@ ${elecLine}--------------------------------
       const evSec = document.getElementById('renewal-ev-submeter-container');
       if (sub.hasEvFacility) {
         evSec.style.display = 'flex';
-        document.getElementById('renewal-ev-rate-badge').textContent = `@ ₹${electricityTariffs.tuktuk.toFixed(1)}/यूनिट`;
+        document.getElementById('renewal-ev-rate-badge').textContent = `@ ₹${electricityTariffs.tuktuk.toFixed(1)} ${t('perUnit')}`;
         document.getElementById('renewal-ev-prev-reading').textContent = sub.lastEvReading || 0;
         document.getElementById('renewal-ev-curr-reading-input').value = '';
         document.getElementById('renewal-ev-units').textContent = '0';
         document.getElementById('renewal-ev-bill-total').textContent = `₹${sub.evDueAmount || 0}`;
         document.getElementById('renewal-ev-paid-input').value = '0';
-        document.getElementById('renewal-ev-arrears-hint').textContent = `पिछला बकाया: ₹${sub.evDueAmount || 0}`;
+        document.getElementById('renewal-ev-arrears-hint').textContent = `${currentLanguage === 'en' ? 'Previous arrears' : 'पिछला बकाया'}: ₹${sub.evDueAmount || 0}`;
       } else {
         evSec.style.display = 'none';
       }
@@ -2154,17 +2555,19 @@ ${elecLine}--------------------------------
         
         const hintEl = document.getElementById('renewal-ev-arrears-hint');
         if (currVal !== '' && !isNaN(currNum) && currNum < prev) {
-          hintEl.textContent = `चेतावनी: वर्तमान रीडिंग (${currNum}) पिछली रीडिंग (${prev}) से कम है!`;
+          hintEl.textContent = currentLanguage === 'en' ? `Warning: Current reading (${currNum}) is lower than previous (${prev})!` : `चेतावनी: वर्तमान रीडिंग (${currNum}) पिछली रीडिंग (${prev}) से कम है!`;
           hintEl.className = 'text-[10px] font-mono text-rose-400 font-bold';
         } else {
-          hintEl.textContent = `बकाया आगे जुड़ेगा: ₹${remainingEvArrears.toLocaleString('en-IN')}`;
+          hintEl.textContent = `${currentLanguage === 'en' ? 'Arrears carried forward:' : 'बकाया आगे जुड़ेगा:'} ₹${remainingEvArrears.toLocaleString('en-IN')}`;
           hintEl.className = 'text-[10px] font-mono text-amber-400/90';
         }
 
         totalCash += evPaid;
       }
 
-      document.getElementById('renewal-confirm-btn-text').textContent = `₹${totalCash.toLocaleString('en-IN')} नकद प्राप्त दर्ज करें`;
+      document.getElementById('renewal-confirm-btn-text').textContent = currentLanguage === 'en'
+        ? `Record Cash: ₹${totalCash.toLocaleString('en-IN')}`
+        : `₹${totalCash.toLocaleString('en-IN')} नकद प्राप्त दर्ज करें`;
     }
 
     // POLISHED CONFIRM PASS RENEWAL (EV-ONLY RECEIPT POLISH)
@@ -2184,7 +2587,7 @@ ${elecLine}--------------------------------
 
       const totalReceived = passPaid + evPaid;
       if (totalReceived <= 0) {
-        alert('कृपया प्राप्त राशि दर्ज करें');
+        alert(currentLanguage === 'en' ? 'Please enter payment amount' : 'कृपया प्राप्त राशि दर्ज करें');
         return;
       }
 
@@ -2200,6 +2603,8 @@ ${elecLine}--------------------------------
         sub.validTillDate = expiryText;
       }
 
+      const isHi = currentLanguage === 'hi';
+      const catLabel = getCategoryLabel(sub.category);
       let evReceiptLines = '';
       if (sub.hasEvFacility) {
         const prev = sub.lastEvReading || 0;
@@ -2218,9 +2623,12 @@ ${elecLine}--------------------------------
         const remainingEvArrears = Math.max(0, totalEvDue - evPaid);
         sub.evDueAmount = remainingEvArrears;
 
-        evReceiptLines = `ई-रिक्शा सब-मीटर रीडिंग: ${prev} -> ${sub.lastEvReading} (${units} यूनिट @ ₹${electricityTariffs.tuktuk})
+        evReceiptLines = isHi ? `ई-रिक्शा सब-मीटर रीडिंग: ${prev} -> ${sub.lastEvReading} (${units} यूनिट @ ₹${electricityTariffs.tuktuk})
 ई-रिक्शा चार्जिंग बिजली बिल: कुल ₹${totalEvDue}
 चार्जिंग जमा राशि: ₹${evPaid} (बकाया शेष: ₹${remainingEvArrears})
+` : `E-Rickshaw Sub-Meter Reading: ${prev} -> ${sub.lastEvReading} (${units} units @ ₹${electricityTariffs.tuktuk})
+E-Rickshaw Power Bill: Total ₹${totalEvDue}
+Power Paid: ₹${evPaid} (Remaining Arrears: ₹${remainingEvArrears})
 `;
       }
 
@@ -2233,16 +2641,16 @@ ${elecLine}--------------------------------
       let receiptText = '';
 
       if (isEvOnly) {
-        modalTitle = 'ई-रिक्शा चार्जिंग रसीद (EV Charging)';
+        modalTitle = isHi ? 'ई-रिक्शा चार्जिंग रसीद' : 'E-Rickshaw Charging Slip';
         splitOwnerNet = evPaid;
         splitRitinCut = 0;
         shiftParkingCashTotal += evPaid;
         shiftParkingOwnerNet += evPaid;
 
-        receiptText = `श्री बालाजी पार्किंग (ई-रिक्शा चार्जिंग रसीद)
+        receiptText = isHi ? `श्री बालाजी पार्किंग (ई-रिक्शा चार्जिंग रसीद)
 (ट्रांजिट कैंप, रुद्रपुर)
 
-वाहन नंबर: [${sub.vehicleNumber}] (${pricing.label})
+वाहन नंबर: [${sub.vehicleNumber}] (${catLabel})
 स्लॉट: [${sub.slot}]
 धारक: [${sub.ownerName}]
 तारीख: [${dateText}]
@@ -2251,19 +2659,31 @@ ${evReceiptLines}--------------------------------
 कुल नकद प्राप्त: ₹${totalReceived} (बिजली बिल)
 मालिक हिस्सा (बिजली फंड): ₹${evPaid} | रितिन कमीशन: ₹0
 --------------------------------
-धन्यवाद। श्री बालाजी पार्किंग।`;
+धन्यवाद। श्री बालाजी पार्किंग।` : `Shree Balaji Parking (E-Rickshaw Charging Slip)
+(Transit Camp, Rudrapur)
+
+Vehicle Number: [${sub.vehicleNumber}] (${catLabel})
+Slot: [${sub.slot}]
+Holder: [${sub.ownerName}]
+Date: [${dateText}]
+--------------------------------
+${evReceiptLines}--------------------------------
+Total Cash Received: ₹${totalReceived} (Power Bill)
+Owner Share (Power Fund): ₹${evPaid} | Ritin Cut: ₹0
+--------------------------------
+Thank you. Shree Balaji Parking.`;
       } else if (isCombined) {
-        modalTitle = 'मासिक पास एवं ई-रिक्शा चार्जिंग रसीद';
+        modalTitle = isHi ? 'मासिक पास एवं ई-रिक्शा चार्जिंग रसीद' : 'Monthly Pass & EV Charging Slip';
         splitOwnerNet = pricing.owner + evPaid;
         splitRitinCut = pricing.ritin;
         shiftParkingCashTotal += totalReceived;
         shiftParkingOwnerNet += splitOwnerNet;
         shiftParkingRitinCut += splitRitinCut;
 
-        receiptText = `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
+        receiptText = isHi ? `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
 मासिक पास एवं ई-रिक्शा चार्जिंग रसीद
 
-वाहन नंबर: [${sub.vehicleNumber}] (${pricing.label})
+वाहन नंबर: [${sub.vehicleNumber}] (${catLabel})
 स्लॉट: [${sub.slot}]
 धारक: [${sub.ownerName}]
 तारीख: [${dateText}]
@@ -2273,19 +2693,32 @@ ${evReceiptLines}--------------------------------
 कुल नकद प्राप्त: ₹${totalReceived}
 मालिक हिस्सा: ₹${splitOwnerNet} | रितिन कमीशन: ₹${splitRitinCut}
 --------------------------------
-धन्यवाद। श्री बालाजी पार्किंग।`;
+धन्यवाद। श्री बालाजी पार्किंग।` : `Shree Balaji Parking (Transit Camp, Rudrapur)
+Monthly Pass & EV Charging Slip
+
+Vehicle Number: [${sub.vehicleNumber}] (${catLabel})
+Slot: [${sub.slot}]
+Holder: [${sub.ownerName}]
+Date: [${dateText}]
+--------------------------------
+Monthly Parking Pass: ₹${passPaid} (Valid: ${dateText} to ${expiryText})
+${evReceiptLines}--------------------------------
+Total Cash Received: ₹${totalReceived}
+Owner Share: ₹${splitOwnerNet} | Ritin Cut: ₹${splitRitinCut}
+--------------------------------
+Thank you. Shree Balaji Parking.`;
       } else {
-        modalTitle = 'मासिक पार्किंग रसीद (Monthly Pass)';
+        modalTitle = isHi ? 'मासिक पार्किंग पास रसीद' : 'Monthly Parking Pass Slip';
         splitOwnerNet = pricing.owner;
         splitRitinCut = pricing.ritin;
         shiftParkingCashTotal += totalReceived;
         shiftParkingOwnerNet += splitOwnerNet;
         shiftParkingRitinCut += splitRitinCut;
 
-        receiptText = `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
+        receiptText = isHi ? `श्री बालाजी पार्किंग (ट्रांजिट कैंप, रुद्रपुर)
 मासिक पार्किंग पास रसीद
 
-वाहन नंबर: [${sub.vehicleNumber}] (${pricing.label})
+वाहन नंबर: [${sub.vehicleNumber}] (${catLabel})
 स्लॉट: [${sub.slot}]
 धारक: [${sub.ownerName}]
 तारीख: [${dateText}]
@@ -2295,7 +2728,20 @@ ${evReceiptLines}--------------------------------
 कुल नकद प्राप्त: ₹${totalReceived}
 मालिक हिस्सा: ₹${splitOwnerNet} | रितिन कमीशन: ₹${splitRitinCut}
 --------------------------------
-धन्यवाद। श्री बालाजी पार्किंग।`;
+धन्यवाद। श्री बालाजी पार्किंग।` : `Shree Balaji Parking (Transit Camp, Rudrapur)
+Monthly Parking Pass Slip
+
+Vehicle Number: [${sub.vehicleNumber}] (${catLabel})
+Slot: [${sub.slot}]
+Holder: [${sub.ownerName}]
+Date: [${dateText}]
+--------------------------------
+Monthly Parking Pass: ₹${passPaid} (Valid: ${dateText} to ${expiryText})
+--------------------------------
+Total Cash Received: ₹${totalReceived}
+Owner Share: ₹${splitOwnerNet} | Ritin Cut: ₹${splitRitinCut}
+--------------------------------
+Thank you. Shree Balaji Parking.`;
       }
 
       closeRenewalDrawer();
@@ -2307,7 +2753,9 @@ ${evReceiptLines}--------------------------------
       const encoded = encodeURIComponent(receiptText);
       document.getElementById('monthly-receipt-modal-title').textContent = title || 'मासिक पार्किंग रसीद (Monthly Pass)';
       document.getElementById('monthly-receipt-preview-text').textContent = receiptText;
-      document.getElementById('monthly-receipt-split-summary').innerHTML = `मालिक नेट: <strong class="text-[#D4AF37]">₹${ownerNet}</strong> | रितिन कमीशन: <strong class="text-cyan-300">₹${ritinCut}</strong>`;
+      document.getElementById('monthly-receipt-split-summary').innerHTML = currentLanguage === 'en'
+        ? `Owner Net: <strong class="text-[#D4AF37]">₹${ownerNet}</strong> | Ritin Cut: <strong class="text-cyan-300">₹${ritinCut}</strong>`
+        : `मालिक नेट: <strong class="text-[#D4AF37]">₹${ownerNet}</strong> | रितिन कमीशन: <strong class="text-cyan-300">₹${ritinCut}</strong>`;
       document.getElementById('monthly-receipt-whatsapp-btn').href = `https://wa.me/?text=${encoded}`;
       document.getElementById('monthly-receipt-sms-btn').href = `sms:?body=${encoded}`;
       document.getElementById('modal-monthly-receipt').style.display = 'flex';
@@ -2334,12 +2782,12 @@ ${evReceiptLines}--------------------------------
       });
 
       const unitSelect = document.getElementById('override-unit-select');
-      unitSelect.innerHTML = estateUnits.map(u => `<option value="${u.id}">${u.name} - ${u.isOccupied ? u.tenantName : '(रिक्त)'}</option>`).join('');
+      unitSelect.innerHTML = estateUnits.map(u => `<option value="${u.id}">${u.name} - ${u.isOccupied ? u.tenantName : (currentLanguage === 'en' ? '(Vacant)' : '(रिक्त)')}</option>`).join('');
       onSelectUnitForOverride();
 
       const subSelect = document.getElementById('override-sub-select');
       if (parkingSubscribers.length === 0) {
-        subSelect.innerHTML = '<option value="">(कोई पंजीकृत ग्राहक नहीं)</option>';
+        subSelect.innerHTML = `<option value="">${currentLanguage === 'en' ? '(No registered subscribers)' : '(कोई पंजीकृत ग्राहक नहीं)'}</option>`;
         document.getElementById('override-sub-slot').value = '';
         document.getElementById('override-sub-evdue').value = '0';
       } else {
@@ -2370,7 +2818,7 @@ ${evReceiptLines}--------------------------------
         document.getElementById('override-sub-evdue').value = '0';
         return;
       }
-      document.getElementById('override-sub-slot').value = sub.slot || 'Open Yard';
+      document.getElementById('override-sub-slot').value = sub.slot || (currentLanguage === 'en' ? 'Open Yard' : 'खुला प्रांगण');
       document.getElementById('override-sub-evdue').value = sub.evDueAmount || 0;
     }
 
