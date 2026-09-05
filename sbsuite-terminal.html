@@ -1807,6 +1807,11 @@
 
       const rentPaid = parseInt(document.getElementById('drawer-pay-rent-input').value || '0', 10);
       const elecPaid = parseInt(document.getElementById('drawer-pay-elec-input').value || '0', 10);
+      const totalCash = rentPaid + elecPaid;
+      if (totalCash <= 0 && !hasValidReading) {
+        alert('कृपया मान्य रीडिंग या भुगतान राशि दर्ज करें');
+        return;
+      }
       const totalDueRent = (activeDrawerUnit.rentDueAmount !== undefined && activeDrawerUnit.rentDueAmount !== null) ? activeDrawerUnit.rentDueAmount : activeDrawerUnit.rentAmount;
       const remainingRent = Math.max(0, totalDueRent - rentPaid);
 
@@ -1912,7 +1917,7 @@ ${elecLine}--------------------------------
         id: 'sub-' + Date.now(),
         vehicleNumber: plate,
         ownerName: name,
-        phone: phone || undefined,
+        phone: phone || '',
         category: newPassCategory,
         slot: slot,
         passStatus: 'active',
@@ -2379,6 +2384,8 @@ ${evReceiptLines}--------------------------------
         categoryPricing[cat].owner = parseInt(document.getElementById(`override-owner-${cat}`).value, 10) || categoryPricing[cat].owner;
         categoryPricing[cat].ritin = parseInt(document.getElementById(`override-ritin-${cat}`).value, 10) || categoryPricing[cat].ritin;
       });
+
+      selectNewPassCategory(newPassCategory);
 
       const unitId = document.getElementById('override-unit-select').value;
       const unit = estateUnits.find(u => u.id === unitId);

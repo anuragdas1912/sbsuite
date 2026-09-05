@@ -351,7 +351,7 @@ export default function Home() {
       id: `sub-${Date.now()}`,
       vehicleNumber: trimmedPlate,
       ownerName: trimmedName,
-      phone: newPhone.trim() || undefined,
+      phone: newPhone.trim() || '',
       category: newCategory,
       slot: slotAssigned,
       passStatus: 'active',
