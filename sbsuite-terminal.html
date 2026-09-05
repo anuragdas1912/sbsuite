@@ -378,6 +378,185 @@
       </div>
     </div>
 
+    <!-- ================= COMMERCIAL PARKING EXIT SETTLEMENT DRAWER ================= -->
+    <div id="parking-exit-backdrop" onclick="closeExitDrawer()" class="absolute inset-0 bg-black/70 backdrop-blur-md z-40 transition-opacity duration-300 pointer-events-none opacity-0" style="display: none;"></div>
+
+    <div id="parking-exit-sheet" class="absolute bottom-0 inset-x-0 bg-[#0A0D14] border-t border-white/[0.12] rounded-t-[32px] p-5 pb-[max(24px,env(safe-area-inset-bottom,24px))] shadow-[0_-20px_50px_rgba(0,0,0,0.9)] z-50 gpu-accel flex flex-col select-none transition-transform duration-300 ease-out max-h-[85vh] overflow-y-auto deck-scrollbar translate-y-full" style="display: none;">
+      <!-- Top handle -->
+      <div class="w-10 h-1 rounded-full bg-white/20 mb-3 mx-auto shrink-0"></div>
+
+      <!-- Top Bar inside Sheet -->
+      <div class="flex items-center justify-between pb-3 border-b border-white/[0.07]">
+        <div class="flex items-center gap-2.5">
+          <span id="exit-vehicle-num-badge" class="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-white/[0.1] font-mono font-bold text-sm text-[#EDEDED]">
+            UK 06 AB 1912
+          </span>
+          <span id="exit-vehicle-type-badge" class="text-xs font-mono text-[#94A3B8]">
+            🚗 4-Wheeler (कार)
+          </span>
+        </div>
+
+        <button onclick="closeExitDrawer()" aria-label="Close drawer" class="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white transition-colors cursor-pointer border border-white/[0.08]">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Exit Settlement Summary -->
+      <div class="flex flex-col gap-3.5 pt-3">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="p-3 rounded-xl bg-[#06080C] border border-white/[0.06] flex flex-col">
+            <span class="text-[10px] font-mono text-[#64748B] uppercase">प्रवेश समय (In)</span>
+            <span id="exit-in-time" class="text-sm font-mono font-bold text-[#EDEDED] mt-0.5">02:45 PM</span>
+          </div>
+
+          <div class="p-3 rounded-xl bg-[#06080C] border border-white/[0.06] flex flex-col">
+            <span class="text-[10px] font-mono text-[#64748B] uppercase">निकास समय (Out)</span>
+            <span id="exit-out-time" class="text-sm font-mono font-bold text-cyan-300 mt-0.5">05:15 PM</span>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs font-mono">
+          <span class="text-[#94A3B8]">कुल अवधि (Duration):</span>
+          <span id="exit-duration-str" class="text-[#EDEDED] font-bold">2 घंटा 30 मिनट</span>
+        </div>
+
+        <div id="exit-rate-desc" class="px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[10px] font-mono text-[#94A3B8] text-center">
+          Base: ₹40 (2hr) + ₹20 (1 घंटा @ ₹20)
+        </div>
+
+        <!-- Total Fare Card -->
+        <div class="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-[#06080C] to-emerald-950/30 border border-emerald-500/40 shadow-inner flex items-center justify-between">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-300 font-semibold block">
+              कुल देय पार्किंग शुल्क
+            </span>
+            <span class="text-[10px] font-mono text-[#94A3B8]">नकद भुगतान (Cash)</span>
+          </div>
+          <span id="exit-fare-amount" class="text-2xl font-mono font-bold text-emerald-400">
+            ₹60
+          </span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <button
+            type="button"
+            onclick="closeExitDrawer()"
+            class="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#94A3B8] hover:text-white text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center"
+          >
+            रद्द करें (Cancel)
+          </button>
+
+          <button
+            type="button"
+            onclick="confirmVehicleExit()"
+            class="py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 bg-emerald-500 hover:bg-emerald-400 text-[#06080C] border border-emerald-300/40 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>नकद प्राप्त व निकास</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ENTRY SLIP MODAL (NON-BLOCKING) ================= -->
+    <div id="modal-parking-entry-slip" style="display: none;" class="absolute inset-0 z-50 flex items-center justify-center p-4">
+      <div onclick="closeEntrySlipModal()" class="absolute inset-0 bg-black/75 backdrop-blur-md cursor-pointer"></div>
+      <div class="relative w-full max-w-sm bg-[#0A0D14] border border-emerald-500/40 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-10 flex flex-col gap-3 font-mono">
+        <div class="flex items-center gap-2.5 pb-2 border-b border-white/[0.08]">
+          <div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-[#EDEDED]">प्रवेश पर्ची तैयार</h3>
+            <span class="text-[10px] text-[#94A3B8]">Entry Slip Generated</span>
+          </div>
+        </div>
+
+        <div id="entry-slip-preview-text" class="p-3.5 rounded-2xl bg-[#06080C] border border-white/[0.08] text-[11px] leading-relaxed text-[#CBD5E1] whitespace-pre-wrap select-text">
+        </div>
+
+        <div class="flex flex-col gap-2 pt-1">
+          <button
+            type="button"
+            onclick="closeEntrySlipModal()"
+            class="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-98 transition-all"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>बाद में / Done (Skip)</span>
+          </button>
+
+          <div class="grid grid-cols-2 gap-2">
+            <a
+              id="entry-slip-whatsapp-btn"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="py-2 px-3 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+            >
+              <span>🟢 WhatsApp</span>
+            </a>
+            <a
+              id="entry-slip-sms-btn"
+              href="#"
+              class="py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+            >
+              <span>💬 SMS पर्ची</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= EXIT RECEIPT MODAL (NON-BLOCKING) ================= -->
+    <div id="modal-parking-exit-receipt" style="display: none;" class="absolute inset-0 z-50 flex items-center justify-center p-4">
+      <div onclick="closeExitReceiptModal()" class="absolute inset-0 bg-black/75 backdrop-blur-md cursor-pointer"></div>
+      <div class="relative w-full max-w-sm bg-[#0A0D14] border border-cyan-500/40 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-10 flex flex-col gap-3 font-mono">
+        <div class="flex items-center gap-2.5 pb-2 border-b border-white/[0.08]">
+          <div class="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-[#EDEDED]">निकास रसीद (Exit Receipt)</h3>
+            <span id="exit-receipt-fare-badge" class="text-[10px] text-emerald-400 font-bold">शुल्क प्राप्त: ₹60</span>
+          </div>
+        </div>
+
+        <div id="exit-receipt-preview-text" class="p-3.5 rounded-2xl bg-[#06080C] border border-white/[0.08] text-[11px] leading-relaxed text-[#CBD5E1] whitespace-pre-wrap select-text">
+        </div>
+
+        <div class="flex flex-col gap-2 pt-1">
+          <button
+            type="button"
+            onclick="closeExitReceiptModal()"
+            class="w-full py-2.5 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.3)] active:scale-98 transition-all"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>संपन्न / Done (Skip)</span>
+          </button>
+
+          <div class="grid grid-cols-2 gap-2">
+            <a
+              id="exit-receipt-whatsapp-btn"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="py-2 px-3 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+            >
+              <span>🟢 WhatsApp</span>
+            </a>
+            <a
+              id="exit-receipt-sms-btn"
+              href="#"
+              class="py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+            >
+              <span>💬 SMS रसीद</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ================= SCREEN 2: VOLUMETRIC GLASS PEBBLE PIN GATEWAY ================= -->
     <div id="screen-pin" style="display: none; padding-top: max(16px, env(safe-area-inset-top, 16px)); padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));" class="screen-fade relative w-full h-full flex flex-col justify-between px-6 z-10 gpu-accel opacity-0">
       
@@ -576,9 +755,12 @@
       </div>
     </div>
 
-    <!-- ================= SCREEN 3: UNITS GRID DECK (AUTHENTICATED) ================= -->
+    <!-- ================= SCREEN 3: UNITS & PARKING DECK (AUTHENTICATED) ================= -->
     <div id="screen-units-deck" class="screen-fade absolute inset-0 w-full h-full flex flex-col overflow-hidden z-10 gpu-accel opacity-0 select-none" style="display: none;">
-      <!-- 1. Pinned Sticky Header (Zero Shrink) -->
+      
+      <!-- VIEW 1: ESTATE UNITS VIEW -->
+      <div id="units-deck-view" class="flex-1 w-full min-h-0 flex flex-col overflow-hidden">
+        <!-- 1. Pinned Sticky Header (Zero Shrink) -->
       <header class="shrink-0 w-full z-20 px-5 pt-[max(12px,env(safe-area-inset-top,12px))] pb-3 border-b border-white/[0.06] bg-[#06080C]/95 backdrop-blur-xl">
         <div class="flex items-center justify-between">
           <!-- Left: Minimalist Titanium SB Monogram & Title -->
@@ -652,6 +834,171 @@
           <!-- Dynamically populated via renderUnitsDeck() -->
         </div>
       </main>
+      </div>
+
+      <!-- VIEW 2: PARKING GATE VIEW -->
+      <div id="parking-gate-view" class="flex-1 w-full min-h-0 flex flex-col overflow-hidden" style="display: none;">
+        <!-- Pinned Parking Gate Header -->
+        <header class="shrink-0 w-full z-20 px-5 pt-[max(12px,env(safe-area-inset-top,12px))] pb-3 border-b border-white/[0.06] bg-[#06080C]/95 backdrop-blur-xl">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-[#0D1117] border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-xs shadow-[0_2px_10px_rgba(6,182,212,0.2)]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg>
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <h2 class="text-sm font-semibold text-[#EDEDED] tracking-tight">Shree Balaji Parking</h2>
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34D399] animate-pulse"></span>
+                </div>
+                <span id="parking-role-badge" class="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-cyan-400/90 tracking-wide uppercase">
+                  Field Gate Terminal // Active
+                </span>
+              </div>
+            </div>
+
+            <button onclick="lockTerminal()" aria-label="Lock terminal" class="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] text-[#94A3B8] hover:text-white active:scale-95 transition-all duration-100 cursor-pointer shadow-sm hover:border-[#D4AF37]/30" title="Lock Terminal">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0110 0v4"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Live Telemetry HUD -->
+          <div class="mt-3 grid grid-cols-3 gap-1.5">
+            <div id="parking-chip-bike" class="py-1.5 px-2 rounded-xl flex flex-col items-center justify-center border font-mono bg-white/[0.03] border-white/[0.08] text-[#CBD5E1]">
+              <div class="flex items-center gap-1 text-[9px] text-[#94A3B8] uppercase">
+                <span>🛵 2-W (Bike)</span>
+              </div>
+              <span id="parking-count-bike" class="text-xs font-bold text-cyan-300 mt-0.5">18 / 30</span>
+            </div>
+
+            <div id="parking-chip-car" class="py-1.5 px-2 rounded-xl flex flex-col items-center justify-center border font-mono bg-white/[0.03] border-white/[0.08] text-[#CBD5E1]">
+              <div class="flex items-center gap-1 text-[9px] text-[#94A3B8] uppercase">
+                <span>🚗 4-W (Car)</span>
+              </div>
+              <span id="parking-count-car" class="text-xs font-bold text-amber-300 mt-0.5">6 / 10</span>
+            </div>
+
+            <div class="py-1.5 px-2 rounded-xl bg-white/[0.03] border border-white/[0.08] flex flex-col items-center justify-center font-mono text-[#CBD5E1]">
+              <span class="text-[9px] text-[#94A3B8] uppercase">Shift Cash</span>
+              <span id="parking-shift-cash" class="text-xs font-bold text-emerald-400 mt-0.5">₹1,640</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Scrollable Parking Main -->
+        <main class="flex-1 w-full min-h-0 overflow-y-auto overscroll-contain px-4 pt-3 pb-4 deck-scrollbar flex flex-col gap-3.5">
+          <!-- Gate-In Entry Card -->
+          <div class="p-3.5 rounded-2xl bg-[#0A0D14] border border-white/[0.08] shadow-lg flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono font-bold text-[#EDEDED] uppercase tracking-wider flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22D3EE]"></span>
+                फास्ट वाहन प्रवेश (Fast Entry)
+              </span>
+              <span id="parking-rate-hint" class="text-[10px] font-mono text-[#94A3B8]">₹20 (2hr), +₹10/hr</span>
+            </div>
+
+            <!-- Vehicle Category Selector -->
+            <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+              <button id="entry-cat-bike-btn" type="button" onclick="selectEntryVehicleType('bike')" class="py-2 px-3 rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-cyan-950/60 text-cyan-200 border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+                <span>🛵 2-W बाइक</span>
+                <span id="entry-bike-full-badge" style="display: none;" class="text-[9px] text-rose-400 font-bold ml-1">[FULL]</span>
+              </button>
+
+              <button id="entry-cat-car-btn" type="button" onclick="selectEntryVehicleType('car')" class="py-2 px-3 rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-[#94A3B8] hover:text-white border border-transparent">
+                <span>🚗 4-W कार</span>
+                <span id="entry-car-full-badge" style="display: none;" class="text-[9px] text-rose-400 font-bold ml-1">[FULL]</span>
+              </button>
+            </div>
+
+            <!-- Input & Check-in Button -->
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center gap-2">
+                <input
+                  id="parking-vehicle-input"
+                  type="text"
+                  oninput="handleVehicleInput(this.value)"
+                  placeholder="UK 06 AB 1234"
+                  class="flex-1 bg-white/[0.04] border border-white/[0.1] focus:border-cyan-500/70 rounded-xl px-3.5 py-2.5 font-mono text-sm font-bold text-[#EDEDED] uppercase tracking-wider focus:outline-none placeholder:text-white/20"
+                />
+                <button
+                  id="parking-checkin-btn"
+                  type="button"
+                  disabled
+                  onclick="checkInVehicle()"
+                  class="py-2.5 px-4 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md bg-white/[0.04] text-[#64748B] border border-white/[0.06] cursor-not-allowed opacity-50"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  <span>पर्ची बनाएं</span>
+                </button>
+              </div>
+
+              <p id="parking-full-warning" style="display: none;" class="text-[11px] font-mono text-rose-400 flex items-center gap-1 pt-0.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <span id="parking-full-warning-text">2-Wheeler (बाइक) स्लॉट भर चुका है! प्रवेश बंद है।</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="relative w-full">
+            <svg class="w-4 h-4 text-[#64748B] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input
+              id="parking-search-input"
+              type="text"
+              oninput="handleParkingSearch(this.value)"
+              placeholder="वाहन नंबर से खोजें (Search number / digits)..."
+              class="w-full bg-white/[0.03] border border-white/[0.07] focus:border-[#D4AF37]/50 rounded-xl pl-9 pr-3.5 py-2 text-xs font-mono text-[#EDEDED] focus:outline-none placeholder:text-[#64748B]"
+            />
+          </div>
+
+          <!-- Active Parked Vehicles List -->
+          <div class="flex flex-col gap-2 pb-4">
+            <div class="flex items-center justify-between px-1">
+              <span id="parking-active-title" class="text-[11px] font-mono font-semibold uppercase tracking-wider text-[#94A3B8]">
+                सक्रिय पार्क वाहन (24)
+              </span>
+              <span class="text-[10px] font-mono text-[#64748B]">
+                निकास के लिए टैप करें
+              </span>
+            </div>
+
+            <div id="parking-vehicles-list" class="flex flex-col gap-2">
+              <!-- Dynamically rendered via renderParkingVehiclesList() -->
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <!-- PINNED BOTTOM NAVIGATION DOCK (ESTATE UNITS & PARKING GATE) -->
+      <div class="shrink-0 w-full z-30 px-4 py-2 border-t border-white/[0.08] bg-[#06080C]/95 backdrop-blur-xl flex items-center justify-around pb-[max(10px,env(safe-area-inset-bottom,10px))]">
+        <button
+          id="dock-units-btn"
+          type="button"
+          onclick="switchMainModule('units')"
+          class="flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-mono font-medium transition-all duration-200 cursor-pointer bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/50 shadow-[0_2px_12px_rgba(212,175,55,0.2)]"
+        >
+          <svg class="w-4 h-4 text-[#D4AF37]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
+          <span>Estate Units</span>
+        </button>
+
+        <button
+          id="dock-parking-btn"
+          type="button"
+          onclick="switchMainModule('parking')"
+          class="flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-mono font-medium transition-all duration-200 cursor-pointer text-[#94A3B8] hover:text-white border border-transparent"
+        >
+          <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg>
+          <span>Parking Gate</span>
+          <span id="dock-parking-count-badge" class="px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold">
+            24
+          </span>
+        </button>
+      </div>
+
+    </div>
+
     <!-- ================= SUB-METER READING TWIN-GAUGE DRAWER ================= -->
     <div id="drawer-backdrop" onclick="closeMeterDrawer()" class="absolute inset-0 bg-black/70 backdrop-blur-md z-40 transition-opacity duration-300 pointer-events-none opacity-0" style="display: none;"></div>
 
@@ -1621,6 +1968,407 @@ ${elecLine}
       if (navigator.vibrate) navigator.vibrate([18, 30, 24]);
       renderUnitsDeck(currentDeckTab);
     }
-  </script>
+  
+    // ================= COMMERCIAL PARKING GATE SYSTEM =================
+    let currentMainModule = 'units'; // 'units' | 'parking'
+    const PARKING_CAPACITY = { bike: 30, car: 10 };
+    let shiftParkingCash = 1640;
+    let entryVehicleType = 'bike'; // 'bike' | 'car'
+    let parkingSearchQuery = '';
+    let activeExitVehicle = null;
+
+    let parkedVehicles = [
+      { id: 'pv-01', vehicleNumber: 'UK 06 AB 1912', type: 'car', entryTimestamp: Date.now() - 145 * 60000, entryTimeFormatted: '02:45 PM' },
+      { id: 'pv-02', vehicleNumber: 'UK 06 CD 4589', type: 'car', entryTimestamp: Date.now() - 110 * 60000, entryTimeFormatted: '03:20 PM' },
+      { id: 'pv-03', vehicleNumber: 'DL 01 AX 7721', type: 'car', entryTimestamp: Date.now() - 75 * 60000, entryTimeFormatted: '03:55 PM' },
+      { id: 'pv-04', vehicleNumber: 'UP 25 BE 3390', type: 'car', entryTimestamp: Date.now() - 50 * 60000, entryTimeFormatted: '04:20 PM' },
+      { id: 'pv-05', vehicleNumber: 'UK 04 F 9012', type: 'car', entryTimestamp: Date.now() - 35 * 60000, entryTimeFormatted: '04:35 PM' },
+      { id: 'pv-06', vehicleNumber: 'HR 26 DQ 1104', type: 'car', entryTimestamp: Date.now() - 15 * 60000, entryTimeFormatted: '04:55 PM' },
+
+      { id: 'pv-07', vehicleNumber: 'UK 06 M 1289', type: 'bike', entryTimestamp: Date.now() - 180 * 60000, entryTimeFormatted: '02:10 PM' },
+      { id: 'pv-08', vehicleNumber: 'UK 06 K 8820', type: 'bike', entryTimestamp: Date.now() - 160 * 60000, entryTimeFormatted: '02:30 PM' },
+      { id: 'pv-09', vehicleNumber: 'UK 06 Q 3411', type: 'bike', entryTimestamp: Date.now() - 135 * 60000, entryTimeFormatted: '02:55 PM' },
+      { id: 'pv-10', vehicleNumber: 'UK 06 J 5678', type: 'bike', entryTimestamp: Date.now() - 120 * 60000, entryTimeFormatted: '03:10 PM' },
+      { id: 'pv-11', vehicleNumber: 'UP 22 R 9912', type: 'bike', entryTimestamp: Date.now() - 105 * 60000, entryTimeFormatted: '03:25 PM' },
+      { id: 'pv-12', vehicleNumber: 'UK 06 L 4120', type: 'bike', entryTimestamp: Date.now() - 95 * 60000, entryTimeFormatted: '03:35 PM' },
+      { id: 'pv-13', vehicleNumber: 'UK 06 H 2234', type: 'bike', entryTimestamp: Date.now() - 85 * 60000, entryTimeFormatted: '03:45 PM' },
+      { id: 'pv-14', vehicleNumber: 'UK 06 N 7781', type: 'bike', entryTimestamp: Date.now() - 70 * 60000, entryTimeFormatted: '04:00 PM' },
+      { id: 'pv-15', vehicleNumber: 'UK 06 P 1904', type: 'bike', entryTimestamp: Date.now() - 65 * 60000, entryTimeFormatted: '04:05 PM' },
+      { id: 'pv-16', vehicleNumber: 'UP 21 Z 6652', type: 'bike', entryTimestamp: Date.now() - 55 * 60000, entryTimeFormatted: '04:15 PM' },
+      { id: 'pv-17', vehicleNumber: 'UK 06 G 3310', type: 'bike', entryTimestamp: Date.now() - 48 * 60000, entryTimeFormatted: '04:22 PM' },
+      { id: 'pv-18', vehicleNumber: 'UK 06 S 8890', type: 'bike', entryTimestamp: Date.now() - 40 * 60000, entryTimeFormatted: '04:30 PM' },
+      { id: 'pv-19', vehicleNumber: 'UK 06 T 1209', type: 'bike', entryTimestamp: Date.now() - 32 * 60000, entryTimeFormatted: '04:38 PM' },
+      { id: 'pv-20', vehicleNumber: 'UK 04 D 7715', type: 'bike', entryTimestamp: Date.now() - 25 * 60000, entryTimeFormatted: '04:45 PM' },
+      { id: 'pv-21', vehicleNumber: 'UK 06 W 4429', type: 'bike', entryTimestamp: Date.now() - 20 * 60000, entryTimeFormatted: '04:50 PM' },
+      { id: 'pv-22', vehicleNumber: 'UK 06 B 8802', type: 'bike', entryTimestamp: Date.now() - 14 * 60000, entryTimeFormatted: '04:56 PM' },
+      { id: 'pv-23', vehicleNumber: 'UK 06 E 5519', type: 'bike', entryTimestamp: Date.now() - 8 * 60000, entryTimeFormatted: '05:02 PM' },
+      { id: 'pv-24', vehicleNumber: 'UK 06 X 3108', type: 'bike', entryTimestamp: Date.now() - 3 * 60000, entryTimeFormatted: '05:07 PM' },
+    ];
+
+    function calculateParkingFare(type, durationMinutes) {
+      const baseMinutes = 120;
+      if (type === 'bike') {
+        const baseFare = 20;
+        const hourlyRate = 10;
+        if (durationMinutes <= baseMinutes) {
+          return { fare: baseFare, rateDescription: 'Base: ₹20 (पहला 2 घंटा)' };
+        }
+        const extraMinutes = durationMinutes - baseMinutes;
+        const extraHours = Math.ceil(extraMinutes / 60);
+        return {
+          fare: baseFare + extraHours * hourlyRate,
+          rateDescription: `Base ₹20 (2hr) + ₹${extraHours * hourlyRate} (${extraHours} घंटा @ ₹10)`,
+        };
+      } else {
+        const baseFare = 40;
+        const hourlyRate = 20;
+        if (durationMinutes <= baseMinutes) {
+          return { fare: baseFare, rateDescription: 'Base: ₹40 (पहला 2 घंटा)' };
+        }
+        const extraMinutes = durationMinutes - baseMinutes;
+        const extraHours = Math.ceil(extraMinutes / 60);
+        return {
+          fare: baseFare + extraHours * hourlyRate,
+          rateDescription: `Base ₹40 (2hr) + ₹${extraHours * hourlyRate} (${extraHours} घंटा @ ₹20)`,
+        };
+      }
+    }
+
+    function formatDurationHindi(minutes) {
+      const hrs = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      if (hrs === 0) return `${mins} मिनट`;
+      if (mins === 0) return `${hrs} घंटा`;
+      return `${hrs} घंटा ${mins} मिनट`;
+    }
+
+    function switchMainModule(mod) {
+      currentMainModule = mod;
+      const unitsView = document.getElementById('units-deck-view');
+      const parkingView = document.getElementById('parking-gate-view');
+      const dockUnitsBtn = document.getElementById('dock-units-btn');
+      const dockParkingBtn = document.getElementById('dock-parking-btn');
+
+      if (mod === 'units') {
+        unitsView.style.display = 'flex';
+        parkingView.style.display = 'none';
+
+        dockUnitsBtn.className = "flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-mono font-medium transition-all duration-200 cursor-pointer bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/50 shadow-[0_2px_12px_rgba(212,175,55,0.2)]";
+        dockParkingBtn.className = "flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-mono font-medium transition-all duration-200 cursor-pointer text-[#94A3B8] hover:text-white border border-transparent";
+      } else {
+        unitsView.style.display = 'none';
+        parkingView.style.display = 'flex';
+
+        dockUnitsBtn.className = "flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-mono font-medium transition-all duration-200 cursor-pointer text-[#94A3B8] hover:text-white border border-transparent";
+        dockParkingBtn.className = "flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-mono font-medium transition-all duration-200 cursor-pointer bg-[#0D1117] text-[#EDEDED] border border-cyan-500/50 shadow-[0_2px_12px_rgba(6,182,212,0.2)]";
+
+        renderParkingGate();
+      }
+    }
+
+    function selectEntryVehicleType(type) {
+      entryVehicleType = type;
+      const bikeBtn = document.getElementById('entry-cat-bike-btn');
+      const carBtn = document.getElementById('entry-cat-car-btn');
+      const rateHint = document.getElementById('parking-rate-hint');
+
+      if (type === 'bike') {
+        bikeBtn.className = "py-2 px-3 rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-cyan-950/60 text-cyan-200 border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]";
+        carBtn.className = "py-2 px-3 rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-[#94A3B8] hover:text-white border border-transparent";
+        rateHint.textContent = "₹20 (2hr), +₹10/hr";
+      } else {
+        bikeBtn.className = "py-2 px-3 rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-[#94A3B8] hover:text-white border border-transparent";
+        carBtn.className = "py-2 px-3 rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-amber-950/60 text-amber-200 border border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)]";
+        rateHint.textContent = "₹40 (2hr), +₹20/hr";
+      }
+
+      checkEntryFormValidity();
+    }
+
+    function handleVehicleInput(val) {
+      document.getElementById('parking-vehicle-input').value = val.toUpperCase();
+      checkEntryFormValidity();
+    }
+
+    function checkEntryFormValidity() {
+      const bikeCount = parkedVehicles.filter(v => v.type === 'bike').length;
+      const carCount = parkedVehicles.filter(v => v.type === 'car').length;
+      const isBikeFull = bikeCount >= PARKING_CAPACITY.bike;
+      const isCarFull = carCount >= PARKING_CAPACITY.car;
+      const isFull = entryVehicleType === 'bike' ? isBikeFull : isCarFull;
+
+      const val = document.getElementById('parking-vehicle-input').value.trim();
+      const checkinBtn = document.getElementById('parking-checkin-btn');
+      const warningEl = document.getElementById('parking-full-warning');
+      const warningText = document.getElementById('parking-full-warning-text');
+
+      if (isFull) {
+        warningEl.style.display = 'flex';
+        warningText.textContent = entryVehicleType === 'bike'
+          ? '2-Wheeler (बाइक) स्लॉट भर चुका है! प्रवेश बंद है।'
+          : '4-Wheeler (कार) स्लॉट भर चुका है! प्रवेश बंद है।';
+        checkinBtn.disabled = true;
+        checkinBtn.className = "py-2.5 px-4 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md bg-white/[0.04] text-[#64748B] border border-white/[0.06] cursor-not-allowed opacity-50";
+      } else {
+        warningEl.style.display = 'none';
+        if (val.length >= 3) {
+          checkinBtn.disabled = false;
+          checkinBtn.className = "py-2.5 px-4 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md bg-emerald-500 hover:bg-emerald-400 text-[#06080C] border border-emerald-300/40 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer";
+        } else {
+          checkinBtn.disabled = true;
+          checkinBtn.className = "py-2.5 px-4 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md bg-white/[0.04] text-[#64748B] border border-white/[0.06] cursor-not-allowed opacity-50";
+        }
+      }
+    }
+
+    function checkInVehicle() {
+      const val = document.getElementById('parking-vehicle-input').value.trim().toUpperCase();
+      if (!val || val.length < 3) return;
+
+      const bikeCount = parkedVehicles.filter(v => v.type === 'bike').length;
+      const carCount = parkedVehicles.filter(v => v.type === 'car').length;
+      if (entryVehicleType === 'bike' && bikeCount >= PARKING_CAPACITY.bike) return;
+      if (entryVehicleType === 'car' && carCount >= PARKING_CAPACITY.car) return;
+
+      const now = new Date();
+      const timeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const dateText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+      const typeText = entryVehicleType === 'bike' ? 'बाइक' : 'कार';
+
+      const newVehicle = {
+        id: 'pv-' + Date.now(),
+        vehicleNumber: val,
+        type: entryVehicleType,
+        entryTimestamp: now.getTime(),
+        entryTimeFormatted: timeFormatted,
+      };
+
+      parkedVehicles.unshift(newVehicle);
+      document.getElementById('parking-vehicle-input').value = '';
+
+      const slipText = `श्री बालाजी पार्किंग (रुद्रपुर)
+प्रवेश पर्ची (Entry Slip)
+वाहन: [${val}] (${typeText})
+समय: [${timeFormatted} | ${dateText}]
+कृपया पर्ची सुरक्षित रखें।`;
+
+      const encoded = encodeURIComponent(slipText);
+      document.getElementById('entry-slip-preview-text').textContent = slipText;
+      document.getElementById('entry-slip-whatsapp-btn').href = `https://wa.me/?text=${encoded}`;
+      document.getElementById('entry-slip-sms-btn').href = `sms:?body=${encoded}`;
+      document.getElementById('modal-parking-entry-slip').style.display = 'flex';
+
+      if (navigator.vibrate) navigator.vibrate([18, 30, 24]);
+      renderParkingGate();
+    }
+
+    function closeEntrySlipModal() {
+      document.getElementById('modal-parking-entry-slip').style.display = 'none';
+    }
+
+    function handleParkingSearch(query) {
+      parkingSearchQuery = query.trim().toUpperCase();
+      renderParkingVehiclesList();
+    }
+
+    function renderParkingGate() {
+      const bikeCount = parkedVehicles.filter(v => v.type === 'bike').length;
+      const carCount = parkedVehicles.filter(v => v.type === 'car').length;
+      const totalActive = parkedVehicles.length;
+      const isBikeFull = bikeCount >= PARKING_CAPACITY.bike;
+      const isCarFull = carCount >= PARKING_CAPACITY.car;
+
+      // Update HUD telemetry
+      const bikeChip = document.getElementById('parking-chip-bike');
+      const carChip = document.getElementById('parking-chip-car');
+      const bikeCountEl = document.getElementById('parking-count-bike');
+      const carCountEl = document.getElementById('parking-count-car');
+
+      if (isBikeFull) {
+        bikeChip.className = "py-1.5 px-2 rounded-xl flex flex-col items-center justify-center border font-mono bg-rose-950/60 border-rose-500/60 text-rose-300 animate-pulse";
+        bikeCountEl.className = "text-xs font-bold text-rose-400 mt-0.5";
+        bikeCountEl.textContent = "FULL (30)";
+        document.getElementById('entry-bike-full-badge').style.display = 'inline';
+      } else {
+        bikeChip.className = "py-1.5 px-2 rounded-xl flex flex-col items-center justify-center border font-mono bg-white/[0.03] border-white/[0.08] text-[#CBD5E1]";
+        bikeCountEl.className = "text-xs font-bold text-cyan-300 mt-0.5";
+        bikeCountEl.textContent = `${bikeCount} / 30`;
+        document.getElementById('entry-bike-full-badge').style.display = 'none';
+      }
+
+      if (isCarFull) {
+        carChip.className = "py-1.5 px-2 rounded-xl flex flex-col items-center justify-center border font-mono bg-rose-950/60 border-rose-500/60 text-rose-300 animate-pulse";
+        carCountEl.className = "text-xs font-bold text-rose-400 mt-0.5";
+        carCountEl.textContent = "FULL (10)";
+        document.getElementById('entry-car-full-badge').style.display = 'inline';
+      } else {
+        carChip.className = "py-1.5 px-2 rounded-xl flex flex-col items-center justify-center border font-mono bg-white/[0.03] border-white/[0.08] text-[#CBD5E1]";
+        carCountEl.className = "text-xs font-bold text-amber-300 mt-0.5";
+        carCountEl.textContent = `${carCount} / 10`;
+        document.getElementById('entry-car-full-badge').style.display = 'none';
+      }
+
+      document.getElementById('parking-shift-cash').textContent = `₹${shiftParkingCash.toLocaleString('en-IN')}`;
+      document.getElementById('dock-parking-count-badge').textContent = totalActive;
+      document.getElementById('parking-active-title').textContent = `सक्रिय पार्क वाहन (${totalActive})`;
+
+      checkEntryFormValidity();
+      renderParkingVehiclesList();
+    }
+
+    function renderParkingVehiclesList() {
+      const container = document.getElementById('parking-vehicles-list');
+      if (!container) return;
+
+      const filtered = parkingSearchQuery
+        ? parkedVehicles.filter(v => v.vehicleNumber.toUpperCase().includes(parkingSearchQuery))
+        : parkedVehicles;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center rounded-2xl bg-white/[0.02] border border-white/[0.05]"><p class="text-xs font-mono text-[#64748B]">कोई वाहन पार्क नहीं मिला</p></div>`;
+        return;
+      }
+
+      const now = Date.now();
+      container.innerHTML = filtered.map(v => {
+        const durationMinutes = Math.max(1, Math.floor((now - v.entryTimestamp) / 60000));
+        const durationStr = formatDurationHindi(durationMinutes);
+        const { fare } = calculateParkingFare(v.type, durationMinutes);
+
+        const iconSvg = v.type === 'bike'
+          ? '🛵'
+          : '🚗';
+
+        return `
+          <div onclick="openExitDrawer('${v.id}')" class="p-3 rounded-2xl bg-[#0A0D14] border border-white/[0.08] hover:border-white/[0.18] transition-all cursor-pointer flex items-center justify-between group active:scale-98 shadow-md">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-base ${v.type === 'bike' ? 'bg-cyan-950/40 border border-cyan-500/30' : 'bg-amber-950/40 border border-amber-500/30'}">
+                ${iconSvg}
+              </div>
+
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-mono font-bold text-[#EDEDED] tracking-wider">${v.vehicleNumber}</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-white/[0.05] border border-white/[0.08] text-[#94A3B8]">${v.type === 'bike' ? 'बाइक' : 'कार'}</span>
+                </div>
+                <div class="text-[10px] font-mono text-[#64748B] flex items-center gap-1 mt-0.5">
+                  <span>प्रवेश: ${v.entryTimeFormatted}</span>
+                  <span class="text-white/20">•</span>
+                  <span class="text-emerald-400 font-semibold">₹${fare} देय</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col items-end gap-1">
+              <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22D3EE] animate-pulse"></span>
+                ${durationStr}
+              </span>
+              <span class="text-[10px] font-mono text-[#D4AF37] group-hover:underline flex items-center gap-0.5">
+                निकास / Exit ➜
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openExitDrawer(vehicleId) {
+      const v = parkedVehicles.find(item => item.id === vehicleId);
+      if (!v) return;
+      activeExitVehicle = v;
+
+      const now = new Date();
+      const outTimeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const durationMinutes = Math.max(1, Math.floor((now.getTime() - v.entryTimestamp) / 60000));
+      const durationStr = formatDurationHindi(durationMinutes);
+      const { fare, rateDescription } = calculateParkingFare(v.type, durationMinutes);
+
+      document.getElementById('exit-vehicle-num-badge').textContent = v.vehicleNumber;
+      document.getElementById('exit-vehicle-type-badge').textContent = v.type === 'bike' ? '🛵 2-Wheeler (बाइक)' : '🚗 4-Wheeler (कार)';
+      document.getElementById('exit-in-time').textContent = v.entryTimeFormatted;
+      document.getElementById('exit-out-time').textContent = outTimeFormatted;
+      document.getElementById('exit-duration-str').textContent = durationStr;
+      document.getElementById('exit-rate-desc').textContent = rateDescription;
+      document.getElementById('exit-fare-amount').textContent = `₹${fare}`;
+
+      const backdrop = document.getElementById('parking-exit-backdrop');
+      const sheet = document.getElementById('parking-exit-sheet');
+
+      backdrop.style.display = 'block';
+      sheet.style.display = 'flex';
+      setTimeout(() => {
+        backdrop.classList.remove('opacity-0');
+        backdrop.classList.add('opacity-100', 'pointer-events-auto');
+        sheet.classList.remove('translate-y-full');
+        sheet.classList.add('translate-y-0');
+      }, 10);
+    }
+
+    function closeExitDrawer() {
+      const backdrop = document.getElementById('parking-exit-backdrop');
+      const sheet = document.getElementById('parking-exit-sheet');
+
+      backdrop.classList.remove('opacity-100', 'pointer-events-auto');
+      backdrop.classList.add('opacity-0');
+      sheet.classList.remove('translate-y-0');
+      sheet.classList.add('translate-y-full');
+
+      setTimeout(() => {
+        backdrop.style.display = 'none';
+        sheet.style.display = 'none';
+        activeExitVehicle = null;
+      }, 300);
+    }
+
+    function confirmVehicleExit() {
+      if (!activeExitVehicle) return;
+
+      const now = new Date();
+      const outTimeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const dateText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+      const typeText = activeExitVehicle.type === 'bike' ? 'बाइक' : 'कार';
+
+      const durationMinutes = Math.max(1, Math.floor((now.getTime() - activeExitVehicle.entryTimestamp) / 60000));
+      const durationStr = formatDurationHindi(durationMinutes);
+      const { fare } = calculateParkingFare(activeExitVehicle.type, durationMinutes);
+
+      parkedVehicles = parkedVehicles.filter(v => v.id !== activeExitVehicle.id);
+      shiftParkingCash += fare;
+
+      const receiptText = `श्री बालाजी पार्किंग (रुद्रपुर)
+निकास रसीद (Exit Receipt)
+वाहन: [${activeExitVehicle.vehicleNumber}] (${typeText})
+प्रवेश: [${activeExitVehicle.entryTimeFormatted}] | निकास: [${outTimeFormatted}]
+कुल समय: [${durationStr}]
+--------------------------------
+पार्किंग शुल्क: ₹${fare}
+स्थिति: भुगतान सफल (नकद)
+धन्यवाद। फिर पधारें।`;
+
+      const encoded = encodeURIComponent(receiptText);
+      document.getElementById('exit-receipt-preview-text').textContent = receiptText;
+      document.getElementById('exit-receipt-fare-badge').textContent = `शुल्क प्राप्त: ₹${fare}`;
+      document.getElementById('exit-receipt-whatsapp-btn').href = `https://wa.me/?text=${encoded}`;
+      document.getElementById('exit-receipt-sms-btn').href = `sms:?body=${encoded}`;
+
+      closeExitDrawer();
+      document.getElementById('modal-parking-exit-receipt').style.display = 'flex';
+
+      if (navigator.vibrate) navigator.vibrate([18, 30, 24]);
+      renderParkingGate();
+    }
+
+    function closeExitReceiptModal() {
+      document.getElementById('modal-parking-exit-receipt').style.display = 'none';
+    }
+
+    // Periodic live timer to update vehicle duration counters every 30s
+    setInterval(() => {
+      if (currentMainModule === 'parking') {
+        renderParkingVehiclesList();
+      }
+    }, 30000);
+</script>
 </body>
 </html>

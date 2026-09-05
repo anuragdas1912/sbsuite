@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Delete, ShieldCheck, Lock, Sparkles, Check, ChevronRight, AlertOctagon, Zap, Plus, Store, X, Camera, AlertTriangle, Wallet, MessageCircle, MessageSquare, ArrowRight, CheckCircle2, Share2 } from 'lucide-react';
+import { Delete, ShieldCheck, Lock, Sparkles, Check, ChevronRight, AlertOctagon, Zap, Plus, Store, X, Camera, AlertTriangle, Wallet, MessageCircle, MessageSquare, ArrowRight, CheckCircle2, Share2, Car, Bike, Clock, Search, Building2 } from 'lucide-react';
 
 type ScreenState = 'splash' | 'pin' | 'units_deck' | 'owner_console' | 'manager_console';
 type UserRole = 'owner' | 'manager';
@@ -35,6 +35,86 @@ export interface UnitItem {
   lastReading: number;
   isReadingPending: boolean;
 }
+
+export interface ParkedVehicle {
+  id: string;
+  vehicleNumber: string;
+  type: 'bike' | 'car';
+  entryTimestamp: number;
+  entryTimeFormatted: string;
+}
+
+const PARKING_CAPACITY = {
+  bike: 30,
+  car: 10,
+};
+
+function calculateParkingFare(type: 'bike' | 'car', durationMinutes: number) {
+  const baseMinutes = 120;
+  if (type === 'bike') {
+    const baseFare = 20;
+    const hourlyRate = 10;
+    if (durationMinutes <= baseMinutes) {
+      return { fare: baseFare, baseHours: 2, rateDescription: 'Base: ₹20 (पहला 2 घंटा)' };
+    }
+    const extraMinutes = durationMinutes - baseMinutes;
+    const extraHours = Math.ceil(extraMinutes / 60);
+    return {
+      fare: baseFare + extraHours * hourlyRate,
+      baseHours: 2,
+      rateDescription: `Base ₹20 (2hr) + ₹${extraHours * hourlyRate} (${extraHours} घंटा @ ₹10)`,
+    };
+  } else {
+    const baseFare = 40;
+    const hourlyRate = 20;
+    if (durationMinutes <= baseMinutes) {
+      return { fare: baseFare, baseHours: 2, rateDescription: 'Base: ₹40 (पहला 2 घंटा)' };
+    }
+    const extraMinutes = durationMinutes - baseMinutes;
+    const extraHours = Math.ceil(extraMinutes / 60);
+    return {
+      fare: baseFare + extraHours * hourlyRate,
+      baseHours: 2,
+      rateDescription: `Base ₹40 (2hr) + ₹${extraHours * hourlyRate} (${extraHours} घंटा @ ₹20)`,
+    };
+  }
+}
+
+function formatDurationHindi(minutes: number): string {
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hrs === 0) return `${mins} मिनट`;
+  if (mins === 0) return `${hrs} घंटा`;
+  return `${hrs} घंटा ${mins} मिनट`;
+}
+
+const INITIAL_PARKED_VEHICLES: ParkedVehicle[] = [
+  { id: 'pv-01', vehicleNumber: 'UK 06 AB 1912', type: 'car', entryTimestamp: Date.now() - 145 * 60000, entryTimeFormatted: '02:45 PM' },
+  { id: 'pv-02', vehicleNumber: 'UK 06 CD 4589', type: 'car', entryTimestamp: Date.now() - 110 * 60000, entryTimeFormatted: '03:20 PM' },
+  { id: 'pv-03', vehicleNumber: 'DL 01 AX 7721', type: 'car', entryTimestamp: Date.now() - 75 * 60000, entryTimeFormatted: '03:55 PM' },
+  { id: 'pv-04', vehicleNumber: 'UP 25 BE 3390', type: 'car', entryTimestamp: Date.now() - 50 * 60000, entryTimeFormatted: '04:20 PM' },
+  { id: 'pv-05', vehicleNumber: 'UK 04 F 9012', type: 'car', entryTimestamp: Date.now() - 35 * 60000, entryTimeFormatted: '04:35 PM' },
+  { id: 'pv-06', vehicleNumber: 'HR 26 DQ 1104', type: 'car', entryTimestamp: Date.now() - 15 * 60000, entryTimeFormatted: '04:55 PM' },
+
+  { id: 'pv-07', vehicleNumber: 'UK 06 M 1289', type: 'bike', entryTimestamp: Date.now() - 180 * 60000, entryTimeFormatted: '02:10 PM' },
+  { id: 'pv-08', vehicleNumber: 'UK 06 K 8820', type: 'bike', entryTimestamp: Date.now() - 160 * 60000, entryTimeFormatted: '02:30 PM' },
+  { id: 'pv-09', vehicleNumber: 'UK 06 Q 3411', type: 'bike', entryTimestamp: Date.now() - 135 * 60000, entryTimeFormatted: '02:55 PM' },
+  { id: 'pv-10', vehicleNumber: 'UK 06 J 5678', type: 'bike', entryTimestamp: Date.now() - 120 * 60000, entryTimeFormatted: '03:10 PM' },
+  { id: 'pv-11', vehicleNumber: 'UP 22 R 9912', type: 'bike', entryTimestamp: Date.now() - 105 * 60000, entryTimeFormatted: '03:25 PM' },
+  { id: 'pv-12', vehicleNumber: 'UK 06 L 4120', type: 'bike', entryTimestamp: Date.now() - 95 * 60000, entryTimeFormatted: '03:35 PM' },
+  { id: 'pv-13', vehicleNumber: 'UK 06 H 2234', type: 'bike', entryTimestamp: Date.now() - 85 * 60000, entryTimeFormatted: '03:45 PM' },
+  { id: 'pv-14', vehicleNumber: 'UK 06 N 7781', type: 'bike', entryTimestamp: Date.now() - 70 * 60000, entryTimeFormatted: '04:00 PM' },
+  { id: 'pv-15', vehicleNumber: 'UK 06 P 1904', type: 'bike', entryTimestamp: Date.now() - 65 * 60000, entryTimeFormatted: '04:05 PM' },
+  { id: 'pv-16', vehicleNumber: 'UP 21 Z 6652', type: 'bike', entryTimestamp: Date.now() - 55 * 60000, entryTimeFormatted: '04:15 PM' },
+  { id: 'pv-17', vehicleNumber: 'UK 06 G 3310', type: 'bike', entryTimestamp: Date.now() - 48 * 60000, entryTimeFormatted: '04:22 PM' },
+  { id: 'pv-18', vehicleNumber: 'UK 06 S 8890', type: 'bike', entryTimestamp: Date.now() - 40 * 60000, entryTimeFormatted: '04:30 PM' },
+  { id: 'pv-19', vehicleNumber: 'UK 06 T 1209', type: 'bike', entryTimestamp: Date.now() - 32 * 60000, entryTimeFormatted: '04:38 PM' },
+  { id: 'pv-20', vehicleNumber: 'UK 04 D 7715', type: 'bike', entryTimestamp: Date.now() - 25 * 60000, entryTimeFormatted: '04:45 PM' },
+  { id: 'pv-21', vehicleNumber: 'UK 06 W 4429', type: 'bike', entryTimestamp: Date.now() - 20 * 60000, entryTimeFormatted: '04:50 PM' },
+  { id: 'pv-22', vehicleNumber: 'UK 06 B 8802', type: 'bike', entryTimestamp: Date.now() - 14 * 60000, entryTimeFormatted: '04:56 PM' },
+  { id: 'pv-23', vehicleNumber: 'UK 06 E 5519', type: 'bike', entryTimestamp: Date.now() - 8 * 60000, entryTimeFormatted: '05:02 PM' },
+  { id: 'pv-24', vehicleNumber: 'UK 06 X 3108', type: 'bike', entryTimestamp: Date.now() - 3 * 60000, entryTimeFormatted: '05:07 PM' },
+];
 
 const STATIC_UNITS: UnitItem[] = [
   // 14 ROOMS (Occupancy: 12/14, Due: ₹4,000, Unread Meters: 3)
@@ -245,6 +325,155 @@ export default function Home() {
   const [currentReadingInput, setCurrentReadingInput] = useState<string>('');
   const [meterPhotoUrl, setMeterPhotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // ================= COMMERCIAL PARKING GATE STATE =================
+  const [activeModule, setActiveModule] = useState<'units' | 'parking'>('units');
+  const [parkedVehicles, setParkedVehicles] = useState<ParkedVehicle[]>(INITIAL_PARKED_VEHICLES);
+  const [shiftParkingCash, setShiftParkingCash] = useState<number>(1640);
+  const [entryVehicleType, setEntryVehicleType] = useState<'bike' | 'car'>('bike');
+  const [vehicleNumberInput, setVehicleNumberInput] = useState<string>('');
+  const [parkingSearchQuery, setParkingSearchQuery] = useState<string>('');
+  const [currentTimeTick, setCurrentTimeTick] = useState<number>(Date.now());
+  const [selectedVehicleForExit, setSelectedVehicleForExit] = useState<ParkedVehicle | null>(null);
+
+  interface EntrySlipPayload {
+    vehicleNumber: string;
+    typeText: string;
+    timeText: string;
+    dateText: string;
+    whatsappUrl: string;
+    smsUrl: string;
+    rawText: string;
+  }
+  const [activeEntrySlip, setActiveEntrySlip] = useState<EntrySlipPayload | null>(null);
+
+  interface ExitReceiptPayload {
+    vehicleNumber: string;
+    typeText: string;
+    inTime: string;
+    outTime: string;
+    durationText: string;
+    fare: number;
+    dateText: string;
+    whatsappUrl: string;
+    smsUrl: string;
+    rawText: string;
+  }
+  const [activeExitReceipt, setActiveExitReceipt] = useState<ExitReceiptPayload | null>(null);
+
+  // Periodic timer to keep parking duration counters updated live
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTimeTick(Date.now()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const bikeCount = useMemo(() => parkedVehicles.filter((v) => v.type === 'bike').length, [parkedVehicles]);
+  const carCount = useMemo(() => parkedVehicles.filter((v) => v.type === 'car').length, [parkedVehicles]);
+  const isBikeFull = bikeCount >= PARKING_CAPACITY.bike;
+  const isCarFull = carCount >= PARKING_CAPACITY.car;
+  const isCurrentCategoryFull = entryVehicleType === 'bike' ? isBikeFull : isCarFull;
+
+  const filteredParkedVehicles = useMemo(() => {
+    if (!parkingSearchQuery.trim()) return parkedVehicles;
+    const q = parkingSearchQuery.trim().toUpperCase();
+    return parkedVehicles.filter((v) => v.vehicleNumber.toUpperCase().includes(q));
+  }, [parkedVehicles, parkingSearchQuery]);
+
+  const handleCheckInVehicle = () => {
+    const trimmed = vehicleNumberInput.trim().toUpperCase();
+    if (!trimmed || trimmed.length < 3) return;
+    if (entryVehicleType === 'bike' && isBikeFull) return;
+    if (entryVehicleType === 'car' && isCarFull) return;
+
+    const now = new Date();
+    const timeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const dateText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+    const typeText = entryVehicleType === 'bike' ? 'बाइक' : 'कार';
+
+    const newVehicle: ParkedVehicle = {
+      id: `pv-${Date.now()}`,
+      vehicleNumber: trimmed,
+      type: entryVehicleType,
+      entryTimestamp: now.getTime(),
+      entryTimeFormatted: timeFormatted,
+    };
+
+    setParkedVehicles((prev) => [newVehicle, ...prev]);
+    setVehicleNumberInput('');
+
+    const slipText = `श्री बालाजी पार्किंग (रुद्रपुर)
+प्रवेश पर्ची (Entry Slip)
+वाहन: [${trimmed}] (${typeText})
+समय: [${timeFormatted} | ${dateText}]
+कृपया पर्ची सुरक्षित रखें।`;
+
+    const encoded = encodeURIComponent(slipText);
+    const whatsappUrl = `https://wa.me/?text=${encoded}`;
+    const smsUrl = `sms:?body=${encoded}`;
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([18, 30, 24]);
+    }
+
+    setActiveEntrySlip({
+      vehicleNumber: trimmed,
+      typeText,
+      timeText: timeFormatted,
+      dateText,
+      whatsappUrl,
+      smsUrl,
+      rawText: slipText,
+    });
+  };
+
+  const handleExitVehicle = () => {
+    if (!selectedVehicleForExit) return;
+
+    const now = new Date();
+    const outTimeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const dateText = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+    const typeText = selectedVehicleForExit.type === 'bike' ? 'बाइक' : 'कार';
+
+    const durationMs = Math.max(0, now.getTime() - selectedVehicleForExit.entryTimestamp);
+    const durationMinutes = Math.max(1, Math.floor(durationMs / 60000));
+    const durationText = formatDurationHindi(durationMinutes);
+    const { fare } = calculateParkingFare(selectedVehicleForExit.type, durationMinutes);
+
+    setParkedVehicles((prev) => prev.filter((v) => v.id !== selectedVehicleForExit.id));
+    setShiftParkingCash((prev) => prev + fare);
+
+    const receiptText = `श्री बालाजी पार्किंग (रुद्रपुर)
+निकास रसीद (Exit Receipt)
+वाहन: [${selectedVehicleForExit.vehicleNumber}] (${typeText})
+प्रवेश: [${selectedVehicleForExit.entryTimeFormatted}] | निकास: [${outTimeFormatted}]
+कुल समय: [${durationText}]
+--------------------------------
+पार्किंग शुल्क: ₹${fare}
+स्थिति: भुगतान सफल (नकद)
+धन्यवाद। फिर पधारें।`;
+
+    const encoded = encodeURIComponent(receiptText);
+    const whatsappUrl = `https://wa.me/?text=${encoded}`;
+    const smsUrl = `sms:?body=${encoded}`;
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([18, 30, 24]);
+    }
+
+    setActiveExitReceipt({
+      vehicleNumber: selectedVehicleForExit.vehicleNumber,
+      typeText,
+      inTime: selectedVehicleForExit.entryTimeFormatted,
+      outTime: outTimeFormatted,
+      durationText,
+      fare,
+      dateText,
+      whatsappUrl,
+      smsUrl,
+      rawText: receiptText,
+    });
+    setSelectedVehicleForExit(null);
+  };
+
 
   // Dual-Wallet Cash Split state
   const [rentPaidInput, setRentPaidInput] = useState<string>('');
@@ -879,7 +1108,9 @@ ${elecLine}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="absolute inset-0 w-full h-full flex flex-col overflow-hidden z-10 gpu-layer select-none"
             >
-              {/* 1. Pinned Sticky Header (Zero Shrink) */}
+              {activeModule === 'units' ? (
+                <>
+{/* 1. Pinned Sticky Header (Zero Shrink) */}
               <header className="shrink-0 w-full z-20 px-5 pt-[max(12px,env(safe-area-inset-top,12px))] pb-3 border-b border-white/[0.06] bg-[#06080C]/95 backdrop-blur-xl">
                 <div className="flex items-center justify-between">
                   {/* Left: Minimalist Titanium SB Monogram & Title */}
@@ -1050,7 +1281,285 @@ ${elecLine}
                   })}
                 </div>
               </main>
-            </motion.div>
+                </>
+              ) : (
+                <>
+                  {/* ================= COMMERCIAL PARKING GATE MODULE ================= */}
+                  {/* 1. Pinned Parking Gate Header */}
+                  <header className="shrink-0 w-full z-20 px-5 pt-[max(12px,env(safe-area-inset-top,12px))] pb-3 border-b border-white/[0.06] bg-[#06080C]/95 backdrop-blur-xl">
+                    <div className="flex items-center justify-between">
+                      {/* Left: Monogram & Title */}
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-[#0D1117] border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-xs shadow-[0_2px_10px_rgba(6,182,212,0.2)]">
+                          <Car className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <h2 className="text-sm font-semibold text-[#EDEDED] tracking-tight">Shree Balaji Parking</h2>
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34D399] animate-pulse" />
+                          </div>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium text-cyan-400/90 tracking-wide uppercase">
+                            Field Gate Terminal // {userRole === 'owner' ? 'Owner Telemetry' : 'Shift Active'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Right: Lock button */}
+                      <button
+                        onClick={handleLockTerminal}
+                        aria-label="Lock terminal"
+                        className="p-2.5 rounded-xl bg-[#0D1117] border border-white/[0.08] text-[#94A3B8] hover:text-white active:scale-95 transition-all duration-100 cursor-pointer shadow-sm hover:border-[#D4AF37]/30"
+                        title="Lock Terminal"
+                      >
+                        <Lock className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* LIVE OCCUPANCY TELEMETRY HUD */}
+                    <div className="mt-3 grid grid-cols-3 gap-1.5">
+                      {/* 2-Wheeler Chip */}
+                      <div className={`py-1.5 px-2 rounded-xl flex flex-col items-center justify-center border font-mono transition-colors ${
+                        isBikeFull
+                          ? 'bg-rose-950/60 border-rose-500/60 text-rose-300 animate-pulse'
+                          : 'bg-white/[0.03] border-white/[0.08] text-[#CBD5E1]'
+                      }`}>
+                        <div className="flex items-center gap-1 text-[9px] text-[#94A3B8] uppercase">
+                          <Bike className="w-3 h-3 text-cyan-400" />
+                          <span>2-W (Bike)</span>
+                        </div>
+                        <span className={`text-xs font-bold mt-0.5 ${isBikeFull ? 'text-rose-400' : 'text-cyan-300'}`}>
+                          {isBikeFull ? 'FULL (30)' : `${bikeCount} / 30`}
+                        </span>
+                      </div>
+
+                      {/* 4-Wheeler Chip */}
+                      <div className={`py-1.5 px-2 rounded-xl flex flex-col items-center justify-center border font-mono transition-colors ${
+                        isCarFull
+                          ? 'bg-rose-950/60 border-rose-500/60 text-rose-300 animate-pulse'
+                          : 'bg-white/[0.03] border-white/[0.08] text-[#CBD5E1]'
+                      }`}>
+                        <div className="flex items-center gap-1 text-[9px] text-[#94A3B8] uppercase">
+                          <Car className="w-3 h-3 text-amber-400" />
+                          <span>4-W (Car)</span>
+                        </div>
+                        <span className={`text-xs font-bold mt-0.5 ${isCarFull ? 'text-rose-400' : 'text-amber-300'}`}>
+                          {isCarFull ? 'FULL (10)' : `${carCount} / 10`}
+                        </span>
+                      </div>
+
+                      {/* Shift Cash Counter */}
+                      <div className="py-1.5 px-2 rounded-xl bg-white/[0.03] border border-white/[0.08] flex flex-col items-center justify-center font-mono text-[#CBD5E1]">
+                        <span className="text-[9px] text-[#94A3B8] uppercase">Shift Cash</span>
+                        <span className="text-xs font-bold text-emerald-400 mt-0.5">
+                          ₹{shiftParkingCash.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    </div>
+                  </header>
+
+                  {/* 2. Scrollable Parking Main */}
+                  <main className="flex-1 w-full min-h-0 overflow-y-auto overscroll-contain px-4 pt-3 pb-4 deck-scrollbar flex flex-col gap-3.5">
+                    {/* FAST VEHICLE ENTRY FLOW (GATE-IN) */}
+                    <div className="p-3.5 rounded-2xl bg-[#0A0D14] border border-white/[0.08] shadow-lg flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono font-bold text-[#EDEDED] uppercase tracking-wider flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22D3EE]" />
+                          फास्ट वाहन प्रवेश (Fast Entry)
+                        </span>
+                        <span className="text-[10px] font-mono text-[#94A3B8]">
+                          {entryVehicleType === 'bike' ? '₹20 (2hr), +₹10/hr' : '₹40 (2hr), +₹20/hr'}
+                        </span>
+                      </div>
+
+                      {/* Vehicle Category Selector */}
+                      <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                        <button
+                          type="button"
+                          onClick={() => setEntryVehicleType('bike')}
+                          className={`py-2 px-3 rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                            entryVehicleType === 'bike'
+                              ? 'bg-cyan-950/60 text-cyan-200 border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]'
+                              : 'text-[#94A3B8] hover:text-white border border-transparent'
+                          }`}
+                        >
+                          <Bike className="w-3.5 h-3.5" />
+                          <span>🛵 2-W बाइक</span>
+                          {isBikeFull && <span className="text-[9px] text-rose-400 font-bold ml-1">[FULL]</span>}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setEntryVehicleType('car')}
+                          className={`py-2 px-3 rounded-lg text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                            entryVehicleType === 'car'
+                              ? 'bg-amber-950/60 text-amber-200 border border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                              : 'text-[#94A3B8] hover:text-white border border-transparent'
+                          }`}
+                        >
+                          <Car className="w-3.5 h-3.5" />
+                          <span>🚗 4-W कार</span>
+                          {isCarFull && <span className="text-[9px] text-rose-400 font-bold ml-1">[FULL]</span>}
+                        </button>
+                      </div>
+
+                      {/* Input & Check-in Button */}
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={vehicleNumberInput}
+                            onChange={(e) => setVehicleNumberInput(e.target.value.toUpperCase())}
+                            placeholder="UK 06 AB 1234"
+                            className="flex-1 bg-white/[0.04] border border-white/[0.1] focus:border-cyan-500/70 rounded-xl px-3.5 py-2.5 font-mono text-sm font-bold text-[#EDEDED] uppercase tracking-wider focus:outline-none placeholder:text-white/20"
+                          />
+                          <button
+                            type="button"
+                            disabled={isCurrentCategoryFull || vehicleNumberInput.trim().length < 3}
+                            onClick={handleCheckInVehicle}
+                            className={`py-2.5 px-4 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md ${
+                              !isCurrentCategoryFull && vehicleNumberInput.trim().length >= 3
+                                ? 'bg-emerald-500 hover:bg-emerald-400 text-[#06080C] border border-emerald-300/40 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer'
+                                : 'bg-white/[0.04] text-[#64748B] border border-white/[0.06] cursor-not-allowed opacity-50'
+                            }`}
+                          >
+                            <Plus className="w-4 h-4" />
+                            <span>पर्ची बनाएं</span>
+                          </button>
+                        </div>
+
+                        {isCurrentCategoryFull && (
+                          <p className="text-[11px] font-mono text-rose-400 flex items-center gap-1 pt-0.5">
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                            <span>{entryVehicleType === 'bike' ? '2-Wheeler (बाइक)' : '4-Wheeler (कार)'} पार्किंग फुल है! प्रवेश बंद है।</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* SEARCH BAR */}
+                    <div className="relative w-full">
+                      <Search className="w-4 h-4 text-[#64748B] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={parkingSearchQuery}
+                        onChange={(e) => setParkingSearchQuery(e.target.value)}
+                        placeholder="वाहन नंबर से खोजें (Search number / digits)..."
+                        className="w-full bg-white/[0.03] border border-white/[0.07] focus:border-[#D4AF37]/50 rounded-xl pl-9 pr-3.5 py-2 text-xs font-mono text-[#EDEDED] focus:outline-none placeholder:text-[#64748B]"
+                      />
+                      {parkingSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setParkingSearchQuery('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#94A3B8] hover:text-white"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+
+                    {/* ACTIVE PARKED VEHICLES LIST */}
+                    <div className="flex flex-col gap-2 pb-4">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-[#94A3B8]">
+                          सक्रिय पार्क वाहन ({filteredParkedVehicles.length})
+                        </span>
+                        <span className="text-[10px] font-mono text-[#64748B]">
+                          निकास के लिए टैप करें
+                        </span>
+                      </div>
+
+                      {filteredParkedVehicles.length === 0 ? (
+                        <div className="p-8 text-center rounded-2xl bg-white/[0.02] border border-white/[0.05]">
+                          <p className="text-xs font-mono text-[#64748B]">कोई वाहन पार्क नहीं मिला</p>
+                        </div>
+                      ) : (
+                        filteredParkedVehicles.map((v) => {
+                          const durationMinutes = Math.max(1, Math.floor((currentTimeTick - v.entryTimestamp) / 60000));
+                          const durationStr = formatDurationHindi(durationMinutes);
+                          const { fare } = calculateParkingFare(v.type, durationMinutes);
+
+                          return (
+                            <div
+                              key={v.id}
+                              onClick={() => setSelectedVehicleForExit(v)}
+                              className="p-3 rounded-2xl bg-[#0A0D14] border border-white/[0.08] hover:border-white/[0.18] transition-all cursor-pointer flex items-center justify-between group active:scale-98 shadow-md"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
+                                  v.type === 'bike'
+                                    ? 'bg-cyan-950/40 border border-cyan-500/30 text-cyan-300'
+                                    : 'bg-amber-950/40 border border-amber-500/30 text-amber-300'
+                                }`}>
+                                  {v.type === 'bike' ? <Bike className="w-5 h-5" /> : <Car className="w-5 h-5" />}
+                                </div>
+
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-mono font-bold text-[#EDEDED] tracking-wider">
+                                      {v.vehicleNumber}
+                                    </span>
+                                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-white/[0.05] border border-white/[0.08] text-[#94A3B8]">
+                                      {v.type === 'bike' ? 'बाइक' : 'कार'}
+                                    </span>
+                                  </div>
+                                  <div className="text-[10px] font-mono text-[#64748B] flex items-center gap-1 mt-0.5">
+                                    <Clock className="w-3 h-3 text-[#64748B]" />
+                                    <span>प्रवेश: {v.entryTimeFormatted}</span>
+                                    <span className="text-white/20">•</span>
+                                    <span className="text-emerald-400 font-semibold">₹{fare} देय</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col items-end gap-1">
+                                <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22D3EE] animate-pulse" />
+                                  {durationStr}
+                                </span>
+                                <span className="text-[10px] font-mono text-[#D4AF37] group-hover:underline flex items-center gap-0.5">
+                                  निकास / Exit ➜
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </main>
+                </>
+              )}
+
+              {/* PINNED BOTTOM NAVIGATION DOCK (ESTATE UNITS & PARKING GATE) */}
+              <div className="shrink-0 w-full z-30 px-4 py-2 border-t border-white/[0.08] bg-[#06080C]/95 backdrop-blur-xl flex items-center justify-around pb-[max(10px,env(safe-area-inset-bottom,10px))]">
+                <button
+                  type="button"
+                  onClick={() => setActiveModule('units')}
+                  className={`flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-mono font-medium transition-all duration-200 cursor-pointer ${
+                    activeModule === 'units'
+                      ? 'bg-[#0D1117] text-[#EDEDED] border border-[#D4AF37]/50 shadow-[0_2px_12px_rgba(212,175,55,0.2)]'
+                      : 'text-[#94A3B8] hover:text-white border border-transparent'
+                  }`}
+                >
+                  <Building2 className="w-4 h-4 text-[#D4AF37]" />
+                  <span>Estate Units</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveModule('parking')}
+                  className={`flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-mono font-medium transition-all duration-200 cursor-pointer ${
+                    activeModule === 'parking'
+                      ? 'bg-[#0D1117] text-[#EDEDED] border border-cyan-500/50 shadow-[0_2px_12px_rgba(6,182,212,0.2)]'
+                      : 'text-[#94A3B8] hover:text-white border border-transparent'
+                  }`}
+                >
+                  <Car className="w-4 h-4 text-cyan-400" />
+                  <span>Parking Gate</span>
+                  <span className="px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold">
+                    {parkedVehicles.length}
+                  </span>
+                </button>
+              </div></motion.div>
           )}
         </AnimatePresence>
 
@@ -1503,6 +2012,258 @@ ${elecLine}
                     )}
                   </>
                 )}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* ================= COMMERCIAL PARKING EXIT SETTLEMENT DRAWER ================= */}
+        <AnimatePresence>
+          {selectedVehicleForExit && (
+            <>
+              <motion.div
+                key="parking-exit-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setSelectedVehicleForExit(null)}
+                className="absolute inset-0 bg-black/70 backdrop-blur-md z-40 cursor-pointer"
+              />
+
+              <motion.div
+                key="parking-exit-sheet"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+                className="absolute bottom-0 inset-x-0 bg-[#0A0D14] border-t border-white/[0.12] rounded-t-[32px] p-5 pb-[max(24px,env(safe-area-inset-bottom,24px))] shadow-[0_-20px_50px_rgba(0,0,0,0.9)] z-50 gpu-layer flex flex-col select-none max-h-[85vh] overflow-y-auto deck-scrollbar"
+              >
+                {/* Top handle */}
+                <div className="w-10 h-1 rounded-full bg-white/20 mb-3 mx-auto shrink-0" />
+
+                {/* Top Bar inside Sheet */}
+                <div className="flex items-center justify-between pb-3 border-b border-white/[0.07]">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-white/[0.1] font-mono font-bold text-sm text-[#EDEDED]">
+                      {selectedVehicleForExit.vehicleNumber}
+                    </span>
+                    <span className="text-xs font-mono text-[#94A3B8]">
+                      {selectedVehicleForExit.type === 'bike' ? '🛵 2-Wheeler (बाइक)' : '🚗 4-Wheeler (कार)'}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedVehicleForExit(null)}
+                    aria-label="Close drawer"
+                    className="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white transition-colors cursor-pointer border border-white/[0.08]"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Exit Fare HUD & Summary */}
+                {(() => {
+                  const now = new Date();
+                  const durationMinutes = Math.max(1, Math.floor((now.getTime() - selectedVehicleForExit.entryTimestamp) / 60000));
+                  const durationStr = formatDurationHindi(durationMinutes);
+                  const { fare, rateDescription } = calculateParkingFare(selectedVehicleForExit.type, durationMinutes);
+                  const outTimeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                  return (
+                    <div className="flex flex-col gap-3.5 pt-3">
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <div className="p-3 rounded-xl bg-[#06080C] border border-white/[0.06] flex flex-col">
+                          <span className="text-[10px] font-mono text-[#64748B] uppercase">प्रवेश समय (In)</span>
+                          <span className="text-sm font-mono font-bold text-[#EDEDED] mt-0.5">{selectedVehicleForExit.entryTimeFormatted}</span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-[#06080C] border border-white/[0.06] flex flex-col">
+                          <span className="text-[10px] font-mono text-[#64748B] uppercase">निकास समय (Out)</span>
+                          <span className="text-sm font-mono font-bold text-cyan-300 mt-0.5">{outTimeFormatted}</span>
+                        </div>
+                      </div>
+
+                      {/* Duration & Tariff description */}
+                      <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs font-mono">
+                        <span className="text-[#94A3B8]">कुल अवधि (Duration):</span>
+                        <span className="text-[#EDEDED] font-bold">{durationStr}</span>
+                      </div>
+
+                      <div className="px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[10px] font-mono text-[#94A3B8] text-center">
+                        {rateDescription}
+                      </div>
+
+                      {/* Total Fare Card */}
+                      <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-[#06080C] to-emerald-950/30 border border-emerald-500/40 shadow-inner flex items-center justify-between">
+                        <div>
+                          <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-300 font-semibold block">
+                            कुल देय पार्किंग शुल्क
+                          </span>
+                          <span className="text-[10px] font-mono text-[#94A3B8]">नकद भुगतान (Cash)</span>
+                        </div>
+                        <span className="text-2xl font-mono font-bold text-emerald-400">
+                          ₹{fare}
+                        </span>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="grid grid-cols-2 gap-3 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedVehicleForExit(null)}
+                          className="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#94A3B8] hover:text-white text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center"
+                        >
+                          रद्द करें (Cancel)
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleExitVehicle}
+                          className="py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 bg-emerald-500 hover:bg-emerald-400 text-[#06080C] border border-emerald-300/40 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                        >
+                          <Check className="w-4 h-4" />
+                          <span>नकद प्राप्त व निकास</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* ================= ENTRY SLIP MODAL (NON-BLOCKING) ================= */}
+        <AnimatePresence>
+          {activeEntrySlip && (
+            <>
+              <motion.div
+                key="entry-slip-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setActiveEntrySlip(null)}
+                className="absolute inset-0 bg-black/75 backdrop-blur-md z-50 cursor-pointer"
+              />
+              <motion.div
+                key="entry-slip-modal"
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-[#0A0D14] border border-emerald-500/40 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-50 flex flex-col gap-3 font-mono"
+              >
+                <div className="flex items-center gap-2.5 pb-2 border-b border-white/[0.08]">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-[#EDEDED]">प्रवेश पर्ची तैयार</h3>
+                    <span className="text-[10px] text-[#94A3B8]">Entry Slip Generated</span>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-[#06080C] border border-white/[0.08] text-[11px] leading-relaxed text-[#CBD5E1] whitespace-pre-wrap select-text">
+                  {activeEntrySlip.rawText}
+                </div>
+
+                {/* Strictly non-blocking actions */}
+                <div className="flex flex-col gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveEntrySlip(null)}
+                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-98 transition-all"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>बाद में / Done (Skip)</span>
+                  </button>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      href={activeEntrySlip.whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2 px-3 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+                    >
+                      <span>🟢 WhatsApp</span>
+                    </a>
+                    <a
+                      href={activeEntrySlip.smsUrl}
+                      className="py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+                    >
+                      <span>💬 SMS पर्ची</span>
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* ================= EXIT RECEIPT MODAL (NON-BLOCKING) ================= */}
+        <AnimatePresence>
+          {activeExitReceipt && (
+            <>
+              <motion.div
+                key="exit-receipt-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setActiveExitReceipt(null)}
+                className="absolute inset-0 bg-black/75 backdrop-blur-md z-50 cursor-pointer"
+              />
+              <motion.div
+                key="exit-receipt-modal"
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-[#0A0D14] border border-cyan-500/40 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-50 flex flex-col gap-3 font-mono"
+              >
+                <div className="flex items-center gap-2.5 pb-2 border-b border-white/[0.08]">
+                  <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-[#EDEDED]">निकास रसीद (Exit Receipt)</h3>
+                    <span className="text-[10px] text-emerald-400 font-bold">शुल्क प्राप्त: ₹{activeExitReceipt.fare}</span>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-[#06080C] border border-white/[0.08] text-[11px] leading-relaxed text-[#CBD5E1] whitespace-pre-wrap select-text">
+                  {activeExitReceipt.rawText}
+                </div>
+
+                {/* Strictly non-blocking actions */}
+                <div className="flex flex-col gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveExitReceipt(null)}
+                    className="w-full py-2.5 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.3)] active:scale-98 transition-all"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>संपन्न / Done (Skip)</span>
+                  </button>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      href={activeExitReceipt.whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2 px-3 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+                    >
+                      <span>🟢 WhatsApp</span>
+                    </a>
+                    <a
+                      href={activeExitReceipt.smsUrl}
+                      className="py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+                    >
+                      <span>💬 SMS रसीद</span>
+                    </a>
+                  </div>
+                </div>
               </motion.div>
             </>
           )}
