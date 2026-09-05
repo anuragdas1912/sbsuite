@@ -657,10 +657,10 @@
 
     <div id="drawer-sheet" class="absolute bottom-0 inset-x-0 bg-[#0A0D14] border-t border-white/[0.12] rounded-t-[32px] p-5 pb-[max(24px,env(safe-area-inset-bottom,24px))] shadow-[0_-20px_50px_rgba(0,0,0,0.9)] z-50 gpu-accel flex flex-col select-none transition-transform duration-300 ease-out max-h-[85vh] overflow-y-auto deck-scrollbar translate-y-full" style="display: none;">
       <!-- Top handle -->
-      <div class="w-10 h-1 rounded-full bg-white/20 mb-4 mx-auto shrink-0"></div>
+      <div class="w-10 h-1 rounded-full bg-white/20 mb-3 mx-auto shrink-0"></div>
 
       <!-- Top Bar inside Sheet -->
-      <div class="flex items-center justify-between pb-3.5 border-b border-white/[0.07]">
+      <div class="flex items-center justify-between pb-3 border-b border-white/[0.07]">
         <div class="flex items-center gap-2.5">
           <span id="drawer-unit-badge" class="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-white/[0.1] font-mono font-bold text-sm text-[#EDEDED]">
             R-101
@@ -680,73 +680,273 @@
         </button>
       </div>
 
-      <!-- THE TWIN-GAUGE READING HUD -->
-      <div class="grid grid-cols-2 gap-3 mt-4">
-        <!-- Left Gauge (Previous Reading - Locked) -->
-        <div class="bg-[#06080C] border border-white/[0.06] rounded-2xl p-3.5 flex flex-col justify-between">
-          <span class="text-[9px] font-mono text-[#64748B] uppercase tracking-wider font-semibold">
-            PREVIOUS (LOCKED)
-          </span>
-          <div class="mt-2 flex items-baseline gap-1">
-            <span id="drawer-prev-reading" class="text-2xl font-mono font-bold text-[#CBD5E1]">
-              1380
-            </span>
-            <span class="text-xs font-mono text-[#64748B]">kWh</span>
+      <!-- VIEW A: OPTIONAL HINDI RECEIPT SCREEN -->
+      <div id="drawer-receipt-section" class="flex flex-col py-2" style="display: none;">
+        <!-- Success Header -->
+        <div class="flex items-center gap-2.5 pb-3 border-b border-white/[0.08]">
+          <div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-[#EDEDED] flex items-center gap-2">
+              <span>भुगतान सफलतापूर्वक दर्ज!</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-normal">Recorded</span>
+            </h3>
+            <p id="drawer-receipt-summary-text" class="text-[11px] font-mono text-[#94A3B8]">
+              कुल नकद: ₹0 // R-101
+            </p>
           </div>
         </div>
 
-        <!-- Right Gauge (Current Reading - Active Input) -->
-        <div id="drawer-input-container" class="bg-white/[0.04] border border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)] rounded-2xl p-3.5 flex flex-col justify-between transition-colors duration-150">
-          <span class="text-[9px] font-mono text-[#D4AF37] uppercase tracking-wider font-semibold">
-            CURRENT READING
-          </span>
-          <div class="mt-2 flex items-baseline gap-1">
-            <input
-              id="drawer-current-input"
-              type="text"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              oninput="handleDrawerInput(this.value)"
-              placeholder="1390"
-              class="w-full bg-transparent text-2xl font-mono font-bold text-[#EDEDED] focus:outline-none placeholder:text-white/20"
-            />
-            <span class="text-xs font-mono text-[#D4AF37]/80">kWh</span>
+        <!-- Receipt Preview Card -->
+        <div class="mt-3.5 p-3.5 rounded-2xl bg-[#06080C] border border-white/[0.08] relative font-mono text-[11px] leading-relaxed text-[#CBD5E1] whitespace-pre-wrap select-text">
+          <div class="text-[10px] text-[#D4AF37] font-semibold mb-1.5 uppercase tracking-wider flex items-center justify-between border-b border-white/[0.06] pb-1">
+            <span>रसीद पूर्वावलोकन (Preview)</span>
+            <span id="drawer-receipt-date" class="text-[#64748B] font-normal">05/09/2026</span>
+          </div>
+          <div id="drawer-receipt-preview-text"></div>
+        </div>
+
+        <!-- Actions: Strictly Non-Blocking -->
+        <div class="mt-4 flex flex-col gap-2.5">
+          <!-- Primary: Done / Skip (Instantly closes drawer with 1 tap) -->
+          <button type="button" onclick="closeMeterDrawer()" class="w-full py-3 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(212,175,55,0.3)] active:scale-98 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>बाद में / Done (Skip)</span>
+          </button>
+
+          <!-- Secondary & Tertiary Action Row: WhatsApp & SMS -->
+          <div class="grid grid-cols-2 gap-2.5">
+            <a id="drawer-whatsapp-btn" href="#" target="_blank" rel="noopener noreferrer" class="py-2.5 px-3 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center">
+              <span>🟢 WhatsApp रसीद</span>
+            </a>
+
+            <a id="drawer-sms-btn" href="#" class="py-2.5 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center">
+              <span>💬 SMS रसीद</span>
+            </a>
           </div>
         </div>
       </div>
 
-      <!-- REAL-TIME LIVE MATH ENGINE -->
-      <div id="drawer-math-hud" class="mt-3.5">
-        <div class="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center text-xs font-mono text-[#64748B]">
-          Enter current meter numbers above to calculate dues
+      <!-- MAIN DRAWER WORKFLOW: SWITCHER + MODES -->
+      <div id="drawer-main-flow" class="flex flex-col">
+        <!-- Segmented Mode Switcher: [ ⚡ Sub-Meter ] and [ 💰 Collect Payment ] -->
+        <div class="grid grid-cols-2 p-1 bg-black/50 border border-white/[0.08] rounded-xl mt-3.5">
+          <button id="dtab-meter-btn" type="button" onclick="switchDrawerTab('meter')" class="py-2 px-3 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer bg-white/[0.08] text-[#FFF4C2] border border-[#D4AF37]/40 shadow-sm">
+            <span>⚡ Sub-Meter</span>
+          </button>
+
+          <button id="dtab-payment-btn" type="button" onclick="switchDrawerTab('payment')" class="py-2 px-3 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer text-[#94A3B8] hover:text-white">
+            <span>💰 Collect Payment</span>
+          </button>
         </div>
-      </div>
 
-      <!-- EVIDENCE CAPTURE & SAVE ACTION -->
-      <div class="mt-4 flex items-center justify-between gap-3">
-        <input id="drawer-photo-input" type="file" accept="image/*" capture="environment" onchange="handleDrawerPhoto(event)" class="hidden" />
+        <!-- ================= TAB 1: SUB-METER READING ================= -->
+        <div id="drawer-meter-section" class="flex flex-col">
+          <!-- THE TWIN-GAUGE READING HUD -->
+          <div class="grid grid-cols-2 gap-3 mt-4">
+            <!-- Left Gauge (Previous Reading - Locked) -->
+            <div class="bg-[#06080C] border border-white/[0.06] rounded-2xl p-3.5 flex flex-col justify-between">
+              <span class="text-[9px] font-mono text-[#64748B] uppercase tracking-wider font-semibold">
+                PREVIOUS (LOCKED)
+              </span>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span id="drawer-prev-reading" class="text-2xl font-mono font-bold text-[#CBD5E1]">
+                  1380
+                </span>
+                <span class="text-xs font-mono text-[#64748B]">kWh</span>
+              </div>
+            </div>
 
-        <button type="button" onclick="document.getElementById('drawer-photo-input').click()" class="flex-1 py-2.5 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.08] text-xs font-mono text-[#CBD5E1] flex items-center justify-center gap-2 cursor-pointer transition-colors active:scale-98">
-          <svg class="w-4 h-4 text-[#D4AF37]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-          <span id="drawer-photo-label">Capture Meter Photo</span>
-        </button>
+            <!-- Right Gauge (Current Reading - Active Input) -->
+            <div id="drawer-input-container" class="bg-white/[0.04] border border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)] rounded-2xl p-3.5 flex flex-col justify-between transition-colors duration-150">
+              <span class="text-[9px] font-mono text-[#D4AF37] uppercase tracking-wider font-semibold">
+                CURRENT READING
+              </span>
+              <div class="mt-2 flex items-baseline gap-1">
+                <input
+                  id="drawer-current-input"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  oninput="handleDrawerInput(this.value)"
+                  placeholder="1390"
+                  class="w-full bg-transparent text-2xl font-mono font-bold text-[#EDEDED] focus:outline-none placeholder:text-white/20"
+                />
+                <span class="text-xs font-mono text-[#D4AF37]/80">kWh</span>
+              </div>
+            </div>
+          </div>
 
-        <div id="drawer-photo-preview-wrap" class="relative group shrink-0" style="display: none;">
-          <img id="drawer-photo-preview" src="" alt="Meter proof" class="w-10 h-10 rounded-xl object-cover border border-[#D4AF37]/50 shadow-md" />
-          <button type="button" onclick="clearDrawerPhoto()" class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] font-bold">✕</button>
+          <!-- REAL-TIME LIVE MATH ENGINE -->
+          <div id="drawer-math-hud" class="mt-3.5">
+            <div class="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center text-xs font-mono text-[#64748B]">
+              Enter current meter numbers above to calculate dues
+            </div>
+          </div>
+
+          <!-- EVIDENCE CAPTURE -->
+          <div class="mt-4 flex items-center justify-between gap-3">
+            <input id="drawer-photo-input" type="file" accept="image/*" capture="environment" onchange="handleDrawerPhoto(event)" class="hidden" />
+
+            <button type="button" onclick="document.getElementById('drawer-photo-input').click()" class="flex-1 py-2.5 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.08] text-xs font-mono text-[#CBD5E1] flex items-center justify-center gap-2 cursor-pointer transition-colors active:scale-98">
+              <svg class="w-4 h-4 text-[#D4AF37]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              <span id="drawer-photo-label">Capture Meter Photo</span>
+            </button>
+
+            <div id="drawer-photo-preview-wrap" class="relative group shrink-0" style="display: none;">
+              <img id="drawer-photo-preview" src="" alt="Meter proof" class="w-10 h-10 rounded-xl object-cover border border-[#D4AF37]/50 shadow-md" />
+              <button type="button" onclick="clearDrawerPhoto()" class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] font-bold">✕</button>
+            </div>
+          </div>
+
+          <!-- Action Buttons (Bottom) -->
+          <div class="grid grid-cols-2 gap-3 mt-4 pt-1">
+            <button id="drawer-save-reading-btn" type="button" disabled onclick="saveReadingOnly()" class="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#CBD5E1] text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center disabled:opacity-40 disabled:cursor-not-allowed">
+              Save Meter Only
+            </button>
+
+            <button type="button" onclick="switchDrawerTab('payment')" class="py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] border border-[#FFF4C2]/40 shadow-[0_0_20px_rgba(212,175,55,0.3)]">
+              <span>Collect Payment</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+          </div>
         </div>
-      </div>
 
-      <!-- Action Buttons (Bottom) -->
-      <div class="grid grid-cols-2 gap-3 mt-4 pt-1">
-        <button type="button" onclick="closeMeterDrawer()" class="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#94A3B8] hover:text-white text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center">
-          Cancel
-        </button>
+        <!-- ================= TAB 2: DUAL-WALLET CASH SPLIT ================= -->
+        <div id="drawer-payment-section" class="flex flex-col gap-3 mt-3.5" style="display: none;">
+          <!-- 1. Rent Box (Golden Vault Box) -->
+          <div class="p-3.5 rounded-2xl bg-[#06080C] border border-[#D4AF37]/40 shadow-[0_4px_16px_rgba(0,0,0,0.4)] flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-[#D4AF37] shadow-[0_0_6px_#D4AF37]"></span>
+                <span class="text-[11px] font-mono font-bold tracking-wider text-[#FFF4C2]">
+                  किराया (RENT)
+                </span>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] font-mono text-[#94A3B8]">कुल बकाया: </span>
+                <span id="drawer-rent-due-label" class="text-xs font-mono font-bold text-[#E2E8F0]">₹0</span>
+              </div>
+            </div>
 
-        <button id="drawer-confirm-btn" type="button" disabled onclick="confirmAndLogReading()" class="py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-not-allowed opacity-50 bg-white/[0.04] text-[#64748B] border border-white/[0.06]">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <span>Confirm & Log</span>
-        </button>
+            <!-- Rent Input Field -->
+            <div class="bg-white/[0.04] border border-white/[0.08] focus-within:border-[#D4AF37]/60 rounded-xl px-3 py-2 flex items-center justify-between transition-colors">
+              <span class="text-sm font-mono text-[#D4AF37] font-bold">₹</span>
+              <input
+                id="drawer-rent-paid-input"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                oninput="handleRentInput(this.value)"
+                placeholder="0"
+                class="w-full bg-transparent text-lg font-mono font-bold text-[#EDEDED] text-right focus:outline-none placeholder:text-white/20"
+              />
+            </div>
+
+            <!-- Dynamic Arrears Math -->
+            <div class="flex items-center justify-between text-[10px] font-mono pt-0.5">
+              <div id="drawer-arrears-indicator" class="flex items-center gap-1 text-emerald-400">
+                <span>✓ पूरा भुगतान (Zero Arrears)</span>
+              </div>
+              <button
+                type="button"
+                onclick="fillFullRentDue()"
+                class="text-[#94A3B8] hover:text-[#D4AF37] transition-colors underline cursor-pointer"
+              >
+                पूरा भरें
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Electricity Box (Cyan Utility Box) -->
+          <div class="p-3.5 rounded-2xl bg-[#06080C] border border-cyan-500/40 shadow-[0_4px_16px_rgba(0,0,0,0.4)] flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" viewBox="0 0 24 24" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                <span class="text-[11px] font-mono font-bold tracking-wider text-cyan-300">
+                  बिजली बिल (ELECTRICITY BILL)
+                </span>
+              </div>
+              <div class="text-right">
+                <span id="drawer-elec-due-label-prefix" class="text-[10px] font-mono text-[#94A3B8]">दर: </span>
+                <span id="drawer-elec-due-label" class="text-xs font-mono font-bold text-cyan-200">₹9/u</span>
+              </div>
+            </div>
+
+            <!-- Reading range note if calculated -->
+            <div id="drawer-elec-calc-note" class="px-2.5 py-1 rounded-lg bg-cyan-950/30 border border-cyan-500/20 text-[10px] font-mono text-cyan-300 flex items-center justify-between" style="display: none;">
+              <span id="drawer-elec-range-text">रीडिंग: 1380 → 1420</span>
+              <span id="drawer-elec-units-text">40 यूनिट @ ₹9</span>
+            </div>
+
+            <!-- Electricity Input Field -->
+            <div class="bg-white/[0.04] border border-white/[0.08] focus-within:border-cyan-500/60 rounded-xl px-3 py-2 flex items-center justify-between transition-colors">
+              <span class="text-sm font-mono text-cyan-400 font-bold">₹</span>
+              <input
+                id="drawer-elec-paid-input"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                oninput="handleElecInput(this.value)"
+                placeholder="0"
+                class="w-full bg-transparent text-lg font-mono font-bold text-[#EDEDED] text-right focus:outline-none placeholder:text-white/20"
+              />
+            </div>
+
+            <div class="flex items-center justify-between text-[10px] font-mono pt-0.5">
+              <span class="text-[#64748B]">उपयोग अनुसार राशि दर्ज करें</span>
+              <button
+                id="drawer-fill-elec-btn"
+                type="button"
+                style="display: none;"
+                onclick="fillFullElecDue()"
+                class="text-cyan-400 hover:text-cyan-300 transition-colors underline cursor-pointer"
+              >
+                बिल राशि भरें
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Total Handover Summary Bar -->
+          <div class="p-3.5 rounded-2xl bg-gradient-to-r from-[#D4AF37]/10 via-[#06080C] to-cyan-950/30 border border-white/[0.12] shadow-inner flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono uppercase tracking-wider text-[#CBD5E1] font-semibold">
+                कुल नकद प्राप्त:
+              </span>
+              <span id="drawer-total-cash-display" class="text-xl font-mono font-bold text-[#FFF4C2]">
+                ₹0
+              </span>
+            </div>
+            <div class="flex items-center justify-between text-[10px] font-mono text-[#94A3B8] border-t border-white/[0.06] pt-1.5">
+              <span id="drawer-total-rent-summary">किराया: ₹0</span>
+              <span class="text-white/30">+</span>
+              <span id="drawer-total-elec-summary">बिजली बिल: ₹0</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons: Cancel vs Record Payment -->
+          <div class="grid grid-cols-2 gap-3 pt-1">
+            <button
+              type="button"
+              onclick="closeMeterDrawer()"
+              className="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#94A3B8] hover:text-white text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center"
+            >
+              रद्द करें (Cancel)
+            </button>
+
+            <button
+              id="drawer-record-payment-btn"
+              type="button"
+              disabled
+              onclick="recordPayment()"
+              class="py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-not-allowed opacity-50 bg-white/[0.04] text-[#64748B] border border-white/[0.06]"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>भुगतान दर्ज करें</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1080,10 +1280,13 @@
       }).join('');
     }
 
-    // 6. SUB-METER READING DRAWER & LIVE MATH
+    // 6. SUB-METER READING DRAWER & DUAL-WALLET CASH SPLIT
     let activeDrawerUnit = null;
+    let currentDrawerTab = 'meter';
     let currentReadingValue = '';
     let attachedPhotoUrl = null;
+    let rentPaidVal = '';
+    let elecPaidVal = '';
 
     function openMeterDrawer(unitId) {
       const unit = STATIC_UNITS.find(u => u.id === unitId);
@@ -1093,16 +1296,29 @@
       currentReadingValue = '';
       attachedPhotoUrl = null;
 
+      const effectiveRent = unit.rentDueAmount > 0 ? unit.rentDueAmount : unit.rentAmount;
+      rentPaidVal = String(effectiveRent);
+      elecPaidVal = '0';
+
       document.getElementById('drawer-unit-badge').textContent = unit.name;
       document.getElementById('drawer-tenant-name').textContent = unit.tenantName;
-      document.getElementById('drawer-rate-label').textContent = `Sub-Meter Reading // ${unit.type === 'room' ? 'Room Rate ₹9/u' : 'Shop Rate ₹11/u'}`;
+      document.getElementById('drawer-rate-label').textContent = `${unit.type === 'room' ? 'Room Rate ₹9/u' : 'Shop Rate ₹11/u'} // ${unit.rentDueAmount > 0 ? 'Due: ₹' + unit.rentDueAmount.toLocaleString('en-IN') : 'Paid'}`;
       document.getElementById('drawer-prev-reading').textContent = unit.lastReading;
+
       const input = document.getElementById('drawer-current-input');
       input.value = '';
       input.placeholder = `${unit.lastReading + 10}`;
 
+      // Reset views
+      document.getElementById('drawer-receipt-section').style.display = 'none';
+      document.getElementById('drawer-main-flow').style.display = 'flex';
+
       clearDrawerPhoto();
       updateDrawerMathHUD();
+
+      // Prioritize pending meter, else payment
+      const initialTab = unit.isReadingPending ? 'meter' : 'payment';
+      switchDrawerTab(initialTab);
 
       const backdrop = document.getElementById('drawer-backdrop');
       const sheet = document.getElementById('drawer-sheet');
@@ -1114,7 +1330,9 @@
         backdrop.style.pointerEvents = 'auto';
         sheet.classList.remove('translate-y-full');
         sheet.classList.add('translate-y-0');
-        input.focus();
+        if (initialTab === 'meter') {
+          input.focus();
+        }
       });
     }
 
@@ -1131,7 +1349,54 @@
         backdrop.style.display = 'none';
         sheet.style.display = 'none';
         activeDrawerUnit = null;
+        document.getElementById('drawer-receipt-section').style.display = 'none';
       }, 300);
+    }
+
+    function switchDrawerTab(tab) {
+      currentDrawerTab = tab;
+      const meterBtn = document.getElementById('dtab-meter-btn');
+      const paymentBtn = document.getElementById('dtab-payment-btn');
+      const meterSec = document.getElementById('drawer-meter-section');
+      const paymentSec = document.getElementById('drawer-payment-section');
+
+      if (tab === 'meter') {
+        meterBtn.className = "py-2 px-3 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer bg-white/[0.08] text-[#FFF4C2] border border-[#D4AF37]/40 shadow-sm";
+        paymentBtn.className = "py-2 px-3 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer text-[#94A3B8] hover:text-white";
+        meterSec.style.display = 'flex';
+        paymentSec.style.display = 'none';
+      } else {
+        paymentBtn.className = "py-2 px-3 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer bg-white/[0.08] text-[#FFF4C2] border border-[#D4AF37]/40 shadow-sm";
+        meterBtn.className = "py-2 px-3 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer text-[#94A3B8] hover:text-white";
+        meterSec.style.display = 'none';
+        paymentSec.style.display = 'flex';
+
+        // Update electricity calculation in payment view if reading is entered
+        if (activeDrawerUnit) {
+          const tariffRate = activeDrawerUnit.type === 'room' ? 9.0 : 11.0;
+          const currentNum = parseInt(currentReadingValue, 10);
+          const hasValidCalc = !isNaN(currentNum) && currentNum >= activeDrawerUnit.lastReading;
+
+          if (hasValidCalc) {
+            const unitsConsumed = currentNum - activeDrawerUnit.lastReading;
+            const electricityDue = unitsConsumed * tariffRate;
+            elecPaidVal = String(electricityDue);
+
+            document.getElementById('drawer-elec-due-label-prefix').textContent = 'गणना: ';
+            document.getElementById('drawer-elec-due-label').textContent = `₹${electricityDue.toLocaleString('en-IN')}`;
+            document.getElementById('drawer-elec-calc-note').style.display = 'flex';
+            document.getElementById('drawer-elec-range-text').textContent = `रीडिंग: ${activeDrawerUnit.lastReading} → ${currentNum}`;
+            document.getElementById('drawer-elec-units-text').textContent = `${unitsConsumed} यूनिट @ ₹${tariffRate}`;
+            document.getElementById('drawer-fill-elec-btn').style.display = 'inline';
+          } else {
+            document.getElementById('drawer-elec-due-label-prefix').textContent = 'दर: ';
+            document.getElementById('drawer-elec-due-label').textContent = `₹${tariffRate}/u`;
+            document.getElementById('drawer-elec-calc-note').style.display = 'none';
+            document.getElementById('drawer-fill-elec-btn').style.display = 'none';
+          }
+        }
+        updatePaymentSummary();
+      }
     }
 
     function handleDrawerInput(val) {
@@ -1145,13 +1410,13 @@
       const tariffRate = activeDrawerUnit.type === 'room' ? 9.0 : 11.0;
       const hud = document.getElementById('drawer-math-hud');
       const inputContainer = document.getElementById('drawer-input-container');
-      const confirmBtn = document.getElementById('drawer-confirm-btn');
+      const saveReadingBtn = document.getElementById('drawer-save-reading-btn');
 
       if (currentReadingValue.trim() === '') {
         inputContainer.className = "bg-white/[0.04] border border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)] rounded-2xl p-3.5 flex flex-col justify-between transition-colors duration-150";
         hud.innerHTML = `<div class="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center text-xs font-mono text-[#64748B]">Enter current meter numbers above to calculate dues</div>`;
-        confirmBtn.disabled = true;
-        confirmBtn.className = "py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-not-allowed opacity-50 bg-white/[0.04] text-[#64748B] border border-white/[0.06]";
+        saveReadingBtn.disabled = true;
+        saveReadingBtn.className = "py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#CBD5E1] text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center disabled:opacity-40 disabled:cursor-not-allowed";
         return;
       }
 
@@ -1167,8 +1432,7 @@
             <span>⚠️ Reading cannot be lower than previous</span>
           </div>
         `;
-        confirmBtn.disabled = true;
-        confirmBtn.className = "py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-not-allowed opacity-50 bg-white/[0.04] text-[#64748B] border border-white/[0.06]";
+        saveReadingBtn.disabled = true;
       } else {
         // Valid calculation
         const unitsConsumed = currentNum - activeDrawerUnit.lastReading;
@@ -1187,8 +1451,8 @@
             </div>
           </div>
         `;
-        confirmBtn.disabled = false;
-        confirmBtn.className = "py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] border border-[#FFF4C2]/40 shadow-[0_0_20px_rgba(212,175,55,0.3)]";
+        saveReadingBtn.disabled = false;
+        saveReadingBtn.className = "py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#CBD5E1] text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center";
       }
     }
 
@@ -1209,7 +1473,7 @@
       document.getElementById('drawer-photo-input').value = '';
     }
 
-    function confirmAndLogReading() {
+    function saveReadingOnly() {
       if (!activeDrawerUnit || currentReadingValue.trim() === '') return;
       const currentNum = parseInt(currentReadingValue, 10);
       if (isNaN(currentNum) || currentNum < activeDrawerUnit.lastReading) return;
@@ -1219,6 +1483,141 @@
 
       if (navigator.vibrate) navigator.vibrate([24, 30, 24]);
       closeMeterDrawer();
+      renderUnitsDeck(currentDeckTab);
+    }
+
+    // 7. DUAL-WALLET CASH SPLIT & HINDI RECEIPTS
+    function handleRentInput(val) {
+      rentPaidVal = val.replace(/[^0-9]/g, '');
+      document.getElementById('drawer-rent-paid-input').value = rentPaidVal;
+      updatePaymentSummary();
+    }
+
+    function handleElecInput(val) {
+      elecPaidVal = val.replace(/[^0-9]/g, '');
+      document.getElementById('drawer-elec-paid-input').value = elecPaidVal;
+      updatePaymentSummary();
+    }
+
+    function fillFullRentDue() {
+      if (!activeDrawerUnit) return;
+      const due = activeDrawerUnit.rentDueAmount > 0 ? activeDrawerUnit.rentDueAmount : activeDrawerUnit.rentAmount;
+      rentPaidVal = String(due);
+      document.getElementById('drawer-rent-paid-input').value = rentPaidVal;
+      updatePaymentSummary();
+    }
+
+    function fillFullElecDue() {
+      if (!activeDrawerUnit) return;
+      const tariffRate = activeDrawerUnit.type === 'room' ? 9.0 : 11.0;
+      const currentNum = parseInt(currentReadingValue, 10);
+      if (!isNaN(currentNum) && currentNum >= activeDrawerUnit.lastReading) {
+        const unitsConsumed = currentNum - activeDrawerUnit.lastReading;
+        elecPaidVal = String(unitsConsumed * tariffRate);
+        document.getElementById('drawer-elec-paid-input').value = elecPaidVal;
+        updatePaymentSummary();
+      }
+    }
+
+    function updatePaymentSummary() {
+      if (!activeDrawerUnit) return;
+      const effectiveDue = activeDrawerUnit.rentDueAmount > 0 ? activeDrawerUnit.rentDueAmount : activeDrawerUnit.rentAmount;
+      document.getElementById('drawer-rent-due-label').textContent = `₹${effectiveDue.toLocaleString('en-IN')}`;
+
+      const rentNum = parseInt(rentPaidVal, 10) || 0;
+      const elecNum = parseInt(elecPaidVal, 10) || 0;
+      const remainingRent = Math.max(0, effectiveDue - rentNum);
+      const totalCash = rentNum + elecNum;
+
+      document.getElementById('drawer-rent-paid-input').value = rentPaidVal;
+      document.getElementById('drawer-elec-paid-input').value = elecPaidVal;
+
+      const arrearsEl = document.getElementById('drawer-arrears-indicator');
+      if (remainingRent > 0) {
+        arrearsEl.className = "flex items-center gap-1 text-amber-300";
+        arrearsEl.innerHTML = `<span>⚠️ बकाया आगे जुड़ेगा: ₹${remainingRent.toLocaleString('en-IN')}</span>`;
+      } else {
+        arrearsEl.className = "flex items-center gap-1 text-emerald-400";
+        arrearsEl.innerHTML = `<span>✓ पूरा भुगतान (Zero Arrears)</span>`;
+      }
+
+      document.getElementById('drawer-total-cash-display').textContent = `₹${totalCash.toLocaleString('en-IN')}`;
+      document.getElementById('drawer-total-rent-summary').textContent = `किराया: ₹${rentNum.toLocaleString('en-IN')}`;
+      document.getElementById('drawer-total-elec-summary').textContent = `बिजली बिल: ₹${elecNum.toLocaleString('en-IN')}`;
+
+      const recordBtn = document.getElementById('drawer-record-payment-btn');
+      if (totalCash > 0) {
+        recordBtn.disabled = false;
+        recordBtn.className = "py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] border border-[#FFF4C2]/40 shadow-[0_0_20px_rgba(212,175,55,0.3)]";
+      } else {
+        recordBtn.disabled = true;
+        recordBtn.className = "py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-not-allowed opacity-50 bg-white/[0.04] text-[#64748B] border border-white/[0.06]";
+      }
+    }
+
+    function recordPayment() {
+      if (!activeDrawerUnit) return;
+      const effectiveDue = activeDrawerUnit.rentDueAmount > 0 ? activeDrawerUnit.rentDueAmount : activeDrawerUnit.rentAmount;
+      const rentNum = parseInt(rentPaidVal, 10) || 0;
+      const elecNum = parseInt(elecPaidVal, 10) || 0;
+      const totalCash = rentNum + elecNum;
+      if (totalCash <= 0) return;
+
+      const remainingRent = Math.max(0, effectiveDue - rentNum);
+      const currentNum = parseInt(currentReadingValue, 10);
+      const hasValidReading = !isNaN(currentNum) && currentNum >= activeDrawerUnit.lastReading;
+
+      // Update unit
+      activeDrawerUnit.rentDueAmount = remainingRent;
+      if (hasValidReading) {
+        activeDrawerUnit.lastReading = currentNum;
+      }
+      if (elecNum > 0 || hasValidReading) {
+        activeDrawerUnit.isReadingPending = false;
+      }
+
+      // Generate receipt text
+      const today = new Date();
+      const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+
+      let elecLine = '';
+      if (hasValidReading) {
+        const unitsConsumed = currentNum - activeDrawerUnit.lastReading;
+        elecLine = `बिजली बिल जमा: ₹${elecNum.toLocaleString('en-IN')} (रीडिंग: ${activeDrawerUnit.lastReading} से ${currentNum} | ${unitsConsumed} यूनिट)`;
+      } else {
+        elecLine = `बिजली बिल जमा: ₹${elecNum.toLocaleString('en-IN')}`;
+      }
+
+      const receiptText = `श्री बालाजी एस्टेट (ट्रांजिट कैंप, रुद्रपुर)
+किराया व बिजली रसीद
+
+यूनिट: ${activeDrawerUnit.name} (${activeDrawerUnit.tenantName || 'किरायेदार'})
+तारीख: ${dateStr}
+--------------------------------
+किराया जमा: ₹${rentNum.toLocaleString('en-IN')} (बकाया: ₹${remainingRent.toLocaleString('en-IN')})
+${elecLine}
+--------------------------------
+कुल प्राप्त नकद: ₹${totalCash.toLocaleString('en-IN')}
+भुगतान स्थिति: दर्ज (सफल)
+
+धन्यवाद।`;
+
+      const encoded = encodeURIComponent(receiptText);
+      const whatsappUrl = `https://wa.me/?text=${encoded}`;
+      const smsUrl = `sms:?body=${encoded}`;
+
+      // Populate Receipt Screen
+      document.getElementById('drawer-receipt-date').textContent = dateStr;
+      document.getElementById('drawer-receipt-summary-text').textContent = `कुल नकद: ₹${totalCash.toLocaleString('en-IN')} // ${activeDrawerUnit.name} (${activeDrawerUnit.tenantName})`;
+      document.getElementById('drawer-receipt-preview-text').textContent = receiptText;
+      document.getElementById('drawer-whatsapp-btn').href = whatsappUrl;
+      document.getElementById('drawer-sms-btn').href = smsUrl;
+
+      // Switch view
+      document.getElementById('drawer-main-flow').style.display = 'none';
+      document.getElementById('drawer-receipt-section').style.display = 'flex';
+
+      if (navigator.vibrate) navigator.vibrate([18, 30, 24]);
       renderUnitsDeck(currentDeckTab);
     }
   </script>

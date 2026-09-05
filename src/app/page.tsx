@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Delete, ShieldCheck, Lock, Sparkles, Check, ChevronRight, AlertOctagon, Zap, Plus, Store, X, Camera, AlertTriangle } from 'lucide-react';
+import { Delete, ShieldCheck, Lock, Sparkles, Check, ChevronRight, AlertOctagon, Zap, Plus, Store, X, Camera, AlertTriangle, Wallet, MessageCircle, MessageSquare, ArrowRight, CheckCircle2, Share2 } from 'lucide-react';
 
 type ScreenState = 'splash' | 'pin' | 'units_deck' | 'owner_console' | 'manager_console';
 type UserRole = 'owner' | 'manager';
@@ -239,11 +239,32 @@ export default function Home() {
   // Dynamic units state
   const [units, setUnits] = useState<UnitItem[]>(STATIC_UNITS);
 
-  // Sub-Meter Reading Drawer state
+  // Sub-Meter Reading & Dual-Wallet Drawer state
   const [selectedUnit, setSelectedUnit] = useState<UnitItem | null>(null);
+  const [drawerTab, setDrawerTab] = useState<'meter' | 'payment'>('meter');
   const [currentReadingInput, setCurrentReadingInput] = useState<string>('');
   const [meterPhotoUrl, setMeterPhotoUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Dual-Wallet Cash Split state
+  const [rentPaidInput, setRentPaidInput] = useState<string>('');
+  const [elecPaidInput, setElecPaidInput] = useState<string>('');
+  interface ReceiptPayload {
+    unitName: string;
+    tenantName: string;
+    dateStr: string;
+    rentPaid: number;
+    remainingRent: number;
+    elecPaid: number;
+    unitsConsumed: number;
+    prevReading: number;
+    currReading: number | null;
+    totalCash: number;
+    whatsappUrl: string;
+    smsUrl: string;
+    rawText: string;
+  }
+  const [receiptData, setReceiptData] = useState<ReceiptPayload | null>(null);
 
   // Live Math Engine Calculations
   const tariffRate = selectedUnit ? (selectedUnit.type === 'room' ? 9.0 : 11.0) : 9.0;
@@ -252,23 +273,40 @@ export default function Home() {
   const isLowerThanPrev = isInputValid && selectedUnit ? currentReadingNum < selectedUnit.lastReading : false;
   const unitsConsumed = isInputValid && selectedUnit && !isLowerThanPrev ? currentReadingNum - selectedUnit.lastReading : 0;
   const electricityDue = unitsConsumed * tariffRate;
-  const canSave = isInputValid && selectedUnit && !isLowerThanPrev;
+  const canSaveReading = isInputValid && selectedUnit && !isLowerThanPrev;
+
+  // Rent & Arrears Calculations
+  const effectiveRentDue = selectedUnit ? (selectedUnit.rentDueAmount > 0 ? selectedUnit.rentDueAmount : selectedUnit.rentAmount) : 0;
+  const rentPaidNum = rentPaidInput.trim() !== '' ? parseInt(rentPaidInput, 10) || 0 : 0;
+  const elecPaidNum = elecPaidInput.trim() !== '' ? parseInt(elecPaidInput, 10) || 0 : 0;
+  const remainingRentDue = Math.max(0, effectiveRentDue - rentPaidNum);
+  const totalCashCollected = rentPaidNum + elecPaidNum;
 
   const handleUnitClick = (unit: UnitItem) => {
     if (!unit.isOccupied) return;
     setSelectedUnit(unit);
+    // Prioritize meter reading if pending, else payment
+    setDrawerTab(unit.isReadingPending ? 'meter' : 'payment');
     setCurrentReadingInput('');
     setMeterPhotoUrl(null);
+    setReceiptData(null);
+    const rentDue = unit.rentDueAmount > 0 ? unit.rentDueAmount : unit.rentAmount;
+    setRentPaidInput(String(rentDue));
+    setElecPaidInput('0');
   };
 
   const handleCloseDrawer = () => {
     setSelectedUnit(null);
     setCurrentReadingInput('');
     setMeterPhotoUrl(null);
+    setReceiptData(null);
+    setRentPaidInput('');
+    setElecPaidInput('');
+    setDrawerTab('meter');
   };
 
-  const handleSaveReading = () => {
-    if (!canSave || !selectedUnit || currentReadingNum === null) return;
+  const handleSaveReadingOnly = () => {
+    if (!canSaveReading || !selectedUnit || currentReadingNum === null) return;
     setUnits((prev) =>
       prev.map((u) =>
         u.id === selectedUnit.id
@@ -280,6 +318,80 @@ export default function Home() {
       navigator.vibrate([24, 30, 24]);
     }
     handleCloseDrawer();
+  };
+
+  const handleProceedToPayment = () => {
+    if (electricityDue > 0) {
+      setElecPaidInput(String(electricityDue));
+    }
+    setDrawerTab('payment');
+  };
+
+  const handleRecordPayment = () => {
+    if (!selectedUnit || totalCashCollected <= 0) return;
+
+    // 1. Immediately update unit state
+    const newLastReading = canSaveReading && currentReadingNum !== null ? currentReadingNum : selectedUnit.lastReading;
+    setUnits((prev) =>
+      prev.map((u) => {
+        if (u.id !== selectedUnit.id) return u;
+        return {
+          ...u,
+          rentDueAmount: remainingRentDue,
+          lastReading: newLastReading,
+          isReadingPending: elecPaidNum > 0 || (canSaveReading && currentReadingNum !== null) ? false : u.isReadingPending,
+        };
+      })
+    );
+
+    // 2. Prepare receipt details
+    const today = new Date();
+    const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+
+    let elecLine = '';
+    if (unitsConsumed > 0 && currentReadingNum !== null) {
+      elecLine = `बिजली बिल जमा: ₹${elecPaidNum.toLocaleString('en-IN')} (रीडिंग: ${selectedUnit.lastReading} से ${currentReadingNum} | ${unitsConsumed} यूनिट)`;
+    } else {
+      elecLine = `बिजली बिल जमा: ₹${elecPaidNum.toLocaleString('en-IN')}`;
+    }
+
+    const receiptText = `श्री बालाजी एस्टेट (ट्रांजिट कैंप, रुद्रपुर)
+किराया व बिजली रसीद
+
+यूनिट: ${selectedUnit.name} (${selectedUnit.tenantName || 'किरायेदार'})
+तारीख: ${dateStr}
+--------------------------------
+किराया जमा: ₹${rentPaidNum.toLocaleString('en-IN')} (बकाया: ₹${remainingRentDue.toLocaleString('en-IN')})
+${elecLine}
+--------------------------------
+कुल प्राप्त नकद: ₹${totalCashCollected.toLocaleString('en-IN')}
+भुगतान स्थिति: दर्ज (सफल)
+
+धन्यवाद।`;
+
+    const encodedReceipt = encodeURIComponent(receiptText);
+    const whatsappUrl = `https://wa.me/?text=${encodedReceipt}`;
+    const smsUrl = `sms:?body=${encodedReceipt}`;
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([18, 30, 24]);
+    }
+
+    setReceiptData({
+      unitName: selectedUnit.name,
+      tenantName: selectedUnit.tenantName || '',
+      dateStr,
+      rentPaid: rentPaidNum,
+      remainingRent: remainingRentDue,
+      elecPaid: elecPaidNum,
+      unitsConsumed,
+      prevReading: selectedUnit.lastReading,
+      currReading: currentReadingNum,
+      totalCash: totalCashCollected,
+      whatsappUrl,
+      smsUrl,
+      rawText: receiptText,
+    });
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -962,10 +1074,10 @@ export default function Home() {
                 className="absolute bottom-0 inset-x-0 bg-[#0A0D14] border-t border-white/[0.12] rounded-t-[32px] p-5 pb-[max(24px,env(safe-area-inset-bottom,24px))] shadow-[0_-20px_50px_rgba(0,0,0,0.9)] z-50 gpu-layer flex flex-col select-none max-h-[85vh] overflow-y-auto deck-scrollbar"
               >
                 {/* Top handle */}
-                <div className="w-10 h-1 rounded-full bg-white/20 mb-4 mx-auto shrink-0" />
+                <div className="w-10 h-1 rounded-full bg-white/20 mb-3 mx-auto shrink-0" />
 
                 {/* Top Bar inside Sheet */}
-                <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.07]">
+                <div className="flex items-center justify-between pb-3 border-b border-white/[0.07]">
                   <div className="flex items-center gap-2.5">
                     <span className="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-white/[0.1] font-mono font-bold text-sm text-[#EDEDED]">
                       {selectedUnit.name}
@@ -975,7 +1087,7 @@ export default function Home() {
                         {selectedUnit.tenantName}
                       </h3>
                       <span className="text-[10px] font-mono text-[#94A3B8]">
-                        Sub-Meter Reading // {selectedUnit.type === 'room' ? 'Room Rate ₹9/u' : 'Shop Rate ₹11/u'}
+                        {selectedUnit.type === 'room' ? 'Room Rate ₹9/u' : 'Shop Rate ₹11/u'} // {selectedUnit.rentDueAmount > 0 ? `Due: ₹${selectedUnit.rentDueAmount.toLocaleString('en-IN')}` : 'Paid'}
                       </span>
                     </div>
                   </div>
@@ -990,138 +1102,402 @@ export default function Home() {
                   </button>
                 </div>
 
-                {/* THE TWIN-GAUGE READING HUD */}
-                <div className="grid grid-cols-2 gap-3 mt-4">
-                  {/* Left Gauge (Previous Reading - Locked) */}
-                  <div className="bg-[#06080C] border border-white/[0.06] rounded-2xl p-3.5 flex flex-col justify-between">
-                    <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider font-semibold">
-                      PREVIOUS (LOCKED)
-                    </span>
-                    <div className="mt-2 flex items-baseline gap-1">
-                      <span className="text-2xl font-mono font-bold text-[#CBD5E1]">
-                        {selectedUnit.lastReading}
-                      </span>
-                      <span className="text-xs font-mono text-[#64748B]">kWh</span>
-                    </div>
-                  </div>
-
-                  {/* Right Gauge (Current Reading - Active Input) */}
-                  <div
-                    className={`bg-white/[0.04] border rounded-2xl p-3.5 flex flex-col justify-between transition-colors duration-150 ${
-                      isLowerThanPrev
-                        ? 'border-rose-500/80 shadow-[0_0_15px_rgba(244,63,94,0.25)]'
-                        : 'border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)]'
-                    }`}
-                  >
-                    <span className="text-[9px] font-mono text-[#D4AF37] uppercase tracking-wider font-semibold">
-                      CURRENT READING
-                    </span>
-                    <div className="mt-2 flex items-baseline gap-1">
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        autoFocus
-                        value={currentReadingInput}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/[^0-9]/g, '');
-                          setCurrentReadingInput(val);
-                        }}
-                        placeholder={`${selectedUnit.lastReading + 10}`}
-                        className="w-full bg-transparent text-2xl font-mono font-bold text-[#EDEDED] focus:outline-none placeholder:text-white/20"
-                      />
-                      <span className="text-xs font-mono text-[#D4AF37]/80">kWh</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* REAL-TIME LIVE MATH ENGINE */}
-                <div className="mt-3.5">
-                  {isLowerThanPrev ? (
-                    <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-rose-950/40 border border-rose-500/50 text-rose-300 text-xs font-mono animate-shake">
-                      <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
-                      <span>⚠️ Reading cannot be lower than previous</span>
-                    </div>
-                  ) : isInputValid && currentReadingNum !== null ? (
-                    <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 text-xs font-mono shadow-[0_0_15px_rgba(34,211,238,0.12)]">
-                      <div className="flex items-center gap-1.5 text-cyan-300">
-                        <Zap className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
-                        <span>Δ Consumed: <strong className="text-white font-bold">{unitsConsumed}</strong> kWh</span>
+                {/* ================= VIEW A: OPTIONAL HINDI RECEIPT MODAL ================= */}
+                {receiptData ? (
+                  <div className="flex flex-col py-2">
+                    {/* Success Header */}
+                    <div className="flex items-center gap-2.5 pb-3 border-b border-white/[0.08]">
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                       </div>
-                      <div className="text-right text-[#EDEDED]">
-                        <span className="text-[#94A3B8]">× ₹{tariffRate} = </span>
-                        <strong className="text-[#D4AF37] text-sm font-bold">₹{electricityDue.toLocaleString('en-IN')}</strong>
+                      <div>
+                        <h3 className="text-sm font-semibold text-[#EDEDED] flex items-center gap-2">
+                          <span>भुगतान सफलतापूर्वक दर्ज!</span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-normal">
+                            Recorded
+                          </span>
+                        </h3>
+                        <p className="text-[11px] font-mono text-[#94A3B8]">
+                          कुल नकद: ₹{receiptData.totalCash.toLocaleString('en-IN')} // {receiptData.unitName} ({receiptData.tenantName})
+                        </p>
                       </div>
                     </div>
-                  ) : (
-                    <div className="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center text-xs font-mono text-[#64748B]">
-                      Enter current meter numbers above to calculate dues
+
+                    {/* Receipt Preview Card */}
+                    <div className="mt-3.5 p-3.5 rounded-2xl bg-[#06080C] border border-white/[0.08] relative font-mono text-[11px] leading-relaxed text-[#CBD5E1] whitespace-pre-wrap select-text">
+                      <div className="text-[10px] text-[#D4AF37] font-semibold mb-1.5 uppercase tracking-wider flex items-center justify-between border-b border-white/[0.06] pb-1">
+                        <span>रसीद पूर्वावलोकन (Preview)</span>
+                        <span className="text-[#64748B] font-normal">{receiptData.dateStr}</span>
+                      </div>
+                      {receiptData.rawText}
                     </div>
-                  )}
-                </div>
 
-                {/* EVIDENCE CAPTURE & SAVE ACTION */}
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handlePhotoUpload}
-                    className="hidden"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex-1 py-2.5 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.08] text-xs font-mono text-[#CBD5E1] flex items-center justify-center gap-2 cursor-pointer transition-colors active:scale-98"
-                  >
-                    <Camera className="w-4 h-4 text-[#D4AF37]" />
-                    <span>{meterPhotoUrl ? 'Photo Attached (Replace)' : 'Capture Meter Photo'}</span>
-                  </button>
-
-                  {meterPhotoUrl && (
-                    <div className="relative group shrink-0">
-                      <img
-                        src={meterPhotoUrl}
-                        alt="Meter proof"
-                        className="w-10 h-10 rounded-xl object-cover border border-[#D4AF37]/50 shadow-md"
-                      />
+                    {/* Actions: Strictly Non-Blocking */}
+                    <div className="mt-4 flex flex-col gap-2.5">
+                      {/* Primary: Done / Skip (Instantly closes drawer with 1 tap) */}
                       <button
                         type="button"
-                        onClick={() => setMeterPhotoUrl(null)}
-                        className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] font-bold"
+                        onClick={handleCloseDrawer}
+                        className="w-full py-3 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] font-mono font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(212,175,55,0.3)] active:scale-98 transition-all"
                       >
-                        ✕
+                        <Check className="w-4 h-4" />
+                        <span>बाद में / Done (Skip)</span>
+                      </button>
+
+                      {/* Secondary & Tertiary Action Row: WhatsApp & SMS */}
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <a
+                          href={receiptData.whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => {
+                            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([16]);
+                          }}
+                          className="py-2.5 px-3 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+                        >
+                          <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <span>🟢 WhatsApp रसीद</span>
+                        </a>
+
+                        <a
+                          href={receiptData.smsUrl}
+                          onClick={() => {
+                            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([16]);
+                          }}
+                          className="py-2.5 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-mono font-semibold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 transition-all text-center"
+                        >
+                          <MessageSquare className="w-4 h-4 text-cyan-300 shrink-0" />
+                          <span>💬 SMS रसीद</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Segmented Mode Switcher: [ ⚡ Sub-Meter ] and [ 💰 Collect Payment ] */}
+                    <div className="grid grid-cols-2 p-1 bg-black/50 border border-white/[0.08] rounded-xl mt-3.5">
+                      <button
+                        type="button"
+                        onClick={() => setDrawerTab('meter')}
+                        className={`py-2 px-3 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer ${
+                          drawerTab === 'meter'
+                            ? 'bg-white/[0.08] text-[#FFF4C2] border border-[#D4AF37]/40 shadow-sm'
+                            : 'text-[#94A3B8] hover:text-white'
+                        }`}
+                      >
+                        <Zap className={`w-3.5 h-3.5 ${drawerTab === 'meter' ? 'text-[#D4AF37]' : 'text-[#64748B]'}`} />
+                        <span>⚡ Sub-Meter</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDrawerTab('payment')}
+                        className={`py-2 px-3 rounded-lg text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer ${
+                          drawerTab === 'payment'
+                            ? 'bg-white/[0.08] text-[#FFF4C2] border border-[#D4AF37]/40 shadow-sm'
+                            : 'text-[#94A3B8] hover:text-white'
+                        }`}
+                      >
+                        <Wallet className={`w-3.5 h-3.5 ${drawerTab === 'payment' ? 'text-[#D4AF37]' : 'text-[#64748B]'}`} />
+                        <span>💰 Collect Payment</span>
                       </button>
                     </div>
-                  )}
-                </div>
 
-                {/* Action Buttons (Bottom) */}
-                <div className="grid grid-cols-2 gap-3 mt-4 pt-1">
-                  <button
-                    type="button"
-                    onClick={handleCloseDrawer}
-                    className="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#94A3B8] hover:text-white text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center"
-                  >
-                    Cancel
-                  </button>
+                    {/* ================= TAB 1: SUB-METER READING ================= */}
+                    {drawerTab === 'meter' && (
+                      <div className="flex flex-col">
+                        {/* THE TWIN-GAUGE READING HUD */}
+                        <div className="grid grid-cols-2 gap-3 mt-4">
+                          {/* Left Gauge (Previous Reading - Locked) */}
+                          <div className="bg-[#06080C] border border-white/[0.06] rounded-2xl p-3.5 flex flex-col justify-between">
+                            <span className="text-[9px] font-mono text-[#64748B] uppercase tracking-wider font-semibold">
+                              PREVIOUS (LOCKED)
+                            </span>
+                            <div className="mt-2 flex items-baseline gap-1">
+                              <span className="text-2xl font-mono font-bold text-[#CBD5E1]">
+                                {selectedUnit.lastReading}
+                              </span>
+                              <span className="text-xs font-mono text-[#64748B]">kWh</span>
+                            </div>
+                          </div>
 
-                  <button
-                    type="button"
-                    disabled={!canSave}
-                    onClick={handleSaveReading}
-                    className={`py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 ${
-                      canSave
-                        ? 'bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] border border-[#FFF4C2]/40 shadow-[0_0_20px_rgba(212,175,55,0.3)]'
-                        : 'bg-white/[0.04] text-[#64748B] border border-white/[0.06] cursor-not-allowed opacity-50'
-                    }`}
-                  >
-                    <Check className="w-4 h-4" />
-                    <span>Confirm & Log</span>
-                  </button>
-                </div>
+                          {/* Right Gauge (Current Reading - Active Input) */}
+                          <div
+                            className={`bg-white/[0.04] border rounded-2xl p-3.5 flex flex-col justify-between transition-colors duration-150 ${
+                              isLowerThanPrev
+                                ? 'border-rose-500/80 shadow-[0_0_15px_rgba(244,63,94,0.25)]'
+                                : 'border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)]'
+                            }`}
+                          >
+                            <span className="text-[9px] font-mono text-[#D4AF37] uppercase tracking-wider font-semibold">
+                              CURRENT READING
+                            </span>
+                            <div className="mt-2 flex items-baseline gap-1">
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                autoFocus
+                                value={currentReadingInput}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/[^0-9]/g, '');
+                                  setCurrentReadingInput(val);
+                                }}
+                                placeholder={`${selectedUnit.lastReading + 10}`}
+                                className="w-full bg-transparent text-2xl font-mono font-bold text-[#EDEDED] focus:outline-none placeholder:text-white/20"
+                              />
+                              <span className="text-xs font-mono text-[#D4AF37]/80">kWh</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* REAL-TIME LIVE MATH ENGINE */}
+                        <div className="mt-3.5">
+                          {isLowerThanPrev ? (
+                            <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-rose-950/40 border border-rose-500/50 text-rose-300 text-xs font-mono animate-shake">
+                              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
+                              <span>⚠️ Reading cannot be lower than previous</span>
+                            </div>
+                          ) : isInputValid && currentReadingNum !== null ? (
+                            <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 text-xs font-mono shadow-[0_0_15px_rgba(34,211,238,0.12)]">
+                              <div className="flex items-center gap-1.5 text-cyan-300">
+                                <Zap className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+                                <span>Δ Consumed: <strong className="text-white font-bold">{unitsConsumed}</strong> kWh</span>
+                              </div>
+                              <div className="text-right text-[#EDEDED]">
+                                <span className="text-[#94A3B8]">× ₹{tariffRate} = </span>
+                                <strong className="text-[#D4AF37] text-sm font-bold">₹{electricityDue.toLocaleString('en-IN')}</strong>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] text-center text-xs font-mono text-[#64748B]">
+                              Enter current meter numbers above to calculate dues
+                            </div>
+                          )}
+                        </div>
+
+                        {/* EVIDENCE CAPTURE */}
+                        <div className="mt-4 flex items-center justify-between gap-3">
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={handlePhotoUpload}
+                            className="hidden"
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex-1 py-2.5 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.08] text-xs font-mono text-[#CBD5E1] flex items-center justify-center gap-2 cursor-pointer transition-colors active:scale-98"
+                          >
+                            <Camera className="w-4 h-4 text-[#D4AF37]" />
+                            <span>{meterPhotoUrl ? 'Photo Attached (Replace)' : 'Capture Meter Photo'}</span>
+                          </button>
+
+                          {meterPhotoUrl && (
+                            <div className="relative group shrink-0">
+                              <img
+                                src={meterPhotoUrl}
+                                alt="Meter proof"
+                                className="w-10 h-10 rounded-xl object-cover border border-[#D4AF37]/50 shadow-md"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setMeterPhotoUrl(null)}
+                                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] font-bold"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action Buttons (Bottom) */}
+                        <div className="grid grid-cols-2 gap-3 mt-4 pt-1">
+                          <button
+                            type="button"
+                            disabled={!canSaveReading}
+                            onClick={handleSaveReadingOnly}
+                            className="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#CBD5E1] text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            Save Meter Only
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={handleProceedToPayment}
+                            className="py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] border border-[#FFF4C2]/40 shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+                          >
+                            <span>Collect Payment</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ================= TAB 2: DUAL-WALLET CASH SPLIT ================= */}
+                    {drawerTab === 'payment' && (
+                      <div className="flex flex-col gap-3 mt-3.5">
+                        {/* 1. Rent Box (Golden Vault Box) */}
+                        <div className="p-3.5 rounded-2xl bg-[#06080C] border border-[#D4AF37]/40 shadow-[0_4px_16px_rgba(0,0,0,0.4)] flex flex-col gap-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-[#D4AF37] shadow-[0_0_6px_#D4AF37]" />
+                              <span className="text-[11px] font-mono font-bold tracking-wider text-[#FFF4C2]">
+                                किराया (RENT)
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-[10px] font-mono text-[#94A3B8]">कुल बकाया: </span>
+                              <span className="text-xs font-mono font-bold text-[#E2E8F0]">₹{effectiveRentDue.toLocaleString('en-IN')}</span>
+                            </div>
+                          </div>
+
+                          {/* Rent Input Field */}
+                          <div className="bg-white/[0.04] border border-white/[0.08] focus-within:border-[#D4AF37]/60 rounded-xl px-3 py-2 flex items-center justify-between transition-colors">
+                            <span className="text-sm font-mono text-[#D4AF37] font-bold">₹</span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              value={rentPaidInput}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/[^0-9]/g, '');
+                                setRentPaidInput(val);
+                              }}
+                              placeholder="0"
+                              className="w-full bg-transparent text-lg font-mono font-bold text-[#EDEDED] text-right focus:outline-none placeholder:text-white/20"
+                            />
+                          </div>
+
+                          {/* Dynamic Arrears Math */}
+                          <div className="flex items-center justify-between text-[10px] font-mono pt-0.5">
+                            {remainingRentDue > 0 ? (
+                              <div className="flex items-center gap-1 text-amber-300">
+                                <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
+                                <span>बकाया आगे जुड़ेगा: ₹{remainingRentDue.toLocaleString('en-IN')}</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-emerald-400">
+                                <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+                                <span>पूरा भुगतान (Zero Arrears)</span>
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setRentPaidInput(String(effectiveRentDue))}
+                              className="text-[#94A3B8] hover:text-[#D4AF37] transition-colors underline cursor-pointer"
+                            >
+                              पूरा भरें
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 2. Electricity Box (Cyan Utility Box) */}
+                        <div className="p-3.5 rounded-2xl bg-[#06080C] border border-cyan-500/40 shadow-[0_4px_16px_rgba(0,0,0,0.4)] flex flex-col gap-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <Zap className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+                              <span className="text-[11px] font-mono font-bold tracking-wider text-cyan-300">
+                                बिजली बिल (ELECTRICITY BILL)
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-[10px] font-mono text-[#94A3B8]">
+                                {electricityDue > 0 ? `गणना: ` : `दर: `}
+                              </span>
+                              <span className="text-xs font-mono font-bold text-cyan-200">
+                                {electricityDue > 0 ? `₹${electricityDue.toLocaleString('en-IN')}` : `₹${tariffRate}/u`}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Reading range notice if calculated */}
+                          {unitsConsumed > 0 && currentReadingNum !== null && (
+                            <div className="px-2.5 py-1 rounded-lg bg-cyan-950/30 border border-cyan-500/20 text-[10px] font-mono text-cyan-300 flex items-center justify-between">
+                              <span>रीडिंग: {selectedUnit.lastReading} → {currentReadingNum}</span>
+                              <span>{unitsConsumed} यूनिट @ ₹{tariffRate}</span>
+                            </div>
+                          )}
+
+                          {/* Electricity Input Field */}
+                          <div className="bg-white/[0.04] border border-white/[0.08] focus-within:border-cyan-500/60 rounded-xl px-3 py-2 flex items-center justify-between transition-colors">
+                            <span className="text-sm font-mono text-cyan-400 font-bold">₹</span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              value={elecPaidInput}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/[^0-9]/g, '');
+                                setElecPaidInput(val);
+                              }}
+                              placeholder="0"
+                              className="w-full bg-transparent text-lg font-mono font-bold text-[#EDEDED] text-right focus:outline-none placeholder:text-white/20"
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between text-[10px] font-mono pt-0.5">
+                            <span className="text-[#64748B]">उपयोग अनुसार राशि दर्ज करें</span>
+                            {electricityDue > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => setElecPaidInput(String(electricityDue))}
+                                className="text-cyan-400 hover:text-cyan-300 transition-colors underline cursor-pointer"
+                              >
+                                बिल राशि भरें
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* 3. Total Handover Summary Bar */}
+                        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#D4AF37]/10 via-[#06080C] to-cyan-950/30 border border-white/[0.12] shadow-inner flex flex-col gap-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-mono uppercase tracking-wider text-[#CBD5E1] font-semibold">
+                              कुल नकद प्राप्त:
+                            </span>
+                            <span className="text-xl font-mono font-bold text-[#FFF4C2]">
+                              ₹{totalCashCollected.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] font-mono text-[#94A3B8] border-t border-white/[0.06] pt-1.5">
+                            <span>किराया: ₹{rentPaidNum.toLocaleString('en-IN')}</span>
+                            <span className="text-white/30">+</span>
+                            <span>बिजली बिल: ₹{elecPaidNum.toLocaleString('en-IN')}</span>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons: Cancel vs Record Payment */}
+                        <div className="grid grid-cols-2 gap-3 pt-1">
+                          <button
+                            type="button"
+                            onClick={handleCloseDrawer}
+                            className="py-3 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#94A3B8] hover:text-white text-xs font-mono font-semibold cursor-pointer active:scale-98 transition-all duration-100 text-center"
+                          >
+                            रद्द करें (Cancel)
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={totalCashCollected <= 0}
+                            onClick={handleRecordPayment}
+                            className={`py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all duration-150 cursor-pointer shadow-lg active:scale-98 ${
+                              totalCashCollected > 0
+                                ? 'bg-[#D4AF37] hover:bg-[#E5C158] text-[#06080C] border border-[#FFF4C2]/40 shadow-[0_0_20px_rgba(212,175,55,0.3)]'
+                                : 'bg-white/[0.04] text-[#64748B] border border-white/[0.06] cursor-not-allowed opacity-50'
+                            }`}
+                          >
+                            <Check className="w-4 h-4" />
+                            <span>भुगतान दर्ज करें</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </motion.div>
             </>
           )}
