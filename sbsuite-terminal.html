@@ -389,8 +389,13 @@
 
             <div class="flex items-center gap-2">
               <button id="btn-master-override-units" onclick="openMasterOverrideModal()" style="display: none;" class="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 <span id="label-control-btn-units">⚙️ Control</span>
+              </button>
+
+              <button id="btn-add-expense-units" onclick="openMaintenanceExpenseDrawer()" class="px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-400 font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+                <span>🛠️</span>
+                <span id="label-expense-btn-units">Expense</span>
               </button>
 
               <button id="btn-lang-toggle-units" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.12] text-[#EDEDED] font-mono font-bold text-[11px] flex items-center gap-1 cursor-pointer active:scale-95 transition-all" title="Toggle Language">
@@ -446,6 +451,15 @@
               </div>
             </div>
           </div>
+
+          <!-- Manager Udhaar (Debit Ledger) Strip -->
+          <div id="deck-manager-udhaar-strip" onclick="openMasterOverrideModal()" class="mt-2.5 py-1.5 px-3 rounded-xl bg-amber-950/25 border border-amber-500/30 flex items-center justify-between font-mono text-xs cursor-pointer hover:bg-amber-950/40 transition-all">
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+              <span id="label-manager-udhaar" class="text-[10px] text-amber-400 font-medium">Manager Udhaar (Ritin):</span>
+            </div>
+            <span id="stat-manager-udhaar" class="text-xs font-bold text-[#FFF4C2]">₹0</span>
+          </div>
         </header>
 
         <main class="flex-1 w-full min-h-0 overflow-y-auto overscroll-contain px-4 pt-3 pb-[max(24px,env(safe-area-inset-bottom,24px))] deck-scrollbar">
@@ -474,8 +488,13 @@
 
             <div class="flex items-center gap-2">
               <button id="btn-master-override-parking" onclick="openMasterOverrideModal()" style="display: none;" class="px-2.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/50 text-[#D4AF37] font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(212,175,55,0.2)]">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 <span id="label-control-btn-parking">⚙️ Control</span>
+              </button>
+
+              <button id="btn-add-expense-parking" onclick="openMaintenanceExpenseDrawer()" class="px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-400 font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+                <span>🛠️</span>
+                <span id="label-expense-btn-parking">Expense</span>
               </button>
 
               <button id="btn-lang-toggle-parking" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.12] text-[#EDEDED] font-mono font-bold text-[11px] flex items-center gap-1 cursor-pointer active:scale-95 transition-all" title="Toggle Language">
@@ -972,6 +991,99 @@
     </div>
 
     <!-- ================= UNIT PAYMENT RECEIPT MODAL ================= -->
+    <!-- ================= MAINTENANCE EXPENSE DRAWER ================= -->
+    <div id="expense-drawer-backdrop" onclick="closeMaintenanceExpenseDrawer()" class="absolute inset-0 bg-black/70 backdrop-blur-md z-40 cursor-pointer" style="display: none; opacity: 0; transition: opacity 0.3s ease;"></div>
+    
+    <div id="expense-drawer-sheet" class="absolute bottom-0 inset-x-0 bg-[#0A0D14] border-t border-amber-500/40 rounded-t-[32px] p-5 pb-[max(24px,env(safe-area-inset-bottom,24px))] shadow-[0_-20px_50px_rgba(0,0,0,0.9)] z-50 gpu-layer flex flex-col select-none max-h-[85vh] overflow-y-auto deck-scrollbar" style="display: none; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+      <div class="w-10 h-1 rounded-full bg-white/20 mb-3 mx-auto shrink-0"></div>
+
+      <div class="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/40 font-mono font-bold text-sm text-amber-400">
+            🛠️
+          </span>
+          <div>
+            <h3 id="expense-drawer-title" class="text-sm font-semibold text-[#EDEDED]">Add Maintenance Expense</h3>
+            <span id="expense-drawer-subtitle" class="text-[10px] font-mono text-amber-400/90">
+              Manager On-Site Shift // Udhaar Ledger
+            </span>
+          </div>
+        </div>
+        <button onclick="closeMaintenanceExpenseDrawer()" class="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="mt-4 flex flex-col gap-3.5 font-mono">
+        <!-- Category Selector -->
+        <div>
+          <label id="expense-cat-label" class="block text-[10px] text-[#94A3B8] uppercase font-bold tracking-wider mb-1.5">
+            Expense Category *
+          </label>
+          <div class="grid grid-cols-3 gap-1.5 text-xs">
+            <button type="button" onclick="selectExpenseCategory('plumbing')" id="cat-btn-plumbing" class="py-2 px-1 rounded-xl border text-center font-bold text-[10.5px] bg-[#0D1117] border-amber-500/50 text-amber-300">🚰 Plumbing</button>
+            <button type="button" onclick="selectExpenseCategory('electrical')" id="cat-btn-electrical" class="py-2 px-1 rounded-xl border text-center font-bold text-[10.5px] bg-white/[0.02] border-white/[0.08] text-[#94A3B8]">⚡ Electrical</button>
+            <button type="button" onclick="selectExpenseCategory('hardware_repair')" id="cat-btn-hardware_repair" class="py-2 px-1 rounded-xl border text-center font-bold text-[10.5px] bg-white/[0.02] border-white/[0.08] text-[#94A3B8]">🔩 Hardware</button>
+            <button type="button" onclick="selectExpenseCategory('cleaning_supplies')" id="cat-btn-cleaning_supplies" class="py-2 px-1 rounded-xl border text-center font-bold text-[10.5px] bg-white/[0.02] border-white/[0.08] text-[#94A3B8]">🧹 Cleaning</button>
+            <button type="button" onclick="selectExpenseCategory('fuel_misc')" id="cat-btn-fuel_misc" class="py-2 px-1 rounded-xl border text-center font-bold text-[10.5px] bg-white/[0.02] border-white/[0.08] text-[#94A3B8]">⛽ Fuel/Misc</button>
+            <button type="button" onclick="selectExpenseCategory('other')" id="cat-btn-other" class="py-2 px-1 rounded-xl border text-center font-bold text-[10.5px] bg-white/[0.02] border-white/[0.08] text-[#94A3B8]">📦 Other</button>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label id="expense-desc-label" class="block text-[10px] text-[#94A3B8] uppercase font-bold tracking-wider mb-1.5">
+            Description / Item Details *
+          </label>
+          <input
+            type="text"
+            id="expense-desc-input"
+            placeholder="e.g. Submersible pump repair motor winding"
+            class="w-full py-2.5 px-3 rounded-xl bg-[#06080C] border border-white/[0.12] focus:border-amber-500/60 text-xs text-[#EDEDED] placeholder-[#64748B] focus:outline-none transition-all"
+          />
+        </div>
+
+        <!-- Amount -->
+        <div>
+          <label id="expense-amount-label" class="block text-[10px] text-[#94A3B8] uppercase font-bold tracking-wider mb-1.5">
+            Amount (₹) Spent by Manager *
+          </label>
+          <div class="relative">
+            <span class="absolute left-3 top-2.5 text-xs text-amber-400 font-bold">₹</span>
+            <input
+              type="number"
+              id="expense-amount-input"
+              placeholder="0"
+              class="w-full py-2.5 pl-8 pr-3 rounded-xl bg-[#06080C] border border-white/[0.12] focus:border-amber-500/60 text-xs font-bold text-[#EDEDED] placeholder-[#64748B] focus:outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        <!-- Vendor / Paid to -->
+        <div>
+          <label id="expense-vendor-label" class="block text-[10px] text-[#94A3B8] uppercase font-bold tracking-wider mb-1.5">
+            Vendor / Shop Name (Optional)
+          </label>
+          <input
+            type="text"
+            id="expense-vendor-input"
+            placeholder="e.g. Gupta Hardware / Sharma Electricals"
+            class="w-full py-2.5 px-3 rounded-xl bg-[#06080C] border border-white/[0.12] focus:border-amber-500/60 text-xs text-[#EDEDED] placeholder-[#64748B] focus:outline-none transition-all"
+          />
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="button"
+          onclick="saveMaintenanceExpense()"
+          class="w-full py-3.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-[#06080C] font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(245,158,11,0.35)] active:scale-98 transition-all mt-2"
+        >
+          <span>✍️</span>
+          <span id="expense-submit-btn-text">Record Expense & Add to Udhaar</span>
+        </button>
+      </div>
+    </div>
+
     <div id="modal-receipt" style="display: none;" class="absolute inset-0 z-50 flex items-center justify-center p-4">
       <div onclick="closeReceiptModal()" class="absolute inset-0 bg-black/75 backdrop-blur-md cursor-pointer"></div>
       <div class="relative w-full max-w-sm bg-[#0A0D14] border border-[#D4AF37]/40 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-10 flex flex-col gap-3 font-mono">
@@ -1336,6 +1448,31 @@
           </div>
         </div>
 
+        <!-- 5. Maintenance Expenses & Manager Udhaar Settlement Panel -->
+        <div class="p-3.5 rounded-2xl bg-[#06080C] border border-amber-500/30 flex flex-col gap-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-400 uppercase flex items-center gap-1.5">
+              <span>🛠️</span> <span id="override-expense-title">Maintenance & Manager Udhaar</span>
+            </span>
+            <span id="override-expense-tally" class="text-xs font-mono font-bold text-[#FFF4C2] bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/40">
+              ₹0 Pending
+            </span>
+          </div>
+
+          <div id="override-expense-list" class="flex flex-col gap-2 max-h-48 overflow-y-auto deck-scrollbar">
+            <!-- Populated dynamically -->
+          </div>
+
+          <button
+            id="btn-settle-all-expenses"
+            type="button"
+            onclick="settleAllMaintenanceExpenses()"
+            class="w-full py-2 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-mono text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+          >
+            <span>✅</span> <span id="label-settle-all">Settle / Clear All Udhaar</span>
+          </button>
+        </div>
+
         <!-- Apply Button -->
         <button
           type="button"
@@ -1444,6 +1581,28 @@
         initialMeterReading: '⚡ Initial Electricity Sub-Meter Reading (kWh)',
         startingBenchmarkNote: 'Starting benchmark for monthly billing cycles',
         assignAndActivateBtn: 'Assign Tenant & Activate Unit',
+        addExpenseBtn: 'Expense',
+        addExpenseTitle: 'Add Maintenance Expense',
+        managerUdhaarTally: 'Manager Udhaar (Ritin):',
+        managerUdhaarSubtitle: 'Manager On-Site Shift // Udhaar Ledger',
+        expenseCategoryLabel: 'Expense Category *',
+        expenseDescLabel: 'Description / Item Details *',
+        expenseDescPlaceholder: 'e.g. Submersible pump motor repair / shutter spring',
+        expenseAmountLabel: 'Amount (₹) Spent by Manager *',
+        expenseVendorLabel: 'Vendor / Shop Name (Optional)',
+        expenseVendorPlaceholder: 'e.g. Gupta Hardware / Sharma Electricals',
+        recordExpenseBtn: 'Record Expense & Add to Udhaar',
+        maintenanceLedgerTitle: 'Maintenance & Manager Udhaar',
+        settleAllBtn: 'Settle / Clear All Udhaar',
+        pendingStatus: 'Pending Settlement',
+        settledStatus: 'Settled / Reimbursed',
+        noPendingExpenses: 'No pending maintenance expenses',
+        catPlumbing: '🚰 Plumbing',
+        catElectrical: '⚡ Electrical',
+        catHardware: '🔩 Hardware',
+        catCleaning: '🧹 Cleaning',
+        catFuel: '⛽ Fuel/Misc',
+        catOther: '📦 Other',
       },
       hi: {
         brandEstate: 'श्री बालाजी एस्टेट',
@@ -1528,6 +1687,28 @@
         initialMeterReading: '⚡ प्रारंभिक बिजली सब-मीटर रीडिंग (kWh)',
         startingBenchmarkNote: 'मासिक बिलिंग चक्र के लिए प्रारंभिक आधार रीडिंग',
         assignAndActivateBtn: 'किराएदार दर्ज करें & यूनिट चालू करें',
+        addExpenseBtn: 'खर्च',
+        addExpenseTitle: 'एस्टेट खर्च दर्ज करें',
+        managerUdhaarTally: 'रितिन का उधार (बकाया):',
+        managerUdhaarSubtitle: 'मैनेजर शिफ्ट खर्च // उधार लेजर',
+        expenseCategoryLabel: 'खर्च श्रेणी (Category) *',
+        expenseDescLabel: 'विवरण / काम की जानकारी *',
+        expenseDescPlaceholder: 'उदा. सबमर्सिबल मोटर वाइंडिंग / शटर स्प्रिंग',
+        expenseAmountLabel: 'राशि (₹) जो रितिन ने खर्च की *',
+        expenseVendorLabel: 'दुकानदार / वेंडर का नाम (वैकल्पिक)',
+        expenseVendorPlaceholder: 'उदा. गुप्ता हार्डवेयर / शर्मा इलेक्ट्रिकल्स',
+        recordExpenseBtn: 'खर्च दर्ज करें & उधार में जोड़ें',
+        maintenanceLedgerTitle: 'एस्टेट मेंटेनेंस और रितिन हिसाब',
+        settleAllBtn: 'पूरा उधार चुकता करें (Settle)',
+        pendingStatus: 'बकाया (Pending)',
+        settledStatus: 'चुकता (Settled)',
+        noPendingExpenses: 'कोई मेंटेनेंस खर्च बकाया नहीं है',
+        catPlumbing: '🚰 प्लंबिंग',
+        catElectrical: '⚡ बिजली कार्य',
+        catHardware: '🔩 हार्डवेयर/रिपेयर',
+        catCleaning: '🧹 साफ-सफाई',
+        catFuel: '⛽ ईंधन / अन्य',
+        catOther: '📦 अन्य',
       }
     };
 
@@ -1745,6 +1926,52 @@
       if (assignMeterNote) assignMeterNote.textContent = t('startingBenchmarkNote');
       const assignBtnText = document.getElementById('assign-btn-text');
       if (assignBtnText) assignBtnText.textContent = t('assignAndActivateBtn');
+
+      const expenseUnitsBtn = document.getElementById('label-expense-btn-units');
+      if (expenseUnitsBtn) expenseUnitsBtn.textContent = t('addExpenseBtn');
+      const expenseParkingBtn = document.getElementById('label-expense-btn-parking');
+      if (expenseParkingBtn) expenseParkingBtn.textContent = t('addExpenseBtn');
+
+      const managerUdhaarLabel = document.getElementById('label-manager-udhaar');
+      if (managerUdhaarLabel) managerUdhaarLabel.textContent = t('managerUdhaarTally');
+
+      const expenseDrawerTitle = document.getElementById('expense-drawer-title');
+      if (expenseDrawerTitle) expenseDrawerTitle.textContent = t('addExpenseTitle');
+      const expenseDrawerSubtitle = document.getElementById('expense-drawer-subtitle');
+      if (expenseDrawerSubtitle) expenseDrawerSubtitle.textContent = t('managerUdhaarSubtitle');
+      const expenseCatLabel = document.getElementById('expense-cat-label');
+      if (expenseCatLabel) expenseCatLabel.textContent = t('expenseCategoryLabel');
+      const expenseDescLabel = document.getElementById('expense-desc-label');
+      if (expenseDescLabel) expenseDescLabel.textContent = t('expenseDescLabel');
+      const expenseDescInput = document.getElementById('expense-desc-input');
+      if (expenseDescInput) expenseDescInput.placeholder = t('expenseDescPlaceholder');
+      const expenseAmountLabel = document.getElementById('expense-amount-label');
+      if (expenseAmountLabel) expenseAmountLabel.textContent = t('expenseAmountLabel');
+      const expenseVendorLabel = document.getElementById('expense-vendor-label');
+      if (expenseVendorLabel) expenseVendorLabel.textContent = t('expenseVendorLabel');
+      const expenseVendorInput = document.getElementById('expense-vendor-input');
+      if (expenseVendorInput) expenseVendorInput.placeholder = t('expenseVendorPlaceholder');
+      const expenseSubmitBtn = document.getElementById('expense-submit-btn-text');
+      if (expenseSubmitBtn) expenseSubmitBtn.textContent = t('recordExpenseBtn');
+
+      const overrideExpenseTitle = document.getElementById('override-expense-title');
+      if (overrideExpenseTitle) overrideExpenseTitle.textContent = t('maintenanceLedgerTitle');
+      const labelSettleAll = document.getElementById('label-settle-all');
+      if (labelSettleAll) labelSettleAll.textContent = t('settleAllBtn');
+
+      // Update Category buttons
+      const catPlumb = document.getElementById('cat-btn-plumbing');
+      if (catPlumb) catPlumb.textContent = t('catPlumbing');
+      const catElec = document.getElementById('cat-btn-electrical');
+      if (catElec) catElec.textContent = t('catElectrical');
+      const catHard = document.getElementById('cat-btn-hardware_repair');
+      if (catHard) catHard.textContent = t('catHardware');
+      const catClean = document.getElementById('cat-btn-cleaning_supplies');
+      if (catClean) catClean.textContent = t('catCleaning');
+      const catFuel = document.getElementById('cat-btn-fuel_misc');
+      if (catFuel) catFuel.textContent = t('catFuel');
+      const catOther = document.getElementById('cat-btn-other');
+      if (catOther) catOther.textContent = t('catOther');
     }
 
     // 2. TARIFFS & PASS RATES (LIVE OVERRIDABLE BY OWNER)
@@ -1804,6 +2031,8 @@
     let activeDrawerUnit = null;
     let activeSelectedSubscriber = null;
     let activeAssignUnit = null;
+    let maintenanceExpenses = [];
+    let currentExpenseCategory = 'plumbing';
 
     // DOM Elements
     const splashEl = document.getElementById('screen-splash');
@@ -1992,6 +2221,7 @@
   closeDrawer();
   closeRenewalDrawer();
   closeAssignTenantDrawer();
+  closeMaintenanceExpenseDrawer();
   closeReceiptModal();
   closeMonthlyReceiptModal();
   closeMasterOverrideModal();
@@ -2195,6 +2425,158 @@
       if (navigator.vibrate) navigator.vibrate([16, 24, 16]);
       closeAssignTenantDrawer();
       renderUnitsDeck();
+    }
+
+    // ================= MAINTENANCE EXPENSE LOGIC & UDHAAR LEDGER =================
+    function selectExpenseCategory(cat) {
+      currentExpenseCategory = cat;
+      const cats = ['plumbing', 'electrical', 'hardware_repair', 'cleaning_supplies', 'fuel_misc', 'other'];
+      cats.forEach(c => {
+        const btn = document.getElementById('cat-btn-' + c);
+        if (btn) {
+          if (c === cat) {
+            btn.className = "py-2 px-1 rounded-xl border text-center font-bold text-[10.5px] bg-[#0D1117] border-amber-500/50 text-amber-300";
+          } else {
+            btn.className = "py-2 px-1 rounded-xl border text-center font-bold text-[10.5px] bg-white/[0.02] border-white/[0.08] text-[#94A3B8]";
+          }
+        }
+      });
+    }
+
+    function openMaintenanceExpenseDrawer() {
+      if (navigator.vibrate) navigator.vibrate([14]);
+      selectExpenseCategory('plumbing');
+      document.getElementById('expense-desc-input').value = '';
+      document.getElementById('expense-amount-input').value = '';
+      document.getElementById('expense-vendor-input').value = '';
+
+      const backdrop = document.getElementById('expense-drawer-backdrop');
+      const sheet = document.getElementById('expense-drawer-sheet');
+      backdrop.style.display = 'block';
+      sheet.style.display = 'flex';
+      requestAnimationFrame(() => {
+        backdrop.style.opacity = '1';
+        backdrop.style.pointerEvents = 'auto';
+        sheet.style.transform = 'translateY(0)';
+      });
+    }
+
+    function closeMaintenanceExpenseDrawer() {
+      const backdrop = document.getElementById('expense-drawer-backdrop');
+      const sheet = document.getElementById('expense-drawer-sheet');
+      if (!backdrop || !sheet) return;
+      backdrop.style.opacity = '0';
+      backdrop.style.pointerEvents = 'none';
+      sheet.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        backdrop.style.display = 'none';
+        sheet.style.display = 'none';
+      }, 300);
+    }
+
+    function updateManagerUdhaarDisplay() {
+      const pendingTotal = maintenanceExpenses
+        .filter(e => e.status === 'pending_settlement')
+        .reduce((sum, e) => sum + e.amount, 0);
+
+      const statEl = document.getElementById('stat-manager-udhaar');
+      if (statEl) {
+        statEl.textContent = '₹' + pendingTotal.toLocaleString('en-IN');
+      }
+      const overrideTally = document.getElementById('override-expense-tally');
+      if (overrideTally) {
+        overrideTally.textContent = '₹' + pendingTotal.toLocaleString('en-IN') + (currentLanguage === 'en' ? ' Pending' : ' बकाया');
+      }
+    }
+
+    function saveMaintenanceExpense() {
+      const desc = (document.getElementById('expense-desc-input').value || '').trim();
+      const amount = parseInt(document.getElementById('expense-amount-input').value || '0', 10);
+      const vendor = (document.getElementById('expense-vendor-input').value || '').trim();
+
+      if (!desc) {
+        alert(currentLanguage === 'en' ? 'Please enter description / item details' : 'कृपया खर्च का विवरण दर्ज करें');
+        return;
+      }
+      if (isNaN(amount) || amount <= 0) {
+        alert(currentLanguage === 'en' ? 'Please enter valid expense amount' : 'कृपया मान्य राशि दर्ज करें');
+        return;
+      }
+
+      const today = new Date();
+      const dateText = String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear();
+
+      const newExpense = {
+        id: 'exp-' + Date.now(),
+        date: dateText,
+        managerName: 'Ritin',
+        category: currentExpenseCategory,
+        description: desc,
+        amount: amount,
+        vendor: vendor || '-',
+        status: 'pending_settlement'
+      };
+
+      maintenanceExpenses.unshift(newExpense);
+      updateManagerUdhaarDisplay();
+
+      if (navigator.vibrate) navigator.vibrate([16, 24, 16]);
+      closeMaintenanceExpenseDrawer();
+      alert(currentLanguage === 'en' ? 'Expense of ₹' + amount + ' logged and added to Udhaar ledger!' : '₹' + amount + ' का खर्च दर्ज हुआ और रितिन के उधार में जुड़ गया!');
+    }
+
+    function renderOverrideExpenseList() {
+      const listEl = document.getElementById('override-expense-list');
+      if (!listEl) return;
+      if (maintenanceExpenses.length === 0) {
+        listEl.innerHTML = '<div class="py-3 px-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[11px] font-mono text-[#94A3B8] text-center">' + t('noPendingExpenses') + '</div>';
+        return;
+      }
+
+      listEl.innerHTML = maintenanceExpenses.map(e => {
+        const isPending = e.status === 'pending_settlement';
+        const catKey = 'cat' + (e.category === 'plumbing' ? 'Plumbing' : e.category === 'electrical' ? 'Electrical' : e.category === 'hardware_repair' ? 'Hardware' : e.category === 'cleaning_supplies' ? 'Cleaning' : e.category === 'fuel_misc' ? 'Fuel' : 'Other');
+        const catName = t(catKey) || e.category;
+        return '<div class="p-2.5 rounded-xl border flex flex-col gap-1 text-[11px] font-mono ' + (isPending ? 'bg-amber-950/20 border-amber-500/30' : 'bg-white/[0.02] border-white/[0.05] opacity-60') + '">' +
+          '<div class="flex items-center justify-between">' +
+            '<span class="font-bold text-[#EDEDED] flex items-center gap-1.5">' +
+              '<span class="text-amber-400">' + catName + '</span>' +
+              '<span class="text-[9.5px] text-[#64748B]">(' + e.date + ')</span>' +
+            '</span>' +
+            '<span class="font-bold text-amber-300">₹' + e.amount.toLocaleString('en-IN') + '</span>' +
+          '</div>' +
+          '<div class="flex items-center justify-between text-[10px] text-[#CBD5E1] mt-0.5">' +
+            '<span class="truncate pr-2">' + e.description + (e.vendor && e.vendor !== '-' ? ' [' + e.vendor + ']' : '') + '</span>' +
+            (isPending 
+              ? '<button type="button" onclick="settleSingleExpense(\'' + e.id + '\')" class="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-[9.5px] font-bold shrink-0 cursor-pointer active:scale-95 transition-all">' + (currentLanguage === 'en' ? 'Settle' : 'चुकता') + '</button>'
+              : '<span class="text-emerald-400 text-[9px]">' + t('settledStatus') + '</span>') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function settleSingleExpense(id) {
+      const exp = maintenanceExpenses.find(e => e.id === id);
+      if (!exp) return;
+      exp.status = 'settled';
+      exp.settledAt = new Date().toISOString();
+      updateManagerUdhaarDisplay();
+      renderOverrideExpenseList();
+      if (navigator.vibrate) navigator.vibrate([16, 24]);
+    }
+
+    function settleAllMaintenanceExpenses() {
+      const pending = maintenanceExpenses.filter(e => e.status === 'pending_settlement');
+      if (pending.length === 0) return;
+      const total = pending.reduce((sum, e) => sum + e.amount, 0);
+      pending.forEach(e => {
+        e.status = 'settled';
+        e.settledAt = new Date().toISOString();
+      });
+      updateManagerUdhaarDisplay();
+      renderOverrideExpenseList();
+      if (navigator.vibrate) navigator.vibrate([24, 30, 24]);
+      alert(currentLanguage === 'en' ? 'All maintenance expenses (₹' + total + ') settled with Manager Ritin!' : 'मैनेजर रितिन का पूरा उधार (₹' + total + ') चुकता कर दिया गया!');
     }
 
     // ================= UNIT SUB-METER & PAYMENT DRAWER LOGIC =================
@@ -2980,6 +3362,9 @@ Thank you. Shree Balaji Parking.`;
         document.getElementById(`override-owner-${cat}`).value = categoryPricing[cat].owner;
         document.getElementById(`override-ritin-${cat}`).value = categoryPricing[cat].ritin;
       });
+
+      updateManagerUdhaarDisplay();
+      renderOverrideExpenseList();
 
       const unitSelect = document.getElementById('override-unit-select');
       unitSelect.innerHTML = estateUnits.map(u => `<option value="${u.id}">${u.name} - ${u.isOccupied ? u.tenantName : (currentLanguage === 'en' ? '(Vacant)' : '(रिक्त)')}</option>`).join('');

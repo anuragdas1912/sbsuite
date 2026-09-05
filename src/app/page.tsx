@@ -30,7 +30,8 @@ import {
   Building2,
   Truck,
   Settings,
-  Sliders
+  Sliders,
+  Wrench
 } from 'lucide-react';
 
 type ScreenState = 'splash' | 'pin' | 'units_deck' | 'owner_console' | 'manager_console';
@@ -73,6 +74,20 @@ export interface CategoryPricing {
   ritin: number;
   label: string;
   subLabel: string;
+}
+
+export interface MaintenanceExpense {
+  id: string;
+  created_at?: string;
+  date?: string;
+  manager_name?: string;
+  category: 'plumbing' | 'electrical' | 'hardware_repair' | 'cleaning_supplies' | 'fuel_misc' | 'other';
+  description: string;
+  amount: number;
+  vendor?: string;
+  status: 'pending_settlement' | 'settled';
+  settled_at?: string;
+  settled_by?: string;
 }
 
 export interface MonthlySubscriber {
@@ -308,6 +323,29 @@ const DICTIONARY = {
     initialMeterReading: '⚡ Initial Electricity Sub-Meter Reading (kWh)',
     startingBenchmarkNote: 'Starting benchmark for monthly billing cycles',
     assignAndActivateBtn: 'Assign Tenant & Activate Unit',
+    addExpenseBtn: 'Expense',
+    addExpenseTitle: 'Add Maintenance Expense',
+    managerUdhaarTally: 'Manager Udhaar (Ritin):',
+    managerUdhaarSubtitle: 'Manager On-Site Shift // Udhaar Ledger',
+    expenseCategoryLabel: 'Expense Category *',
+    expenseDescLabel: 'Description / Item Details *',
+    expenseDescPlaceholder: 'e.g. Submersible pump motor repair / shutter spring',
+    expenseAmountLabel: 'Amount (₹) Spent by Manager *',
+    expenseVendorLabel: 'Vendor / Shop Name (Optional)',
+    expenseVendorPlaceholder: 'e.g. Gupta Hardware / Sharma Electricals',
+    recordExpenseBtn: 'Record Expense & Add to Udhaar',
+    maintenanceLedgerTitle: 'Maintenance & Manager Udhaar',
+    settleAllBtn: 'Settle / Clear All Udhaar',
+    settleBtn: 'Settle',
+    pendingStatus: 'Pending Settlement',
+    settledStatus: 'Settled / Reimbursed',
+    noPendingExpenses: 'No pending maintenance expenses',
+    catPlumbing: '🚰 Plumbing',
+    catElectrical: '⚡ Electrical',
+    catHardware: '🔩 Hardware',
+    catCleaning: '🧹 Cleaning',
+    catFuel: '⛽ Fuel/Misc',
+    catOther: '📦 Other',
   },
   hi: {
     brandEstate: 'श्री बालाजी एस्टेट',
@@ -409,6 +447,29 @@ const DICTIONARY = {
     initialMeterReading: '⚡ प्रारंभिक बिजली सब-मीटर रीडिंग (kWh)',
     startingBenchmarkNote: 'मासिक बिलिंग चक्र के लिए प्रारंभिक रीडिंग',
     assignAndActivateBtn: 'किराएदार दर्ज करें & यूनिट चालू करें',
+    addExpenseBtn: 'खर्च',
+    addExpenseTitle: 'एस्टेट खर्च दर्ज करें',
+    managerUdhaarTally: 'रितिन का उधार (बकाया):',
+    managerUdhaarSubtitle: 'मैनेजर शिफ्ट खर्च // उधार लेजर',
+    expenseCategoryLabel: 'खर्च श्रेणी (Category) *',
+    expenseDescLabel: 'विवरण / काम की जानकारी *',
+    expenseDescPlaceholder: 'उदा. सबमर्सिबल मोटर वाइंडिंग / शटर स्प्रिंग',
+    expenseAmountLabel: 'राशि (₹) जो रितिन ने खर्च की *',
+    expenseVendorLabel: 'दुकानदार / वेंडर का नाम (वैकल्पिक)',
+    expenseVendorPlaceholder: 'उदा. गुप्ता हार्डवेयर / शर्मा इलेक्ट्रिकल्स',
+    recordExpenseBtn: 'खर्च दर्ज करें & उधार में जोड़ें',
+    maintenanceLedgerTitle: 'एस्टेट मेंटेनेंस व रितिन उधार',
+    settleAllBtn: 'पूरा हिसाब चुकता करें',
+    settleBtn: 'चुकता',
+    pendingStatus: 'बकाया',
+    settledStatus: 'चुकता किया गया',
+    noPendingExpenses: 'कोई बकाया मेंटेनेंस खर्च नहीं है',
+    catPlumbing: '🚰 प्लंबिंग',
+    catElectrical: '⚡ बिजली',
+    catHardware: '🔩 हार्डवेयर',
+    catCleaning: '🧹 सफाई',
+    catFuel: '⛽ ईंधन/विविध',
+    catOther: '📦 अन्य',
   }
 };
 
@@ -470,6 +531,15 @@ export default function Home() {
   const [activeModule, setActiveModule] = useState<'units' | 'parking'>('units');
   const [subscribers, setSubscribers] = useState<MonthlySubscriber[]>(INITIAL_SUBSCRIBERS);
   const [pricing, setPricing] = useState<Record<VehicleCategory, CategoryPricing>>(DEFAULT_CATEGORY_PRICING);
+
+  // Maintenance Expenses & Manager Udhaar Ledger
+  const [maintenanceExpenses, setMaintenanceExpenses] = useState<MaintenanceExpense[]>([]);
+  const [isExpenseDrawerOpen, setIsExpenseDrawerOpen] = useState<boolean>(false);
+  const [expenseCategory, setExpenseCategory] = useState<MaintenanceExpense['category']>('plumbing');
+  const [expenseDescription, setExpenseDescription] = useState<string>('');
+  const [expenseAmount, setExpenseAmount] = useState<string>('');
+  const [expenseVendor, setExpenseVendor] = useState<string>('');
+  const [isSavingExpense, setIsSavingExpense] = useState<boolean>(false);
 
   // Electricity Tariffs (Owner overridable)
   const [tariffs, setTariffs] = useState({
@@ -579,6 +649,28 @@ export default function Home() {
         setOwnerParkingShare(ownerShare);
         setRitinParkingCut(ritinCut);
       }
+
+      // 5. Fetch Maintenance Expenses & Udhaar Ledger
+      const { data: expData, error: expError } = await supabase
+        .from('maintenance_expenses')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!expError && expData) {
+        setMaintenanceExpenses(expData.map((e: any) => ({
+          id: e.id,
+          created_at: e.created_at,
+          date: e.created_at ? formatDbDate(e.created_at) : '-',
+          manager_name: e.manager_name || 'Ritin',
+          category: e.category,
+          description: e.description,
+          amount: Number(e.amount || 0),
+          vendor: e.vendor || '-',
+          status: e.status || 'pending_settlement',
+          settled_at: e.settled_at,
+          settled_by: e.settled_by
+        })));
+      }
     } catch (err) {
       console.warn('Initial data load error:', err);
     }
@@ -599,6 +691,9 @@ export default function Home() {
         fetchInitialData();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'collections_ledger' }, () => {
+        fetchInitialData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_expenses' }, () => {
         fetchInitialData();
       })
       .subscribe();
@@ -1175,6 +1270,131 @@ export default function Home() {
   const remainingRentDue = Math.max(0, effectiveRentDue - rentPaidNum);
   const totalCashCollected = rentPaidNum + elecPaidNum;
 
+  // ================= MAINTENANCE EXPENSE & MANAGER UDHAAR HANDLERS =================
+  const handleOpenExpenseDrawer = () => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([14]);
+    }
+    setExpenseCategory('plumbing');
+    setExpenseDescription('');
+    setExpenseAmount('');
+    setExpenseVendor('');
+    setIsExpenseDrawerOpen(true);
+  };
+
+  const handleCloseExpenseDrawer = () => {
+    setIsExpenseDrawerOpen(false);
+  };
+
+  const handleSaveMaintenanceExpense = async () => {
+    const desc = expenseDescription.trim();
+    const amt = parseFloat(expenseAmount);
+    const vendor = expenseVendor.trim();
+
+    if (!desc) {
+      alert(lang === 'en' ? 'Please enter description / item details' : 'कृपया खर्च का विवरण दर्ज करें');
+      return;
+    }
+    if (isNaN(amt) || amt <= 0) {
+      alert(lang === 'en' ? 'Please enter valid expense amount' : 'कृपया मान्य राशि दर्ज करें');
+      return;
+    }
+
+    setIsSavingExpense(true);
+    const id = 'exp-' + Date.now();
+    const today = new Date();
+    const dateText = String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear();
+
+    const newRecord: MaintenanceExpense = {
+      id,
+      date: dateText,
+      manager_name: 'Ritin',
+      category: expenseCategory,
+      description: desc,
+      amount: amt,
+      vendor: vendor || undefined,
+      status: 'pending_settlement'
+    };
+
+    // Optimistic state update
+    setMaintenanceExpenses((prev) => [newRecord, ...prev]);
+
+    try {
+      await supabase.from('maintenance_expenses').insert([{
+        id,
+        manager_name: 'Ritin',
+        category: expenseCategory,
+        description: desc,
+        amount: amt,
+        vendor: vendor || null,
+        status: 'pending_settlement'
+      }]);
+    } catch (err) {
+      console.error('Failed to save expense in Supabase:', err);
+    } finally {
+      setIsSavingExpense(false);
+      handleCloseExpenseDrawer();
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([16, 24, 16]);
+      }
+      alert(
+        lang === 'en'
+          ? `Expense of ₹${amt} logged and added to Manager Udhaar!`
+          : `₹${amt} का खर्च दर्ज हुआ और रितिन के उधार में जुड़ गया!`
+      );
+    }
+  };
+
+  const settleSingleExpense = async (id: string) => {
+    const nowIso = new Date().toISOString();
+    setMaintenanceExpenses((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, status: 'settled', settled_at: nowIso, settled_by: 'Owner' } : e))
+    );
+
+    try {
+      await supabase
+        .from('maintenance_expenses')
+        .update({ status: 'settled', settled_at: nowIso, settled_by: 'Owner' })
+        .eq('id', id);
+    } catch (err) {
+      console.error('Failed to settle expense in Supabase:', err);
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([16, 24]);
+    }
+  };
+
+  const settleAllMaintenanceExpenses = async () => {
+    const pending = maintenanceExpenses.filter((e) => e.status === 'pending_settlement');
+    if (pending.length === 0) return;
+
+    const total = pending.reduce((sum, e) => sum + e.amount, 0);
+    const nowIso = new Date().toISOString();
+
+    setMaintenanceExpenses((prev) =>
+      prev.map((e) => (e.status === 'pending_settlement' ? { ...e, status: 'settled', settled_at: nowIso, settled_by: 'Owner' } : e))
+    );
+
+    try {
+      await supabase
+        .from('maintenance_expenses')
+        .update({ status: 'settled', settled_at: nowIso, settled_by: 'Owner' })
+        .eq('status', 'pending_settlement');
+    } catch (err) {
+      console.error('Failed to settle all expenses in Supabase:', err);
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([24, 30, 24]);
+    }
+    alert(
+      lang === 'en'
+        ? `All maintenance expenses (₹${total.toLocaleString('en-IN')}) settled with Manager Ritin!`
+        : `मैनेजर रितिन का पूरा उधार (₹${total.toLocaleString('en-IN')}) चुकता कर दिया गया!`
+    );
+  };
+
   const handleOpenAssignTenant = (unit: UnitItem) => {
     if (unit.isOccupied) return;
     setActiveAssignUnit(unit);
@@ -1475,6 +1695,10 @@ ${elecLine}--------------------------------
   }, [units, activeTab]);
 
   const totalFiltered = filteredUnits.length;
+  const pendingMaintenanceTotal = useMemo(
+    () => maintenanceExpenses.filter((e) => e.status === 'pending_settlement').reduce((sum, e) => sum + e.amount, 0),
+    [maintenanceExpenses]
+  );
   const occupiedCount = useMemo(() => filteredUnits.filter((u) => u.isOccupied).length, [filteredUnits]);
   const totalRentDue = useMemo(() => {
     return filteredUnits.reduce((sum, u) => sum + ((u.rentDueAmount !== undefined && u.rentDueAmount !== null) ? u.rentDueAmount : (u.isOccupied ? u.rentAmount : 0)), 0);
@@ -1530,6 +1754,7 @@ ${elecLine}--------------------------------
     }
     handleCloseDrawer();
     handleCloseAssignTenant();
+    handleCloseExpenseDrawer();
     setSelectedSubForRenewal(null);
     setActiveMonthlyReceipt(null);
     setIsMasterOverrideOpen(false);
@@ -1880,6 +2105,15 @@ ${elecLine}--------------------------------
 
                       {/* Right Controls: Master Override (Owner Only), Language Toggle & Lock */}
                       <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleOpenExpenseDrawer}
+                          className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                        >
+                          <Wrench className="w-3.5 h-3.5" />
+                          <span>{t('addExpenseBtn')}</span>
+                        </button>
+
                         {userRole === 'owner' && (
                           <button
                             type="button"
@@ -1962,6 +2196,15 @@ ${elecLine}--------------------------------
                           <span className="text-xs font-mono font-semibold text-cyan-400">{pendingMetersCount}</span>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Manager Udhaar Ribbon */}
+                    <div className="mt-2.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between font-mono text-xs">
+                      <div className="flex items-center gap-1.5 text-amber-400">
+                        <Wrench className="w-3.5 h-3.5" />
+                        <span className="text-[10px] uppercase font-bold tracking-wider">{t('managerUdhaarTally')}</span>
+                      </div>
+                      <span className="text-xs font-bold text-amber-300">₹{pendingMaintenanceTotal.toLocaleString('en-IN')}</span>
                     </div>
                   </header>
 
@@ -2048,6 +2291,15 @@ ${elecLine}--------------------------------
 
                       {/* Right Controls: Master Override, Language Toggle & Lock */}
                       <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleOpenExpenseDrawer}
+                          className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-mono font-bold text-[11px] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                        >
+                          <Wrench className="w-3.5 h-3.5" />
+                          <span>{t('addExpenseBtn')}</span>
+                        </button>
+
                         {userRole === 'owner' && (
                           <button
                             type="button"
@@ -2117,6 +2369,15 @@ ${elecLine}--------------------------------
                           <span className="text-xs font-bold text-cyan-300">₹{ritinParkingCut.toLocaleString('en-IN')}</span>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Manager Udhaar Ribbon */}
+                    <div className="mt-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between font-mono text-xs">
+                      <div className="flex items-center gap-1.5 text-amber-400">
+                        <Wrench className="w-3.5 h-3.5" />
+                        <span className="text-[10px] uppercase font-bold tracking-wider">{t('managerUdhaarTally')}</span>
+                      </div>
+                      <span className="text-xs font-bold text-amber-300">₹{pendingMaintenanceTotal.toLocaleString('en-IN')}</span>
                     </div>
                   </header>
 
@@ -2380,6 +2641,135 @@ ${elecLine}--------------------------------
                 </div>
               </nav>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ================= MAINTENANCE EXPENSE DRAWER (MANAGER RITIN / OWNER) ================= */}
+        <AnimatePresence>
+          {isExpenseDrawerOpen && (
+            <>
+              <motion.div
+                key="expense-drawer-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={handleCloseExpenseDrawer}
+                className="absolute inset-0 bg-black/70 backdrop-blur-md z-40 cursor-pointer"
+              />
+
+              <motion.div
+                key="expense-drawer-sheet"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+                className="absolute bottom-0 inset-x-0 bg-[#0A0D14] border-t border-amber-500/40 rounded-t-[32px] p-5 pb-[max(24px,env(safe-area-inset-bottom,24px))] shadow-[0_-20px_50px_rgba(0,0,0,0.9)] z-50 gpu-layer flex flex-col select-none max-h-[85vh] overflow-y-auto deck-scrollbar"
+              >
+                <div className="w-10 h-1 rounded-full bg-white/20 mb-3 mx-auto shrink-0" />
+
+                <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+                  <div className="flex items-center gap-2.5">
+                    <span className="p-2 rounded-xl bg-amber-500/15 border border-amber-500/40 font-mono font-bold text-sm text-amber-400">
+                      🛠️
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-semibold text-[#EDEDED]">{t('addExpenseTitle')}</h3>
+                      <span className="text-[10px] font-mono text-[#94A3B8]">
+                        {t('managerUdhaarSubtitle')}
+                      </span>
+                    </div>
+                  </div>
+                  <button onClick={handleCloseExpenseDrawer} className="p-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-[#94A3B8] hover:text-white">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-3.5 font-mono">
+                  {/* Category Pills */}
+                  <div>
+                    <label className="block text-[10px] text-[#94A3B8] uppercase font-bold tracking-wider mb-1.5">
+                      {t('expenseCategoryLabel')}
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {(['plumbing', 'electrical', 'hardware_repair', 'cleaning_supplies', 'fuel_misc', 'other'] as const).map((cat) => {
+                        const isSelected = expenseCategory === cat;
+                        const catLabel = cat === 'plumbing' ? t('catPlumbing') : cat === 'electrical' ? t('catElectrical') : cat === 'hardware_repair' ? t('catHardware') : cat === 'cleaning_supplies' ? t('catCleaning') : cat === 'fuel_misc' ? t('catFuel') : t('catOther');
+                        return (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => setExpenseCategory(cat)}
+                            className={`py-2 px-1 rounded-xl border text-center font-bold text-[10.5px] transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-[#0D1117] border-amber-500/50 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.15)]'
+                                : 'bg-white/[0.02] border-white/[0.08] text-[#94A3B8] hover:text-white'
+                            }`}
+                          >
+                            {catLabel}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="block text-[10px] text-[#94A3B8] uppercase font-bold tracking-wider mb-1.5">
+                      {t('expenseDescLabel')}
+                    </label>
+                    <input
+                      type="text"
+                      value={expenseDescription}
+                      onChange={(e) => setExpenseDescription(e.target.value)}
+                      placeholder={t('expenseDescPlaceholder')}
+                      className="w-full py-2.5 px-3 rounded-xl bg-[#06080C] border border-white/[0.12] focus:border-amber-500/60 text-xs text-[#EDEDED] placeholder-[#64748B] focus:outline-none transition-all"
+                    />
+                  </div>
+
+                  {/* Amount */}
+                  <div>
+                    <label className="block text-[10px] text-[#94A3B8] uppercase font-bold tracking-wider mb-1.5">
+                      {t('expenseAmountLabel')}
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-xs text-amber-400 font-bold">₹</span>
+                      <input
+                        type="number"
+                        value={expenseAmount}
+                        onChange={(e) => setExpenseAmount(e.target.value)}
+                        placeholder="0"
+                        className="w-full py-2.5 pl-8 pr-3 rounded-xl bg-[#06080C] border border-white/[0.12] focus:border-amber-500/60 text-xs font-bold text-amber-300 placeholder-[#64748B] focus:outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Vendor / Shop Name */}
+                  <div>
+                    <label className="block text-[10px] text-[#94A3B8] uppercase font-bold tracking-wider mb-1.5">
+                      {t('expenseVendorLabel')}
+                    </label>
+                    <input
+                      type="text"
+                      value={expenseVendor}
+                      onChange={(e) => setExpenseVendor(e.target.value)}
+                      placeholder={t('expenseVendorPlaceholder')}
+                      className="w-full py-2.5 px-3 rounded-xl bg-[#06080C] border border-white/[0.12] focus:border-amber-500/60 text-xs text-[#EDEDED] placeholder-[#64748B] focus:outline-none transition-all"
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="button"
+                    onClick={handleSaveMaintenanceExpense}
+                    disabled={isSavingExpense}
+                    className="w-full py-3 px-4 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 cursor-pointer active:scale-98 transition-all bg-amber-500 hover:bg-amber-400 text-[#06080C] shadow-[0_0_20px_rgba(245,158,11,0.3)] mt-2 disabled:opacity-50"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>{t('recordExpenseBtn')}</span>
+                  </button>
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
 
@@ -3182,6 +3572,79 @@ ${elecLine}--------------------------------
                         className="w-full py-1 px-2 rounded-lg bg-[#0D1117] border border-white/[0.1] font-bold text-cyan-300"
                       />
                     </div>
+                  </div>
+                </div>
+
+                {/* 5. Maintenance & Manager Udhaar Settlement */}
+                <div className="p-3 rounded-2xl bg-[#06080C] border border-amber-500/30 flex flex-col gap-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-300 uppercase flex items-center gap-1.5">
+                      <Wrench className="w-3.5 h-3.5 text-amber-400" />
+                      {t('maintenanceLedgerTitle')}
+                    </span>
+                    <span className="text-[11px] font-bold text-amber-400 font-mono">
+                      ₹{pendingMaintenanceTotal.toLocaleString('en-IN')} {t('dueLabel')}
+                    </span>
+                  </div>
+
+                  {pendingMaintenanceTotal > 0 && (
+                    <button
+                      type="button"
+                      onClick={settleAllMaintenanceExpenses}
+                      className="w-full py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>{t('settleAllBtn')} (₹{pendingMaintenanceTotal.toLocaleString('en-IN')})</span>
+                    </button>
+                  )}
+
+                  {/* Audit List */}
+                  <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto deck-scrollbar">
+                    {maintenanceExpenses.length === 0 ? (
+                      <div className="py-2.5 px-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-[10.5px] font-mono text-[#94A3B8] text-center">
+                        {t('noPendingExpenses')}
+                      </div>
+                    ) : (
+                      maintenanceExpenses.map((exp) => {
+                        const isPending = exp.status === 'pending_settlement';
+                        const catKey = ('cat' + (exp.category === 'plumbing' ? 'Plumbing' : exp.category === 'electrical' ? 'Electrical' : exp.category === 'hardware_repair' ? 'Hardware' : exp.category === 'cleaning_supplies' ? 'Cleaning' : exp.category === 'fuel_misc' ? 'Fuel' : 'Other')) as keyof typeof DICTIONARY['en'];
+                        const catName = t(catKey) || exp.category;
+                        return (
+                          <div
+                            key={exp.id}
+                            className={`p-2 rounded-xl border flex flex-col gap-1 text-[11px] font-mono ${
+                              isPending
+                                ? 'bg-amber-950/20 border-amber-500/30'
+                                : 'bg-white/[0.02] border-white/[0.05] opacity-60'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[#EDEDED] flex items-center gap-1.5">
+                                <span className="text-amber-400">{catName}</span>
+                                <span className="text-[9.5px] text-[#64748B]">({exp.date || '-'})</span>
+                              </span>
+                              <span className="font-bold text-amber-300">₹{exp.amount.toLocaleString('en-IN')}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] text-[#CBD5E1] mt-0.5">
+                              <span className="truncate pr-2">
+                                {exp.description} {exp.vendor && exp.vendor !== '-' ? `[${exp.vendor}]` : ''}
+                              </span>
+                              {isPending ? (
+                                <button
+                                  type="button"
+                                  onClick={() => settleSingleExpense(exp.id)}
+                                  className="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-[9.5px] font-bold shrink-0 cursor-pointer active:scale-95 transition-all"
+                                >
+                                  {t('settleBtn')}
+                                </button>
+                              ) : (
+                                <span className="text-emerald-400 text-[9px]">{t('settledStatus')}</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
 
