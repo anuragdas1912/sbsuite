@@ -1031,6 +1031,11 @@ export default function Home() {
   // Master Override Handlers (PIN: 1912 ONLY)
   const handleOpenMasterOverride = () => {
     if (userRole !== 'owner') return;
+    const currentUnit = units.find((u) => u.id === overrideSelectedUnitId) || units[0];
+    if (currentUnit) {
+      setOverrideUnitRent(String(currentUnit.rentAmount || 0));
+      setOverrideUnitDue(String(currentUnit.rentDueAmount || 0));
+    }
     setIsMasterOverrideOpen(true);
   };
 
@@ -1174,8 +1179,8 @@ export default function Home() {
     if (unit.isOccupied) return;
     setActiveAssignUnit(unit);
     setAssignTenantName('');
-    setAssignRentInput(unit.rentAmount > 0 ? String(unit.rentAmount) : '');
-    setAssignMeterInput(String(unit.lastReading || 0));
+    setAssignRentInput('');
+    setAssignMeterInput('0');
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate([14]);
     }

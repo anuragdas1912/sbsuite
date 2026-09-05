@@ -2138,8 +2138,8 @@
       document.getElementById('assign-meter-tariff-badge').textContent = `@ ₹${rate.toFixed(1)} ${t('perUnit')}`;
 
       document.getElementById('assign-tenant-name-input').value = '';
-      document.getElementById('assign-rent-input').value = unit.rentAmount > 0 ? unit.rentAmount : '';
-      document.getElementById('assign-meter-input').value = unit.lastReading || '0';
+      document.getElementById('assign-rent-input').value = '';
+      document.getElementById('assign-meter-input').value = '0';
 
       const backdrop = document.getElementById('assign-tenant-backdrop');
       const sheet = document.getElementById('assign-tenant-sheet');
