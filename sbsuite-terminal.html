@@ -1276,62 +1276,42 @@
 
     let newPassCategory = 'car_small';
 
-    // 3. UNITS DATA (14 ROOMS + 8 SHOPS)
+    // 3. UNITS DATA (14 ROOMS + 8 SHOPS - Clean Zero-State Inventory)
     const estateUnits = [
       // 14 ROOMS
-      { id: 'r-101', name: 'R-101', type: 'room', isOccupied: true, tenantName: 'Sunil Verma', rentAmount: 6500, rentDueAmount: 0, lastReading: 1420, isReadingPending: false },
-      { id: 'r-102', name: 'R-102', type: 'room', isOccupied: true, tenantName: 'Amit Sharma', rentAmount: 6500, rentDueAmount: 4000, lastReading: 1380, isReadingPending: true },
-      { id: 'r-103', name: 'R-103', type: 'room', isOccupied: true, tenantName: 'Rajesh Patel', rentAmount: 7000, rentDueAmount: 0, lastReading: 1890, isReadingPending: false },
-      { id: 'r-104', name: 'R-104', type: 'room', isOccupied: true, tenantName: 'Priya Nair', rentAmount: 6500, rentDueAmount: 0, lastReading: 1120, isReadingPending: false },
-      { id: 'r-105', name: 'R-105', type: 'room', isOccupied: true, tenantName: 'Vikas Gupta', rentAmount: 6000, rentDueAmount: 0, lastReading: 980, isReadingPending: false },
-      { id: 'r-106', name: 'R-106', type: 'room', isOccupied: true, tenantName: 'Deepak Yadav', rentAmount: 6500, rentDueAmount: 0, lastReading: 2150, isReadingPending: false },
-      { id: 'r-107', name: 'R-107', type: 'room', isOccupied: true, tenantName: 'Sneha Kulkarni', rentAmount: 7000, rentDueAmount: 0, lastReading: 1460, isReadingPending: true },
-      { id: 'r-108', name: 'R-108', type: 'room', isOccupied: false, rentAmount: 6500, rentDueAmount: 0, lastReading: 1200, isReadingPending: false },
-      { id: 'r-109', name: 'R-109', type: 'room', isOccupied: true, tenantName: 'Manish Tiwari', rentAmount: 6500, rentDueAmount: 0, lastReading: 1340, isReadingPending: false },
-      { id: 'r-110', name: 'R-110', type: 'room', isOccupied: true, tenantName: 'Ananya Roy', rentAmount: 7500, rentDueAmount: 0, lastReading: 1760, isReadingPending: false },
-      { id: 'r-111', name: 'R-111', type: 'room', isOccupied: true, tenantName: 'Rohit Chauhan', rentAmount: 6500, rentDueAmount: 0, lastReading: 1510, isReadingPending: false },
-      { id: 'r-112', name: 'R-112', type: 'room', isOccupied: false, rentAmount: 7000, rentDueAmount: 0, lastReading: 940, isReadingPending: false },
-      { id: 'r-113', name: 'R-113', type: 'room', isOccupied: true, tenantName: 'Karan Malhotra', rentAmount: 7000, rentDueAmount: 0, lastReading: 1680, isReadingPending: true },
-      { id: 'r-114', name: 'R-114', type: 'room', isOccupied: true, tenantName: 'Pooja Mehra', rentAmount: 7500, rentDueAmount: 0, lastReading: 1930, isReadingPending: false },
+      { id: 'r-101', name: 'R-101', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-102', name: 'R-102', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-103', name: 'R-103', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-104', name: 'R-104', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-105', name: 'R-105', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-106', name: 'R-106', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-107', name: 'R-107', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-108', name: 'R-108', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-109', name: 'R-109', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-110', name: 'R-110', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-111', name: 'R-111', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-112', name: 'R-112', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-113', name: 'R-113', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 'r-114', name: 'R-114', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
 
       // 8 SHOPS
-      { id: 's-01', name: 'S-01', type: 'shop', isOccupied: true, tenantName: 'Balaji Medicals', rentAmount: 18000, rentDueAmount: 0, lastReading: 4210, isReadingPending: false },
-      { id: 's-02', name: 'S-02', type: 'shop', isOccupied: true, tenantName: 'Shree Ganesh Grocery', rentAmount: 16500, rentDueAmount: 0, lastReading: 3890, isReadingPending: false },
-      { id: 's-03', name: 'S-03', type: 'shop', isOccupied: true, tenantName: 'Modern Dry Cleaners', rentAmount: 14000, rentDueAmount: 8500, lastReading: 2890, isReadingPending: true },
-      { id: 's-04', name: 'S-04', type: 'shop', isOccupied: true, tenantName: 'Metro Cyber & Print', rentAmount: 12500, rentDueAmount: 0, lastReading: 2450, isReadingPending: false },
-      { id: 's-05', name: 'S-05', type: 'shop', isOccupied: false, rentAmount: 15000, rentDueAmount: 0, lastReading: 1100, isReadingPending: false },
-      { id: 's-06', name: 'S-06', type: 'shop', isOccupied: true, tenantName: 'Royal Hair Salon', rentAmount: 15000, rentDueAmount: 0, lastReading: 3110, isReadingPending: false },
-      { id: 's-07', name: 'S-07', type: 'shop', isOccupied: true, tenantName: 'Shanti Stationery', rentAmount: 13000, rentDueAmount: 0, lastReading: 1840, isReadingPending: false },
-      { id: 's-08', name: 'S-08', type: 'shop', isOccupied: true, tenantName: 'Om Sweet & Snacks', rentAmount: 22000, rentDueAmount: 0, lastReading: 5620, isReadingPending: false }
+      { id: 's-01', name: 'S-01', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 18000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 's-02', name: 'S-02', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 16500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 's-03', name: 'S-03', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 14000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 's-04', name: 'S-04', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 12500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 's-05', name: 'S-05', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 15000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 's-06', name: 'S-06', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 15000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 's-07', name: 'S-07', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 13000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+      { id: 's-08', name: 'S-08', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 22000, rentDueAmount: 0, lastReading: 0, isReadingPending: false }
     ];
 
-    // 4. COMMERCIAL PARKING SUBSCRIBERS
-    let parkingSubscribers = [
-      // Car Small (₹500: ₹400 / ₹100)
-      { id: 'sub-1', vehicleNumber: 'UK 06 AB 1912', ownerName: 'राजेश कुमार', phone: '98371-20411', category: 'car_small', slot: 'P-01', passStatus: 'active', validTillDate: '30/09/2026', isParkedInside: true, lastPaidDate: '01/09/2026' },
-      { id: 'sub-2', vehicleNumber: 'UK 06 CD 4589', ownerName: 'अमित सिब्बल', phone: '94120-88320', category: 'car_small', slot: 'P-02', passStatus: 'active', validTillDate: '28/09/2026', isParkedInside: true, lastPaidDate: '29/08/2026' },
-      { id: 'sub-3', vehicleNumber: 'UP 25 BE 3390', ownerName: 'विक्रम राणा', phone: '97190-44120', category: 'car_small', slot: 'P-03', passStatus: 'active', validTillDate: '22/09/2026', isParkedInside: false, lastPaidDate: '23/08/2026' },
-
-      // Car Large / SUV (₹700: ₹500 / ₹200)
-      { id: 'sub-4', vehicleNumber: 'DL 01 AX 7721', ownerName: 'डॉ. पी. के. शर्मा', phone: '98102-34901', category: 'car_large', slot: 'P-08', passStatus: 'active', validTillDate: '04/10/2026', isParkedInside: true, lastPaidDate: '05/09/2026' },
-      { id: 'sub-5', vehicleNumber: 'HR 26 DQ 1104', ownerName: 'संजय ग्रोवर', phone: '98114-55092', category: 'car_large', slot: 'P-09', passStatus: 'active', validTillDate: '15/09/2026', isParkedInside: true, lastPaidDate: '16/08/2026' },
-      { id: 'sub-6', vehicleNumber: 'UK 04 F 9012', ownerName: 'दीपक बिष्ट', phone: '99270-11234', category: 'car_large', slot: 'P-10', passStatus: 'due', validTillDate: '02/09/2026', isParkedInside: true, lastPaidDate: '03/08/2026' },
-
-      // Pickup / Loader / Heavy (₹800: ₹600 / ₹200)
-      { id: 'sub-7', vehicleNumber: 'UK 06 L 8820', ownerName: 'महेन्द्र सिंह लोडर', phone: '95570-33412', category: 'heavy', slot: 'Open Yard-A', passStatus: 'active', validTillDate: '27/09/2026', isParkedInside: true, lastPaidDate: '28/08/2026' },
-      { id: 'sub-8', vehicleNumber: 'UP 22 M 2244', ownerName: 'अनिल रस्तोगी', phone: '96340-99812', category: 'heavy', slot: 'Open Yard-B', passStatus: 'active', validTillDate: '26/09/2026', isParkedInside: true, lastPaidDate: '27/08/2026' },
-
-      // E-Rickshaw / Tuk-Tuk (₹500: ₹400 / ₹100) + Optional EV Charging Sub-Meter
-      { id: 'sub-9', vehicleNumber: 'UK 06 ER 4420', ownerName: 'रमेश पाल', phone: '97580-22109', category: 'tuktuk', slot: 'EV-Bay 1', passStatus: 'active', validTillDate: '25/09/2026', isParkedInside: true, lastPaidDate: '26/08/2026', hasEvFacility: true, lastEvReading: 420, evDueAmount: 0 },
-      { id: 'sub-10', vehicleNumber: 'UK 06 ER 7710', ownerName: 'सलीम अख्तर', phone: '98971-88410', category: 'tuktuk', slot: 'EV-Bay 2', passStatus: 'active', validTillDate: '30/09/2026', isParkedInside: true, lastPaidDate: '01/09/2026', hasEvFacility: true, lastEvReading: 580, evDueAmount: 180 },
-      { id: 'sub-11', vehicleNumber: 'UK 06 ER 1109', ownerName: 'राजू कश्यप', phone: '94121-66782', category: 'tuktuk', slot: 'EV-Bay 3', passStatus: 'due', validTillDate: '03/09/2026', isParkedInside: true, lastPaidDate: '04/08/2026', hasEvFacility: true, lastEvReading: 310, evDueAmount: 0 },
-      { id: 'sub-12', vehicleNumber: 'UK 06 ER 9904', ownerName: 'सुरेश मौर्या', phone: '97198-44510', category: 'tuktuk', slot: 'T-04', passStatus: 'active', validTillDate: '02/10/2026', isParkedInside: false, lastPaidDate: '03/09/2026', hasEvFacility: false }
-    ];
+    // 4. COMMERCIAL PARKING SUBSCRIBERS (Clean Zero-State)
+    let parkingSubscribers = [];
 
     // Shift Cash Collections Ledger
-    let shiftParkingCashTotal = 26500;
-    let shiftParkingOwnerNet = 20800;
-    let shiftParkingRitinCut = 5700;
+    let shiftParkingCashTotal = 0;
+    let shiftParkingOwnerNet = 0;
+    let shiftParkingRitinCut = 0;
 
     // Active Drawers & Selections
     let activeDrawerUnit = null;
@@ -1998,6 +1978,18 @@ ${elecLine}--------------------------------
 
       document.getElementById('parking-active-count').textContent = filtered.length;
 
+      if (filtered.length === 0) {
+        listContainer.innerHTML = `
+          <div class="py-12 px-4 rounded-2xl bg-[#0A0D14]/60 border border-white/[0.06] flex flex-col items-center justify-center text-center gap-2.5">
+            <span class="text-3xl opacity-40">🅿️</span>
+            <p class="text-xs font-mono text-[#94A3B8]">
+              कोई पंजीकृत मासिक ग्राहक नहीं है। नया पास जारी करें।
+            </p>
+          </div>
+        `;
+        return;
+      }
+
       listContainer.innerHTML = filtered.map(sub => {
         const pricing = categoryPricing[sub.category] || categoryPricing.car_small;
         const isDue = sub.passStatus === 'due';
@@ -2346,8 +2338,14 @@ ${evReceiptLines}--------------------------------
       onSelectUnitForOverride();
 
       const subSelect = document.getElementById('override-sub-select');
-      subSelect.innerHTML = parkingSubscribers.map(s => `<option value="${s.id}">${s.vehicleNumber} - ${s.ownerName} (${s.slot})</option>`).join('');
-      onSelectSubForOverride();
+      if (parkingSubscribers.length === 0) {
+        subSelect.innerHTML = '<option value="">(कोई पंजीकृत ग्राहक नहीं)</option>';
+        document.getElementById('override-sub-slot').value = '';
+        document.getElementById('override-sub-evdue').value = '0';
+      } else {
+        subSelect.innerHTML = parkingSubscribers.map(s => `<option value="${s.id}">${s.vehicleNumber} - ${s.ownerName} (${s.slot})</option>`).join('');
+        onSelectSubForOverride();
+      }
 
       document.getElementById('modal-owner-override').style.display = 'flex';
     }
@@ -2367,7 +2365,11 @@ ${evReceiptLines}--------------------------------
     function onSelectSubForOverride() {
       const subId = document.getElementById('override-sub-select').value;
       const sub = parkingSubscribers.find(s => s.id === subId);
-      if (!sub) return;
+      if (!sub) {
+        document.getElementById('override-sub-slot').value = '';
+        document.getElementById('override-sub-evdue').value = '0';
+        return;
+      }
       document.getElementById('override-sub-slot').value = sub.slot || 'Open Yard';
       document.getElementById('override-sub-evdue').value = sub.evDueAmount || 0;
     }

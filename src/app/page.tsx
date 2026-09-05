@@ -98,54 +98,34 @@ const DEFAULT_CATEGORY_PRICING: Record<VehicleCategory, CategoryPricing> = {
   tuktuk:    { fee: 500, owner: 400, ritin: 100, label: 'E-Rickshaw', subLabel: 'टुक-टुक (+EV मीटर)' }
 };
 
-const INITIAL_SUBSCRIBERS: MonthlySubscriber[] = [
-  // Car Small (₹500: ₹400 / ₹100)
-  { id: 'sub-1', vehicleNumber: 'UK 06 AB 1912', ownerName: 'राजेश कुमार', phone: '98371-20411', category: 'car_small', slot: 'P-01', passStatus: 'active', validTillDate: '30/09/2026', isParkedInside: true, lastPaidDate: '01/09/2026' },
-  { id: 'sub-2', vehicleNumber: 'UK 06 CD 4589', ownerName: 'अमित सिब्बल', phone: '94120-88320', category: 'car_small', slot: 'P-02', passStatus: 'active', validTillDate: '28/09/2026', isParkedInside: true, lastPaidDate: '29/08/2026' },
-  { id: 'sub-3', vehicleNumber: 'UP 25 BE 3390', ownerName: 'विक्रम सिंह राणा', phone: '97190-44120', category: 'car_small', slot: 'P-03', passStatus: 'active', validTillDate: '22/09/2026', isParkedInside: false, lastPaidDate: '23/08/2026' },
-
-  // Car Large / SUV (₹700: ₹500 / ₹200)
-  { id: 'sub-4', vehicleNumber: 'DL 01 AX 7721', ownerName: 'डॉ. पी. के. शर्मा', phone: '98102-34901', category: 'car_large', slot: 'P-08', passStatus: 'active', validTillDate: '04/10/2026', isParkedInside: true, lastPaidDate: '05/09/2026' },
-  { id: 'sub-5', vehicleNumber: 'HR 26 DQ 1104', ownerName: 'संजय ग्रोवर', phone: '98114-55092', category: 'car_large', slot: 'P-09', passStatus: 'active', validTillDate: '15/09/2026', isParkedInside: true, lastPaidDate: '16/08/2026' },
-  { id: 'sub-6', vehicleNumber: 'UK 04 F 9012', ownerName: 'दीपक बिष्ट', phone: '99270-11234', category: 'car_large', slot: 'P-10', passStatus: 'due', validTillDate: '02/09/2026', isParkedInside: true, lastPaidDate: '03/08/2026' },
-
-  // Pickup / Loader / Heavy (₹800: ₹600 / ₹200)
-  { id: 'sub-7', vehicleNumber: 'UK 06 L 8820', ownerName: 'महेन्द्र सिंह लोडर', phone: '95570-33412', category: 'heavy', slot: 'Open Yard-A', passStatus: 'active', validTillDate: '27/09/2026', isParkedInside: true, lastPaidDate: '28/08/2026' },
-  { id: 'sub-8', vehicleNumber: 'UP 22 M 2244', ownerName: 'अनिल रस्तोगी', phone: '96340-99812', category: 'heavy', slot: 'Open Yard-B', passStatus: 'active', validTillDate: '26/09/2026', isParkedInside: true, lastPaidDate: '27/08/2026' },
-
-  // E-Rickshaw / Tuk-Tuk (₹500: ₹400 / ₹100) + Optional EV Charging Sub-Meter
-  { id: 'sub-9', vehicleNumber: 'UK 06 ER 4420', ownerName: 'रमेश पाल', phone: '97580-22109', category: 'tuktuk', slot: 'EV-Bay 1', passStatus: 'active', validTillDate: '25/09/2026', isParkedInside: true, lastPaidDate: '26/08/2026', hasEvFacility: true, lastEvReading: 420, evDueAmount: 0 },
-  { id: 'sub-10', vehicleNumber: 'UK 06 ER 7710', ownerName: 'सलीम अख्तर', phone: '98971-88410', category: 'tuktuk', slot: 'EV-Bay 2', passStatus: 'active', validTillDate: '30/09/2026', isParkedInside: true, lastPaidDate: '01/09/2026', hasEvFacility: true, lastEvReading: 580, evDueAmount: 180 },
-  { id: 'sub-11', vehicleNumber: 'UK 06 ER 1109', ownerName: 'राजू कश्यप', phone: '94121-66782', category: 'tuktuk', slot: 'EV-Bay 3', passStatus: 'due', validTillDate: '03/09/2026', isParkedInside: true, lastPaidDate: '04/08/2026', hasEvFacility: true, lastEvReading: 310, evDueAmount: 0 },
-  { id: 'sub-12', vehicleNumber: 'UK 06 ER 9904', ownerName: 'सुरेश मौर्या', phone: '97198-44510', category: 'tuktuk', slot: 'T-04', passStatus: 'active', validTillDate: '02/10/2026', isParkedInside: false, lastPaidDate: '03/09/2026', hasEvFacility: false }
-];
+const INITIAL_SUBSCRIBERS: MonthlySubscriber[] = [];
 
 const STATIC_UNITS: UnitItem[] = [
-  // 14 ROOMS
-  { id: 'r-101', name: 'R-101', type: 'room', isOccupied: true, tenantName: 'Sunil Verma', rentAmount: 6500, rentDueAmount: 0, lastReading: 1420, isReadingPending: false },
-  { id: 'r-102', name: 'R-102', type: 'room', isOccupied: true, tenantName: 'Amit Sharma', rentAmount: 6500, rentDueAmount: 4000, lastReading: 1380, isReadingPending: true },
-  { id: 'r-103', name: 'R-103', type: 'room', isOccupied: true, tenantName: 'Rajesh Patel', rentAmount: 7000, rentDueAmount: 0, lastReading: 1890, isReadingPending: false },
-  { id: 'r-104', name: 'R-104', type: 'room', isOccupied: true, tenantName: 'Priya Nair', rentAmount: 6500, rentDueAmount: 0, lastReading: 1120, isReadingPending: false },
-  { id: 'r-105', name: 'R-105', type: 'room', isOccupied: true, tenantName: 'Vikas Gupta', rentAmount: 6000, rentDueAmount: 0, lastReading: 980, isReadingPending: false },
-  { id: 'r-106', name: 'R-106', type: 'room', isOccupied: true, tenantName: 'Deepak Yadav', rentAmount: 6500, rentDueAmount: 0, lastReading: 2150, isReadingPending: false },
-  { id: 'r-107', name: 'R-107', type: 'room', isOccupied: true, tenantName: 'Sneha Kulkarni', rentAmount: 7000, rentDueAmount: 0, lastReading: 1460, isReadingPending: true },
-  { id: 'r-108', name: 'R-108', type: 'room', isOccupied: false, rentAmount: 6500, rentDueAmount: 0, lastReading: 1200, isReadingPending: false },
-  { id: 'r-109', name: 'R-109', type: 'room', isOccupied: true, tenantName: 'Manish Tiwari', rentAmount: 6500, rentDueAmount: 0, lastReading: 1340, isReadingPending: false },
-  { id: 'r-110', name: 'R-110', type: 'room', isOccupied: true, tenantName: 'Ananya Roy', rentAmount: 7500, rentDueAmount: 0, lastReading: 1760, isReadingPending: false },
-  { id: 'r-111', name: 'R-111', type: 'room', isOccupied: true, tenantName: 'Rohit Chauhan', rentAmount: 6500, rentDueAmount: 0, lastReading: 1510, isReadingPending: false },
-  { id: 'r-112', name: 'R-112', type: 'room', isOccupied: false, rentAmount: 7000, rentDueAmount: 0, lastReading: 940, isReadingPending: false },
-  { id: 'r-113', name: 'R-113', type: 'room', isOccupied: true, tenantName: 'Karan Malhotra', rentAmount: 7000, rentDueAmount: 0, lastReading: 1680, isReadingPending: true },
-  { id: 'r-114', name: 'R-114', type: 'room', isOccupied: true, tenantName: 'Pooja Mehra', rentAmount: 7500, rentDueAmount: 0, lastReading: 1930, isReadingPending: false },
+  // 14 ROOMS (Clean Zero-State Inventory)
+  { id: 'r-101', name: 'R-101', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-102', name: 'R-102', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-103', name: 'R-103', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-104', name: 'R-104', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-105', name: 'R-105', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-106', name: 'R-106', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-107', name: 'R-107', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-108', name: 'R-108', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-109', name: 'R-109', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-110', name: 'R-110', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-111', name: 'R-111', type: 'room', isOccupied: false, tenantName: '', rentAmount: 6500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-112', name: 'R-112', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-113', name: 'R-113', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 'r-114', name: 'R-114', type: 'room', isOccupied: false, tenantName: '', rentAmount: 7500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
 
-  // 8 SHOPS
-  { id: 's-01', name: 'S-01', type: 'shop', isOccupied: true, tenantName: 'Balaji Medicals', rentAmount: 18000, rentDueAmount: 0, lastReading: 4210, isReadingPending: false },
-  { id: 's-02', name: 'S-02', type: 'shop', isOccupied: true, tenantName: 'Shree Ganesh Grocery', rentAmount: 16500, rentDueAmount: 0, lastReading: 3890, isReadingPending: false },
-  { id: 's-03', name: 'S-03', type: 'shop', isOccupied: true, tenantName: 'Modern Dry Cleaners', rentAmount: 14000, rentDueAmount: 8500, lastReading: 2890, isReadingPending: true },
-  { id: 's-04', name: 'S-04', type: 'shop', isOccupied: true, tenantName: 'Metro Cyber & Print', rentAmount: 12500, rentDueAmount: 0, lastReading: 2450, isReadingPending: false },
-  { id: 's-05', name: 'S-05', type: 'shop', isOccupied: false, rentAmount: 15000, rentDueAmount: 0, lastReading: 1100, isReadingPending: false },
-  { id: 's-06', name: 'S-06', type: 'shop', isOccupied: true, tenantName: 'Royal Hair Salon', rentAmount: 15000, rentDueAmount: 0, lastReading: 3110, isReadingPending: false },
-  { id: 's-07', name: 'S-07', type: 'shop', isOccupied: true, tenantName: 'Shanti Stationery', rentAmount: 13000, rentDueAmount: 0, lastReading: 1840, isReadingPending: false },
-  { id: 's-08', name: 'S-08', type: 'shop', isOccupied: true, tenantName: 'Om Sweet & Snacks', rentAmount: 22000, rentDueAmount: 0, lastReading: 5620, isReadingPending: false }
+  // 8 SHOPS (Clean Zero-State Inventory)
+  { id: 's-01', name: 'S-01', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 18000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-02', name: 'S-02', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 16500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-03', name: 'S-03', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 14000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-04', name: 'S-04', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 12500, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-05', name: 'S-05', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 15000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-06', name: 'S-06', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 15000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-07', name: 'S-07', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 13000, rentDueAmount: 0, lastReading: 0, isReadingPending: false },
+  { id: 's-08', name: 'S-08', type: 'shop', isOccupied: false, tenantName: '', rentAmount: 22000, rentDueAmount: 0, lastReading: 0, isReadingPending: false }
 ];
 
 function VolumetricMonolith({ className = 'w-36 h-36' }: { className?: string }) {
@@ -289,7 +269,7 @@ export default function Home() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!subsError && subsData && subsData.length > 0) {
+      if (!subsError && subsData) {
         const mappedSubs: MonthlySubscriber[] = subsData.map((row: any) => ({
           id: row.id,
           vehicleNumber: row.vehicle_plate,
@@ -306,6 +286,15 @@ export default function Home() {
           evDueAmount: Number(row.ev_due_amount || 0),
         }));
         setSubscribers(mappedSubs);
+        if (mappedSubs.length > 0) {
+          setOverrideSelectedSubId((prev) => prev || mappedSubs[0].id);
+          setOverrideSubSlot((prev) => prev || mappedSubs[0].slot || 'General');
+          setOverrideSubEvDue((prev) => prev !== '0' ? prev : String(mappedSubs[0].evDueAmount || 0));
+        } else {
+          setOverrideSelectedSubId('');
+          setOverrideSubSlot('');
+          setOverrideSubEvDue('0');
+        }
       }
 
       // 3. Fetch system config
@@ -333,6 +322,24 @@ export default function Home() {
           }));
         }
       }
+
+      // 4. Fetch Shift Collections Ledger for Parking
+      const { data: ledgerData, error: ledgerError } = await supabase
+        .from('collections_ledger')
+        .select('*');
+
+      if (!ledgerError && ledgerData) {
+        const parkingEntries = ledgerData.filter((entry: any) =>
+          entry.source_type === 'parking_pass' || entry.source_type === 'tuktuk_charging'
+        );
+        const totalCollected = parkingEntries.reduce((acc: number, cur: any) => acc + Number(cur.total_cash || 0), 0);
+        const ownerShare = parkingEntries.reduce((acc: number, cur: any) => acc + Number(cur.owner_share || 0), 0);
+        const ritinCut = parkingEntries.reduce((acc: number, cur: any) => acc + Number(cur.ritin_commission || 0), 0);
+
+        setTotalParkingCollected(totalCollected);
+        setOwnerParkingShare(ownerShare);
+        setRitinParkingCut(ritinCut);
+      }
     } catch (err) {
       console.warn('Initial data load error:', err);
     }
@@ -352,6 +359,9 @@ export default function Home() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'system_config' }, () => {
         fetchInitialData();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'collections_ledger' }, () => {
+        fetchInitialData();
+      })
       .subscribe();
 
     return () => {
@@ -359,10 +369,10 @@ export default function Home() {
     };
   }, [fetchInitialData]);
 
-  // Financial Split Ledger
-  const [totalParkingCollected, setTotalParkingCollected] = useState<number>(26500);
-  const [ownerParkingShare, setOwnerParkingShare] = useState<number>(20800);
-  const [ritinParkingCut, setRitinParkingCut] = useState<number>(5700);
+  // Financial Split Ledger (Factory Reset at ₹0)
+  const [totalParkingCollected, setTotalParkingCollected] = useState<number>(0);
+  const [ownerParkingShare, setOwnerParkingShare] = useState<number>(0);
+  const [ritinParkingCut, setRitinParkingCut] = useState<number>(0);
 
   // New Pass Issuance Form
   const [newCategory, setNewCategory] = useState<VehicleCategory>('car_small');
@@ -386,9 +396,9 @@ export default function Home() {
   const [overrideUnitRent, setOverrideUnitRent] = useState<string>(String(STATIC_UNITS[0].rentAmount));
   const [overrideUnitDue, setOverrideUnitDue] = useState<string>(String(STATIC_UNITS[0].rentDueAmount));
 
-  const [overrideSelectedSubId, setOverrideSelectedSubId] = useState<string>(INITIAL_SUBSCRIBERS[0].id);
-  const [overrideSubSlot, setOverrideSubSlot] = useState<string>(INITIAL_SUBSCRIBERS[0].slot);
-  const [overrideSubEvDue, setOverrideSubEvDue] = useState<string>(String(INITIAL_SUBSCRIBERS[0].evDueAmount || 0));
+  const [overrideSelectedSubId, setOverrideSelectedSubId] = useState<string>('');
+  const [overrideSubSlot, setOverrideSubSlot] = useState<string>('');
+  const [overrideSubEvDue, setOverrideSubEvDue] = useState<string>('0');
 
   interface MonthlyReceiptPayload {
     vehicleNumber: string;
@@ -1906,65 +1916,74 @@ ${elecLine}--------------------------------
                     </div>
 
                     <div className="flex flex-col gap-2 pb-6">
-                      {filteredSubscribers.map((sub) => {
-                        const p = pricing[sub.category] || pricing.car_small;
-                        const isDue = sub.passStatus === 'due';
-                        const hasEv = sub.hasEvFacility;
+                      {filteredSubscribers.length === 0 ? (
+                        <div className="py-12 px-4 rounded-2xl bg-[#0A0D14]/60 border border-white/[0.06] flex flex-col items-center justify-center text-center gap-2.5">
+                          <span className="text-3xl opacity-40">🅿️</span>
+                          <p className="text-xs font-mono text-[#94A3B8]">
+                            कोई पंजीकृत मासिक ग्राहक नहीं है। नया पास जारी करें।
+                          </p>
+                        </div>
+                      ) : (
+                        filteredSubscribers.map((sub) => {
+                          const p = pricing[sub.category] || pricing.car_small;
+                          const isDue = sub.passStatus === 'due';
+                          const hasEv = sub.hasEvFacility;
 
-                        return (
-                          <div
-                            key={sub.id}
-                            onClick={() => handleOpenRenewalDrawer(sub)}
-                            className="p-3.5 rounded-2xl bg-[#0A0D14] border border-white/[0.08] hover:border-[#D4AF37]/40 flex flex-col gap-2.5 cursor-pointer active:scale-98 transition-all"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="px-2 py-0.5 rounded-lg bg-white/[0.06] border border-white/[0.1] font-mono font-bold text-xs text-[#EDEDED]">
-                                  {sub.vehicleNumber}
-                                </span>
-                                <span className="text-[10px] font-mono text-[#94A3B8]">
-                                  {p.label}
+                          return (
+                            <div
+                              key={sub.id}
+                              onClick={() => handleOpenRenewalDrawer(sub)}
+                              className="p-3.5 rounded-2xl bg-[#0A0D14] border border-white/[0.08] hover:border-[#D4AF37]/40 flex flex-col gap-2.5 cursor-pointer active:scale-98 transition-all"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="px-2 py-0.5 rounded-lg bg-white/[0.06] border border-white/[0.1] font-mono font-bold text-xs text-[#EDEDED]">
+                                    {sub.vehicleNumber}
+                                  </span>
+                                  <span className="text-[10px] font-mono text-[#94A3B8]">
+                                    {p.label}
+                                  </span>
+                                </div>
+
+                                {/* Field Presence Toggle */}
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleTogglePresence(sub.id, e)}
+                                  className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
+                                    sub.isParkedInside
+                                      ? 'bg-emerald-950/60 border border-emerald-500/40 text-emerald-400'
+                                      : 'bg-white/[0.03] border border-white/[0.08] text-[#64748B]'
+                                  }`}
+                                >
+                                  <span className={`w-1.5 h-1.5 rounded-full ${sub.isParkedInside ? 'bg-emerald-400 animate-pulse' : 'bg-[#64748B]'}`} />
+                                  <span>{sub.isParkedInside ? 'अंदर (Inside)' : 'बाहर (Outside)'}</span>
+                                </button>
+                              </div>
+
+                              <div className="flex items-center justify-between text-xs font-mono">
+                                <span className="text-[#CBD5E1] font-medium">{sub.ownerName}</span>
+                                <span className="text-amber-300 font-bold bg-amber-950/30 px-2 py-0.5 rounded border border-amber-500/30">
+                                  📍 {sub.slot || 'Open Yard'}
                                 </span>
                               </div>
 
-                              {/* Field Presence Toggle */}
-                              <button
-                                type="button"
-                                onClick={(e) => handleTogglePresence(sub.id, e)}
-                                className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
-                                  sub.isParkedInside
-                                    ? 'bg-emerald-950/60 border border-emerald-500/40 text-emerald-400'
-                                    : 'bg-white/[0.03] border border-white/[0.08] text-[#64748B]'
-                                }`}
-                              >
-                                <span className={`w-1.5 h-1.5 rounded-full ${sub.isParkedInside ? 'bg-emerald-400 animate-pulse' : 'bg-[#64748B]'}`} />
-                                <span>{sub.isParkedInside ? 'अंदर (Inside)' : 'बाहर (Outside)'}</span>
-                              </button>
-                            </div>
-
-                            <div className="flex items-center justify-between text-xs font-mono">
-                              <span className="text-[#CBD5E1] font-medium">{sub.ownerName}</span>
-                              <span className="text-amber-300 font-bold bg-amber-950/30 px-2 py-0.5 rounded border border-amber-500/30">
-                                📍 {sub.slot || 'Open Yard'}
-                              </span>
-                            </div>
-
-                            <div className="pt-2 border-t border-white/[0.05] flex items-center justify-between text-[10px] font-mono">
-                              <span className={isDue ? 'text-rose-400 font-bold' : 'text-emerald-400'}>
-                                {isDue ? '⚠️ पास देय (Due)' : `सक्रिय (वैध: ${sub.validTillDate})`}
-                              </span>
-
-                              {hasEv ? (
-                                <span className="text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/30 flex items-center gap-1">
-                                  ⚡ EV: {sub.lastEvReading} kWh {sub.evDueAmount && sub.evDueAmount > 0 ? `| बकाया ₹${sub.evDueAmount}` : ''}
+                              <div className="pt-2 border-t border-white/[0.05] flex items-center justify-between text-[10px] font-mono">
+                                <span className={isDue ? 'text-rose-400 font-bold' : 'text-emerald-400'}>
+                                  {isDue ? '⚠️ पास देय (Due)' : `सक्रिय (वैध: ${sub.validTillDate})`}
                                 </span>
-                              ) : (
-                                <span className="text-[#64748B]">मासिक: ₹{p.fee}</span>
-                              )}
+
+                                {hasEv ? (
+                                  <span className="text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/30 flex items-center gap-1">
+                                    ⚡ EV: {sub.lastEvReading} kWh {sub.evDueAmount && sub.evDueAmount > 0 ? `| बकाया ₹${sub.evDueAmount}` : ''}
+                                  </span>
+                                ) : (
+                                  <span className="text-[#64748B]">मासिक: ₹{p.fee}</span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })
+                      )}
                     </div>
                   </main>
                 </>
@@ -2647,25 +2666,31 @@ ${elecLine}--------------------------------
                 {/* 4. Parking Subscriber Balance & Slot Adjustment */}
                 <div className="p-3 rounded-2xl bg-[#06080C] border border-white/[0.08] flex flex-col gap-2">
                   <span className="text-xs font-bold text-[#EDEDED] uppercase">🅿️ पार्किंग ग्राहक व स्लॉट समायोजन</span>
-                  <select
-                    value={overrideSelectedSubId}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      setOverrideSelectedSubId(id);
-                      const s = subscribers.find((x) => x.id === id);
-                      if (s) {
-                        setOverrideSubSlot(s.slot || 'General');
-                        setOverrideSubEvDue(String(s.evDueAmount || 0));
-                      }
-                    }}
-                    className="w-full py-1.5 px-2 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none"
-                  >
-                    {subscribers.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.vehicleNumber} - {s.ownerName} ({s.slot})
-                      </option>
-                    ))}
-                  </select>
+                  {subscribers.length === 0 ? (
+                    <div className="py-2.5 px-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[11px] font-mono text-[#94A3B8] text-center">
+                      कोई पंजीकृत ग्राहक नहीं है
+                    </div>
+                  ) : (
+                    <select
+                      value={overrideSelectedSubId}
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        setOverrideSelectedSubId(id);
+                        const s = subscribers.find((x) => x.id === id);
+                        if (s) {
+                          setOverrideSubSlot(s.slot || 'General');
+                          setOverrideSubEvDue(String(s.evDueAmount || 0));
+                        }
+                      }}
+                      className="w-full py-1.5 px-2 rounded-xl bg-[#0D1117] border border-white/[0.1] text-xs font-mono text-[#EDEDED] focus:outline-none"
+                    >
+                      {subscribers.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.vehicleNumber} - {s.ownerName} ({s.slot})
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <label className="block text-[9px] text-[#94A3B8]">स्लॉट / स्थान</label>
